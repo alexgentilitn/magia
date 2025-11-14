@@ -12,6 +12,9 @@ Branch: claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u
 Deploy: GitHub Actions → FTP Aruba
 
 PERCORSO CORRETTO: /magia
-Ultimo aggiornamento: 2025-11-14 18:50 UTC
+Ultimo aggiornamento: 2025-11-14 18:55 UTC
 
-✅ Secret FTP_PATH aggiornato correttamente!
+✅ Tutti i 4 secrets configurati correttamente!
+✅ FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_PATH
+
+Deploy automatico attivo - in corso...

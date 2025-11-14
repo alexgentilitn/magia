@@ -200,4 +200,55 @@ abstract class JsonAuthenticatable extends Authenticatable
     {
         return null;
     }
+
+    /**
+     * Override belongsTo per supporto JSON
+     * Restituisce il record correlato cercando nel JSON
+     */
+    public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
+    {
+        // Ottieni il valore della foreign key
+        $foreignKeyValue = $this->getAttribute($foreignKey);
+
+        if (!$foreignKeyValue) {
+            return null;
+        }
+
+        // Cerca il record correlato
+        return $related::find($foreignKeyValue);
+    }
+
+    /**
+     * Override hasMany per supporto JSON
+     * Restituisce collection di record correlati cercando nel JSON
+     */
+    public function hasMany($related, $foreignKey = null, $localKey = null)
+    {
+        // Ottieni il valore della local key (di solito 'id')
+        $localKeyValue = $this->getAttribute($localKey ?? 'id');
+
+        if (!$localKeyValue) {
+            return collect([]);
+        }
+
+        // Cerca tutti i record che hanno questa foreign key
+        return $related::where($foreignKey, $localKeyValue)->get();
+    }
+
+    /**
+     * Override hasOne per supporto JSON
+     * Restituisce il primo record correlato cercando nel JSON
+     */
+    public function hasOne($related, $foreignKey = null, $localKey = null)
+    {
+        // Ottieni il valore della local key (di solito 'id')
+        $localKeyValue = $this->getAttribute($localKey ?? 'id');
+
+        if (!$localKeyValue) {
+            return null;
+        }
+
+        // Cerca il primo record che ha questa foreign key
+        return $related::where($foreignKey, $localKeyValue)->first();
+    }
 }

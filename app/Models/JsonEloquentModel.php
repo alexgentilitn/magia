@@ -126,6 +126,16 @@ abstract class JsonEloquentModel extends Model
     }
 
     /**
+     * Override with per eager loading (non fa nulla in JSON, ma previene errori)
+     */
+    public static function with($relations)
+    {
+        // In JSON non abbiamo eager loading, ma restituiamo il query builder
+        // Le relazioni verranno caricate lazy quando accedute
+        return new JsonEloquentQueryBuilder(new static());
+    }
+
+    /**
      * Override count
      */
     public static function count()
@@ -201,6 +211,57 @@ abstract class JsonEloquentModel extends Model
     {
         return null;
     }
+
+    /**
+     * Override belongsTo per supporto JSON
+     * Restituisce il record correlato cercando nel JSON
+     */
+    public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
+    {
+        // Ottieni il valore della foreign key
+        $foreignKeyValue = $this->getAttribute($foreignKey);
+
+        if (!$foreignKeyValue) {
+            return null;
+        }
+
+        // Cerca il record correlato
+        return $related::find($foreignKeyValue);
+    }
+
+    /**
+     * Override hasMany per supporto JSON
+     * Restituisce collection di record correlati cercando nel JSON
+     */
+    public function hasMany($related, $foreignKey = null, $localKey = null)
+    {
+        // Ottieni il valore della local key (di solito 'id')
+        $localKeyValue = $this->getAttribute($localKey ?? 'id');
+
+        if (!$localKeyValue) {
+            return collect([]);
+        }
+
+        // Cerca tutti i record che hanno questa foreign key
+        return $related::where($foreignKey, $localKeyValue)->get();
+    }
+
+    /**
+     * Override hasOne per supporto JSON
+     * Restituisce il primo record correlato cercando nel JSON
+     */
+    public function hasOne($related, $foreignKey = null, $localKey = null)
+    {
+        // Ottieni il valore della local key (di solito 'id')
+        $localKeyValue = $this->getAttribute($localKey ?? 'id');
+
+        if (!$localKeyValue) {
+            return null;
+        }
+
+        // Cerca il primo record che ha questa foreign key
+        return $related::where($foreignKey, $localKeyValue)->first();
+    }
 }
 
 /**
@@ -220,6 +281,23 @@ class JsonEloquentQueryBuilder
     public function __construct($model)
     {
         $this->model = $model;
+    }
+
+    /**
+     * Magic method per supportare scope methods
+     * Esempio: scaduti() chiama scopeScaduti() sul model
+     */
+    public function __call($method, $parameters)
+    {
+        // Cerca il metodo scope sul model
+        $scopeMethod = 'scope' . ucfirst($method);
+
+        if (method_exists($this->model, $scopeMethod)) {
+            // Chiama lo scope method passando il query builder
+            return $this->model->$scopeMethod($this, ...$parameters);
+        }
+
+        throw new \BadMethodCallException("Method {$method} does not exist.");
     }
 
     /**
@@ -244,6 +322,13 @@ class JsonEloquentQueryBuilder
 
     public function orWhere($column, $operator = null, $value = null)
     {
+        // Se $column è una closure, gestiamo OR grouping (limitato)
+        if ($column instanceof \Closure) {
+            // Per ora aggiungiamo la closure e la skippiamo in applyWheres
+            $this->orWheres[] = [$column, null, null];
+            return $this;
+        }
+
         if ($value === null) {
             $value = $operator;
             $operator = '=';
@@ -343,6 +428,14 @@ class JsonEloquentQueryBuilder
     }
 
     /**
+     * Somma valori di una colonna
+     */
+    public function sum($column)
+    {
+        return $this->get()->sum($column);
+    }
+
+    /**
      * Primo risultato
      */
     public function first($columns = ['*'])
@@ -389,6 +482,11 @@ class JsonEloquentQueryBuilder
 
             // Controllo AND wheres
             foreach ($this->wheres as [$column, $operator, $value]) {
+                // Skip closures (vengono gestite già in where())
+                if ($column instanceof \Closure) {
+                    continue;
+                }
+
                 if (!$this->compareValue($item[$column] ?? null, $operator, $value)) {
                     $matchesAnd = false;
                     break;
@@ -397,13 +495,19 @@ class JsonEloquentQueryBuilder
 
             // Controllo OR wheres
             foreach ($this->orWheres as [$column, $operator, $value]) {
+                // Skip closures (per ora non supportati, restituiamo tutti i record)
+                if ($column instanceof \Closure) {
+                    $matchesOr = true; // Considera come match per non filtrare
+                    continue;
+                }
+
                 if ($this->compareValue($item[$column] ?? null, $operator, $value)) {
                     $matchesOr = true;
                 }
             }
 
-            // Include se matcha AND conditions oppure almeno un OR
-            if ($matchesAnd || $matchesOr) {
+            // Include se matcha AND conditions oppure almeno un OR (o se ci sono closure)
+            if ($matchesAnd || $matchesOr || empty($this->wheres)) {
                 $filtered[] = $item;
             }
         }

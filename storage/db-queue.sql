@@ -1,5 +1,5 @@
--- DB QUEUE: Verifica tabelle e pulizia tabelle di test
+-- DB QUEUE: Cerca tabelle di test da eliminare
 -- Risultati in: storage/logs/db-results.json
 
--- Mostra tutte le tabelle per identificare quelle di test
-SHOW TABLES
+-- Cerca tabelle che contengono "test" nel nome
+SHOW TABLES LIKE '%test%'

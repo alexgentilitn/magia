@@ -40,6 +40,8 @@ class Utente extends Authenticatable
     protected $fillable = [
         'email',
         'password',
+        'password_temp_expires_at',
+        'deve_cambiare_password',
         'nome',
         'cognome',
         'telefono',
@@ -69,9 +71,11 @@ class Utente extends Authenticatable
     protected $casts = [
         'email_verificata' => 'boolean',
         'attivo' => 'boolean',
+        'deve_cambiare_password' => 'boolean',
         'email_verificata_il' => 'datetime',
         'ultimo_accesso' => 'datetime',
         'email_verified_at' => 'datetime',
+        'password_temp_expires_at' => 'datetime',
         'password' => 'hashed', // Laravel 10+ cripta automaticamente
     ];
 
@@ -88,13 +92,24 @@ class Utente extends Authenticatable
 
     /**
      * Relazione: Utente ha un profilo Cliente
-     * 
+     *
      * Funzione: Se tipo_utente = 'cliente', collega al profilo cliente
      * Ritorna: Oggetto Cliente o null
      */
     public function cliente()
     {
         return $this->hasOne(Cliente::class, 'utente_id');
+    }
+
+    /**
+     * Relazione: Utente ha un profilo Professionista
+     *
+     * Funzione: Se tipo_utente = 'professionista', collega al profilo professionista
+     * Ritorna: Oggetto Professionista o null
+     */
+    public function professionista()
+    {
+        return $this->hasOne(Professionista::class, 'utente_id');
     }
 
     /**
@@ -171,8 +186,28 @@ class Utente extends Authenticatable
     }
 
     /**
+     * Verifica se l'utente ha un ruolo specifico
+     *
+     * Funzione: Controlla se il ruolo corrisponde allo slug fornito
+     * Parametri:
+     *   - $role_slug: slug del ruolo (es: 'super-admin', 'super_admin', 'moderatore')
+     * Ritorna: true se ha il ruolo, false altrimenti
+     */
+    public function hasRole($role_slug)
+    {
+        if (!$this->ruolo) {
+            return false;
+        }
+
+        // Normalizza lo slug (accetta sia underscore che dash)
+        $normalized_slug = str_replace('_', '-', strtolower($role_slug));
+
+        return $this->ruolo->slug === $normalized_slug;
+    }
+
+    /**
      * Verifica se l'utente è Super Admin
-     * 
+     *
      * Funzione: Controlla se il ruolo è Super Admin
      * Ritorna: true se è Super Admin, false altrimenti
      */

@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cliente;
 use App\Models\Utente;
+use App\Models\Lezione;
+use App\Models\Programma;
+use App\Models\Pagamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Controller: Dashboard Amministratore
- * Funzione: Gestisce la dashboard principale per amministratori
+ * Funzione: Gestisce la dashboard principale con statistiche aggregate
  */
 class DashboardController extends Controller
 {
@@ -21,79 +23,147 @@ class DashboardController extends Controller
     public function index()
     {
         try {
-            // Utente autenticato
             $utente = Auth::user();
 
-            // === STATISTICHE CLIENTI ===
-            
-            // Totale clienti
-            $totaleClienti = Cliente::count();
-            
-            // Clienti attivi (stato_cliente = 'attivo')
-            $clientiAttivi = Cliente::where('stato_cliente', 'attivo')->count();
-            
-            // Nuovi clienti questo mese
-            $nuoviMese = Cliente::whereMonth('created_at', now()->month)
+            // ==========================================
+            // STATISTICHE CLIENTI
+            // ==========================================
+            $totaleClienti = Utente::where('tipo_utente', 'cliente')->count();
+            $clientiAttivi = Utente::where('tipo_utente', 'cliente')
+                ->where('stato_cliente', 'attivo')
+                ->count();
+            $nuoviClientiMese = Utente::where('tipo_utente', 'cliente')
+                ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->count();
 
-            // === CLIENTI PER PROGRAMMA ===
-            
-            $clientiProgramma = Cliente::select('programma_attuale', DB::raw('COUNT(*) as totale'))
-                ->where('stato_cliente', 'attivo')
-                ->whereNotNull('programma_attuale')
-                ->groupBy('programma_attuale')
-                ->get()
-                ->map(function($item) {
-                    return [
-                        'programma' => ucfirst(str_replace('_', ' ', $item->programma_attuale)),
-                        'totale' => $item->totale
-                    ];
-                });
+            // ==========================================
+            // STATISTICHE LEZIONI
+            // ==========================================
+            $totaleLezioni = Lezione::count();
+            $lezioniFuture = Lezione::where('data', '>=', now())->count();
+            $lezioniOggi = Lezione::whereDate('data', now()->toDateString())->count();
+            $lezioniSettimana = Lezione::whereBetween('data', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ])->count();
 
-            // Se non ci sono programmi, crea array vuoto
-            if ($clientiProgramma->isEmpty()) {
-                $clientiProgramma = collect([]);
-            }
+            // ==========================================
+            // STATISTICHE PROGRAMMI
+            // ==========================================
+            $totaleProgrammi = Programma::count();
+            $programmiAttivi = Programma::where('attivo', true)->count();
+            $programmiInEvidenza = Programma::where('in_evidenza', true)->count();
 
-            // === ULTIMI CLIENTI REGISTRATI ===
-            
-            $ultimiClienti = Cliente::orderBy('created_at', 'desc')
-                ->limit(10)
+            // ==========================================
+            // STATISTICHE PAGAMENTI
+            // ==========================================
+            $totalePagamenti = Pagamento::count();
+            $pagamentiCompletati = Pagamento::where('stato', 'completato')->count();
+            $pagamentiInAttesa = Pagamento::where('stato', 'in_attesa')->count();
+            $incassoTotale = Pagamento::where('stato', 'completato')->sum('importo_pagato');
+            $incassoMese = Pagamento::where('stato', 'completato')
+                ->whereMonth('data_pagamento', now()->month)
+                ->whereYear('data_pagamento', now()->year)
+                ->sum('importo_pagato');
+            $daIncassare = Pagamento::where('stato', 'in_attesa')->sum('importo_residuo');
+
+            // ==========================================
+            // PROSSIME LEZIONI (oggi e domani)
+            // ==========================================
+            $prossimeLezioni = Lezione::with(['programma', 'sede', 'professionista'])
+                ->whereBetween('data', [now(), now()->addDays(1)])
+                ->orderBy('data')
+                ->orderBy('ora_inizio')
+                ->limit(5)
                 ->get();
 
-            // === ALERT E NOTIFICHE ===
-            
-            // Certificati medici in scadenza (prossimi 30 giorni)
-            $certificatiScadenza = Cliente::where('certificato_scadenza', '<=', now()->addDays(30))
-                ->where('certificato_scadenza', '>=', now())
-                ->count();
+            // ==========================================
+            // ULTIMI CLIENTI REGISTRATI
+            // ==========================================
+            $ultimiClienti = Utente::where('tipo_utente', 'cliente')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
 
-            // === GRAFICI ANDAMENTO ===
-            
-            // Iscrizioni ultimi 12 mesi
-            $iscrizioniMesi = collect();
-            for ($i = 11; $i >= 0; $i--) {
+            // ==========================================
+            // PAGAMENTI IN SCADENZA
+            // ==========================================
+            $pagamentiScadenza = Pagamento::where('stato', 'in_attesa')
+                ->where('data_scadenza', '<=', now()->addDays(7))
+                ->where('data_scadenza', '>=', now())
+                ->with('cliente')
+                ->orderBy('data_scadenza')
+                ->limit(5)
+                ->get();
+
+            // ==========================================
+            // GRAFICO INCASSI ULTIMI 6 MESI
+            // ==========================================
+            $incassiMesi = collect();
+            for ($i = 5; $i >= 0; $i--) {
                 $data = now()->subMonths($i);
-                $totale = Cliente::whereMonth('created_at', $data->month)
-                    ->whereYear('created_at', $data->year)
-                    ->count();
-                
-                $iscrizioniMesi->push([
+                $totale = Pagamento::where('stato', 'completato')
+                    ->whereMonth('data_pagamento', $data->month)
+                    ->whereYear('data_pagamento', $data->year)
+                    ->sum('importo_pagato');
+
+                $incassiMesi->push([
                     'mese' => $data->format('M Y'),
                     'totale' => $totale
                 ]);
             }
 
+            // ==========================================
+            // GRAFICO NUOVI CLIENTI ULTIMI 6 MESI
+            // ==========================================
+            $clientiMesi = collect();
+            for ($i = 5; $i >= 0; $i--) {
+                $data = now()->subMonths($i);
+                $totale = Utente::where('tipo_utente', 'cliente')
+                    ->whereMonth('created_at', $data->month)
+                    ->whereYear('created_at', $data->year)
+                    ->count();
+
+                $clientiMesi->push([
+                    'mese' => $data->format('M Y'),
+                    'totale' => $totale
+                ]);
+            }
+
+            // ==========================================
+            // ALERT E NOTIFICHE
+            // ==========================================
+            $certificatiScadenza = Utente::where('tipo_utente', 'cliente')
+                ->whereNotNull('certificato_scadenza')
+                ->where('certificato_scadenza', '<=', now()->addDays(30))
+                ->where('certificato_scadenza', '>=', now())
+                ->count();
+
             // Passa tutti i dati alla view
             return view('admin.dashboard', compact(
                 'totaleClienti',
                 'clientiAttivi',
-                'nuoviMese',
-                'certificatiScadenza',
+                'nuoviClientiMese',
+                'totaleLezioni',
+                'lezioniFuture',
+                'lezioniOggi',
+                'lezioniSettimana',
+                'totaleProgrammi',
+                'programmiAttivi',
+                'programmiInEvidenza',
+                'totalePagamenti',
+                'pagamentiCompletati',
+                'pagamentiInAttesa',
+                'incassoTotale',
+                'incassoMese',
+                'daIncassare',
+                'prossimeLezioni',
                 'ultimiClienti',
-                'iscrizioniMesi',
-                'clientiProgramma'
+                'pagamentiScadenza',
+                'incassiMesi',
+                'clientiMesi',
+                'certificatiScadenza'
             ));
 
         } catch (\Exception $e) {
@@ -101,36 +171,26 @@ class DashboardController extends Controller
             return view('admin.dashboard', [
                 'totaleClienti' => 0,
                 'clientiAttivi' => 0,
-                'nuoviMese' => 0,
-                'certificatiScadenza' => 0,
+                'nuoviClientiMese' => 0,
+                'totaleLezioni' => 0,
+                'lezioniFuture' => 0,
+                'lezioniOggi' => 0,
+                'lezioniSettimana' => 0,
+                'totaleProgrammi' => 0,
+                'programmiAttivi' => 0,
+                'programmiInEvidenza' => 0,
+                'totalePagamenti' => 0,
+                'pagamentiCompletati' => 0,
+                'pagamentiInAttesa' => 0,
+                'incassoTotale' => 0,
+                'incassoMese' => 0,
+                'daIncassare' => 0,
+                'prossimeLezioni' => collect([]),
                 'ultimiClienti' => collect([]),
-                'iscrizioniMesi' => collect([]),
-                'clientiProgramma' => collect([])
-            ]);
-        }
-    }
-
-    /**
-     * Ottiene statistiche rapide (AJAX)
-     */
-    public function statisticheRapide()
-    {
-        try {
-            return response()->json([
-                'totale_clienti' => Cliente::count(),
-                'clienti_attivi' => Cliente::where('stato_cliente', 'attivo')->count(),
-                'nuovi_oggi' => Cliente::whereDate('created_at', now()->today())->count(),
-                'nuovi_settimana' => Cliente::whereBetween('created_at', [
-                    now()->startOfWeek(),
-                    now()->endOfWeek()
-                ])->count(),
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'totale_clienti' => 0,
-                'clienti_attivi' => 0,
-                'nuovi_oggi' => 0,
-                'nuovi_settimana' => 0,
+                'pagamentiScadenza' => collect([]),
+                'incassiMesi' => collect([]),
+                'clientiMesi' => collect([]),
+                'certificatiScadenza' => 0
             ]);
         }
     }

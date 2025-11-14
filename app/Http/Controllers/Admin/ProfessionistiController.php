@@ -1,0 +1,367 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Professionista;
+use App\Models\Utente;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\PasswordTemporaneaMail;
+
+/**
+ * Controller: Gestione Professionisti
+ * CRUD completo per professionisti, istruttori, personal trainer
+ */
+class ProfessionistiController extends Controller
+{
+    /**
+     * Mostra l'elenco dei professionisti
+     */
+    public function index(Request $request)
+    {
+        $query = Professionista::with('utente')->withCount(['lezioni', 'programmi']);
+
+        // Filtri
+        if ($request->filled('stato')) {
+            $query->where('stato', $request->stato);
+        }
+
+        if ($request->filled('specializzazione')) {
+            $query->whereJsonContains('specializzazioni', $request->specializzazione);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nome', 'like', "%{$search}%")
+                  ->orWhere('cognome', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('codice_professionista', 'like', "%{$search}%");
+            });
+        }
+
+        $professionisti = $query->orderBy('cognome')->orderBy('nome')->paginate(20);
+
+        // Statistiche
+        $statistiche = [
+            'totale' => Professionista::count(),
+            'attivi' => Professionista::where('stato', 'attivo')->count(),
+            'visibili' => Professionista::where('visibile_pubblico', true)->count(),
+            'con_certificazioni' => Professionista::whereNotNull('certificazioni')->count(),
+        ];
+
+        return view('admin.professionisti.index', compact('professionisti', 'statistiche'));
+    }
+
+    /**
+     * Mostra il form di creazione
+     */
+    public function create()
+    {
+        return view('admin.professionisti.create');
+    }
+
+    /**
+     * Salva un nuovo professionista
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nome' => 'required|string|max:100',
+            'cognome' => 'required|string|max:100',
+            'email' => 'required|email|unique:utenti,email',
+            'telefono_mobile' => 'nullable|string|max:20',
+            'titolo_professionale' => 'nullable|string|max:100',
+            'bio' => 'nullable|string',
+            'anni_esperienza' => 'nullable|integer|min:0',
+            'tariffa_oraria' => 'nullable|numeric|min:0',
+            'stato' => 'required|in:attivo,sospeso,inattivo',
+        ]);
+
+        // Genera password temporanea
+        $passwordTemporanea = 'temp' . rand(1000, 9999);
+        $scadenza = now()->addHours(24);
+
+        // Crea utente base
+        $utente = Utente::create([
+            'nome' => $validated['nome'],
+            'cognome' => $validated['cognome'],
+            'email' => $validated['email'],
+            'password' => Hash::make($passwordTemporanea),
+            'password_temp_expires_at' => $scadenza,
+            'deve_cambiare_password' => true,
+            'tipo_utente' => 'professionista',
+            'telefono' => $validated['telefono_mobile'] ?? null,
+            'attivo' => true,
+        ]);
+
+        // Crea profilo professionista
+        $dataProfessionista = $validated;
+        unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
+        $dataProfessionista['utente_id'] = $utente->id;
+        $dataProfessionista['codice_professionista'] = Professionista::generaCodiceProfessionista();
+
+        $professionista = Professionista::create($dataProfessionista);
+
+        // Invia email con credenziali
+        try {
+            // Applica configurazioni SMTP dal database
+            \App\Models\Impostazione::applySmtpConfig();
+
+            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
+                $professionista,
+                $passwordTemporanea,
+                $scadenza
+            ));
+            $emailMessage = ' Email inviata con successo!';
+        } catch (\Exception $e) {
+            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea;
+        }
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', 'Professionista creato con successo! Password temporanea: ' . $passwordTemporanea . $emailMessage);
+    }
+
+    /**
+     * Mostra il dettaglio di un professionista
+     */
+    public function show($id)
+    {
+        $professionista = Professionista::with(['utente', 'lezioni', 'programmi'])
+            ->withCount(['lezioni', 'programmi'])
+            ->findOrFail($id);
+
+        // Statistiche professionista
+        $statistiche = [
+            'lezioni_totali' => $professionista->lezioni_count,
+            'lezioni_future' => $professionista->lezioni()->where('data', '>=', now())->count(),
+            'programmi_totali' => $professionista->programmi_count,
+            'programmi_attivi' => $professionista->programmi()->where('attivo', true)->count(),
+            'certificazioni_valide' => $professionista->hasCertificazioniValide(),
+            'certificazioni_scadenza' => $professionista->getCertificazioniInScadenza()->count(),
+        ];
+
+        // Prossime lezioni
+        $prossimeLezioni = $professionista->lezioni()
+            ->with(['programma', 'sede'])
+            ->where('data', '>=', now())
+            ->orderBy('data')
+            ->orderBy('ora_inizio')
+            ->limit(5)
+            ->get();
+
+        return view('admin.professionisti.show', compact('professionista', 'statistiche', 'prossimeLezioni'));
+    }
+
+    /**
+     * Mostra il form di modifica
+     */
+    public function edit($id)
+    {
+        $professionista = Professionista::with('utente')->findOrFail($id);
+        return view('admin.professionisti.edit', compact('professionista'));
+    }
+
+    /**
+     * Aggiorna un professionista
+     */
+    public function update(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $validated = $request->validate([
+            'nome' => 'required|string|max:100',
+            'cognome' => 'required|string|max:100',
+            'email' => 'required|email|unique:utenti,email,' . $professionista->utente_id,
+            'telefono_mobile' => 'nullable|string|max:20',
+            'titolo_professionale' => 'nullable|string|max:100',
+            'bio' => 'nullable|string',
+            'anni_esperienza' => 'nullable|integer|min:0',
+            'tariffa_oraria' => 'nullable|numeric|min:0',
+            'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
+            'tariffa_lezione_privata' => 'nullable|numeric|min:0',
+            'stato' => 'required|in:attivo,sospeso,inattivo',
+            'visibile_pubblico' => 'boolean',
+        ]);
+
+        // Aggiorna utente base
+        $professionista->utente->update([
+            'nome' => $validated['nome'],
+            'cognome' => $validated['cognome'],
+            'email' => $validated['email'],
+            'telefono' => $validated['telefono_mobile'] ?? null,
+        ]);
+
+        // Aggiorna professionista (rimuovi email)
+        $dataProfessionista = $validated;
+        unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
+        $professionista->update($dataProfessionista);
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', 'Professionista aggiornato con successo!');
+    }
+
+    /**
+     * Elimina un professionista (soft delete)
+     */
+    public function destroy($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        // Verifica se ha lezioni o programmi attivi
+        $lezioniAttive = $professionista->lezioni()->where('data', '>=', now())->count();
+        $programmiAttivi = $professionista->programmi()->where('attivo', true)->count();
+
+        if ($lezioniAttive > 0 || $programmiAttivi > 0) {
+            return redirect()->route('admin.professionisti.index')
+                ->with('error', 'Impossibile eliminare: il professionista ha lezioni o programmi attivi.');
+        }
+
+        // Soft delete utente e professionista
+        $professionista->utente->delete();
+        $professionista->delete();
+
+        return redirect()->route('admin.professionisti.index')
+            ->with('success', 'Professionista eliminato con successo!');
+    }
+
+    /**
+     * Cambia stato professionista
+     */
+    public function cambiaStato(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $validated = $request->validate([
+            'stato' => 'required|in:attivo,sospeso,inattivo',
+        ]);
+
+        $professionista->update(['stato' => $validated['stato']]);
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', 'Stato professionista aggiornato!');
+    }
+
+    /**
+     * Gestione certificazioni
+     */
+    public function certificazioni($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+        return view('admin.professionisti.certificazioni', compact('professionista'));
+    }
+
+    /**
+     * Salva certificazioni
+     */
+    public function salvaCertificazioni(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $certificazioni = [];
+        if ($request->has('certificazione_nome')) {
+            foreach ($request->certificazione_nome as $index => $nome) {
+                if ($nome) {
+                    $certificazioni[] = [
+                        'nome' => $nome,
+                        'ente' => $request->certificazione_ente[$index] ?? null,
+                        'data_conseguimento' => $request->certificazione_data[$index] ?? null,
+                        'scadenza' => $request->certificazione_scadenza[$index] ?? null,
+                    ];
+                }
+            }
+        }
+
+        $professionista->update(['certificazioni' => $certificazioni]);
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', 'Certificazioni aggiornate!');
+    }
+
+    /**
+     * Gestione disponibilità settimanale
+     */
+    public function disponibilita($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $giorniSettimana = [
+            'lunedi' => 'Lunedì',
+            'martedi' => 'Martedì',
+            'mercoledi' => 'Mercoledì',
+            'giovedi' => 'Giovedì',
+            'venerdi' => 'Venerdì',
+            'sabato' => 'Sabato',
+            'domenica' => 'Domenica',
+        ];
+
+        return view('admin.professionisti.disponibilita', compact('professionista', 'giorniSettimana'));
+    }
+
+    /**
+     * Salva disponibilità
+     */
+    public function salvaDisponibilita(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $disponibilita = [];
+        $giorni = ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'];
+
+        foreach ($giorni as $giorno) {
+            if ($request->has("disponibile_{$giorno}")) {
+                $disponibilita[$giorno] = [
+                    'disponibile' => true,
+                    'dalle' => $request->input("dalle_{$giorno}"),
+                    'alle' => $request->input("alle_{$giorno}"),
+                ];
+            } else {
+                $disponibilita[$giorno] = ['disponibile' => false];
+            }
+        }
+
+        $professionista->update(['disponibilita_settimanale' => $disponibilita]);
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', 'Disponibilità aggiornata!');
+    }
+
+    /**
+     * Reset password professionista
+     */
+    public function resetPassword($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        // Genera nuova password temporanea
+        $nuovaPassword = 'temp' . rand(1000, 9999);
+        $scadenza = now()->addHours(24);
+
+        $professionista->utente->update([
+            'password' => Hash::make($nuovaPassword),
+            'password_temp_expires_at' => $scadenza,
+            'deve_cambiare_password' => true,
+        ]);
+
+        // Invia email con nuova password
+        try {
+            // Applica configurazioni SMTP dal database
+            \App\Models\Impostazione::applySmtpConfig();
+
+            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
+                $professionista,
+                $nuovaPassword,
+                $scadenza
+            ));
+            $emailMessage = ' Email inviata con successo a ' . $professionista->email;
+        } catch (\Exception $e) {
+            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente la password: ' . $nuovaPassword;
+        }
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', "Password resettata! Nuova password temporanea: {$nuovaPassword}. {$emailMessage}");
+    }
+}

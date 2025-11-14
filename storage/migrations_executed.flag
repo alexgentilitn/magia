@@ -1,0 +1,4 @@
+{
+    "executed_at": "2025-11-12 10:39:22",
+    "output": "\n   INFO  Running migrations.  \n\n  2025_11_12_101547_create_test_deployment_table ................... 27ms DONE\n\n"
+}

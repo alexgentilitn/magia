@@ -4,244 +4,222 @@
 
 @section('contenuto')
 <div class="p-6">
-    
-    <!-- Statistiche Rapide -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        
-        <!-- Card: Totale Clienti -->
-        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-viola-magia transform hover:scale-105 transition">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+        <p class="text-gray-600">Panoramica generale del sistema MA.GIA DONNA</p>
+    </div>
+
+    <!-- Statistiche Principali -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Clienti -->
+        <div class="bg-gradient-to-br from-fucsia-magia to-viola-magia text-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-medium uppercase">Totale Clienti</p>
-                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ $totaleClienti }}</p>
+                    <p class="text-sm opacity-90">Clienti Totali</p>
+                    <p class="text-3xl font-bold mt-2">{{ $totaleClienti }}</p>
+                    <p class="text-xs opacity-75 mt-1">{{ $clientiAttivi }} attivi</p>
                 </div>
-                <div class="bg-viola-magia bg-opacity-10 rounded-full p-4">
-                    <i class="fas fa-users text-viola-magia text-2xl"></i>
+                <div class="text-4xl opacity-80">
+                    <i class="fas fa-users"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Card: Clienti Attivi -->
-        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 transform hover:scale-105 transition">
+        <!-- Lezioni -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-medium uppercase">Clienti Attivi</p>
-                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ $clientiAttivi }}</p>
+                    <p class="text-sm opacity-90">Lezioni Programmate</p>
+                    <p class="text-3xl font-bold mt-2">{{ $lezioniFuture }}</p>
+                    <p class="text-xs opacity-75 mt-1">{{ $lezioniOggi }} oggi</p>
                 </div>
-                <div class="bg-green-500 bg-opacity-10 rounded-full p-4">
-                    <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                <div class="text-4xl opacity-80">
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Card: Nuovi Questo Mese -->
-        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:scale-105 transition">
+        <!-- Programmi -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-medium uppercase">Nuovi Questo Mese</p>
-                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ $nuoviMese }}</p>
+                    <p class="text-sm opacity-90">Programmi Attivi</p>
+                    <p class="text-3xl font-bold mt-2">{{ $programmiAttivi }}</p>
+                    <p class="text-xs opacity-75 mt-1">su {{ $totaleProgrammi }} totali</p>
                 </div>
-                <div class="bg-blue-500 bg-opacity-10 rounded-full p-4">
-                    <i class="fas fa-user-plus text-blue-500 text-2xl"></i>
+                <div class="text-4xl opacity-80">
+                    <i class="fas fa-dumbbell"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Card: Certificati in Scadenza -->
-        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500 transform hover:scale-105 transition">
+        <!-- Incasso Mese -->
+        <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-medium uppercase">Certificati Scadenza</p>
-                    <p class="text-3xl font-bold text-gray-800 mt-2">{{ $certificatiScadenza }}</p>
+                    <p class="text-sm opacity-90">Incasso Mese</p>
+                    <p class="text-3xl font-bold mt-2">€ {{ number_format($incassoMese, 0) }}</p>
+                    <p class="text-xs opacity-75 mt-1">€ {{ number_format($daIncassare, 0) }} da incassare</p>
                 </div>
-                <div class="bg-red-500 bg-opacity-10 rounded-full p-4">
-                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                <div class="text-4xl opacity-80">
+                    <i class="fas fa-euro-sign"></i>
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- Riga con 2 colonne -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Prossime Lezioni -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-calendar-check text-fucsia-magia mr-2"></i>
+                    Prossime Lezioni (Oggi/Domani)
+                </h2>
+            </div>
+            <div class="p-4">
+                @if($prossimeLezioni->count() > 0)
+                    <div class="space-y-3">
+                        @foreach($prossimeLezioni as $lezione)
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">{{ $lezione->titolo }}</p>
+                                <p class="text-sm text-gray-600">
+                                    <i class="far fa-clock mr-1"></i> {{ $lezione->data->format('d/m') }} - {{ substr($lezione->ora_inizio, 0, 5) }}
+                                    @if($lezione->sede)
+                                    <span class="ml-2"><i class="fas fa-map-marker-alt mr-1"></i>{{ $lezione->sede->nome }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                            <span class="px-2 py-1 text-xs rounded {{ $lezione->badge_stato }}">{{ ucfirst($lezione->stato) }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-500 text-center py-8">Nessuna lezione programmata</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Pagamenti in Scadenza -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    Pagamenti in Scadenza (7 giorni)
+                </h2>
+            </div>
+            <div class="p-4">
+                @if($pagamentiScadenza->count() > 0)
+                    <div class="space-y-3">
+                        @foreach($pagamentiScadenza as $pagamento)
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">{{ $pagamento->cliente->nome }} {{ $pagamento->cliente->cognome }}</p>
+                                <p class="text-sm text-gray-600">
+                                    € {{ number_format($pagamento->importo_residuo, 2) }} - Scad: {{ $pagamento->data_scadenza->format('d/m/Y') }}
+                                </p>
+                            </div>
+                            <a href="{{ route('admin.pagamenti.show', $pagamento->id) }}" class="text-fucsia-magia hover:text-viola-magia">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-500 text-center py-8">Nessun pagamento in scadenza</p>
+                @endif
+            </div>
+        </div>
     </div>
 
     <!-- Grafici -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        
-        <!-- Grafico: Iscrizioni ultimi 12 mesi -->
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-chart-line text-fucsia-magia mr-2"></i>
-                Iscrizioni Ultimi 12 Mesi
-            </h3>
-            <div class="h-64">
-                <canvas id="graficoIscrizioni"></canvas>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Grafico Incassi -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Incassi Ultimi 6 Mesi</h2>
+            <div class="h-64 flex items-end justify-between space-x-2">
+                @foreach($incassiMesi as $mese)
+                    @php
+                        $maxIncasso = $incassiMesi->max('totale');
+                        $altezza = $maxIncasso > 0 ? ($mese['totale'] / $maxIncasso) * 100 : 0;
+                    @endphp
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-gradient-to-t from-fucsia-magia to-viola-magia rounded-t" style="height: {{ $altezza }}%;min-height: 20px;"></div>
+                        <p class="text-xs text-gray-600 mt-2 transform -rotate-45 origin-top-left">{{ $mese['mese'] }}</p>
+                        <p class="text-xs font-bold text-gray-800">€{{ number_format($mese['totale'], 0) }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- Grafico: Clienti per Programma -->
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-chart-pie text-fucsia-magia mr-2"></i>
-                Clienti per Programma
-            </h3>
-            <div class="h-64 flex items-center justify-center">
-                <canvas id="graficoProgrammi"></canvas>
+        <!-- Grafico Nuovi Clienti -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">Nuovi Clienti Ultimi 6 Mesi</h2>
+            <div class="h-64 flex items-end justify-between space-x-2">
+                @foreach($clientiMesi as $mese)
+                    @php
+                        $maxClienti = $clientiMesi->max('totale');
+                        $altezza = $maxClienti > 0 ? ($mese['totale'] / $maxClienti) * 100 : 0;
+                    @endphp
+                    <div class="flex-1 flex flex-col items-center">
+                        <div class="w-full bg-gradient-to-t from-blue-500 to-blue-700 rounded-t" style="height: {{ $altezza }}%; min-height: 20px;"></div>
+                        <p class="text-xs text-gray-600 mt-2 transform -rotate-45 origin-top-left">{{ $mese['mese'] }}</p>
+                        <p class="text-xs font-bold text-gray-800">{{ $mese['totale'] }}</p>
+                    </div>
+                @endforeach
             </div>
         </div>
-
     </div>
-
-    <!-- Alert Certificati in Scadenza -->
-    @if($certificatiScadenza > 0)
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
-            <div>
-                <p class="text-red-800 font-bold">Attenzione: {{ $certificatiScadenza }} certificati medici in scadenza!</p>
-                <p class="text-red-700 text-sm mt-1">Verifica i certificati nella sezione clienti</p>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Ultimi Clienti Registrati -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-gray-800 flex items-center">
-                <i class="fas fa-clock text-fucsia-magia mr-2"></i>
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-4 border-b">
+            <h2 class="text-lg font-semibold flex items-center">
+                <i class="fas fa-user-plus text-fucsia-magia mr-2"></i>
                 Ultimi Clienti Registrati
-            </h3>
-            <a href="{{ route('admin.clienti.index') }}" class="text-fucsia-magia hover:text-viola-magia font-medium text-sm">
-                Vedi tutti <i class="fas fa-arrow-right ml-1"></i>
-            </a>
+            </h2>
         </div>
-        
+        @if($ultimiClienti->count() > 0)
         <div class="overflow-x-auto">
             <table class="min-w-full">
-                <thead>
-                    <tr class="border-b border-gray-200">
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Nome</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Email</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Programma</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Data Iscrizione</th>
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Stato</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700">Azioni</th>
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stato</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registrato</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Azioni</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($ultimiClienti as $cliente)
-                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
-                        <td class="py-3 px-4">
-                            <span class="font-medium text-gray-800">{{ $cliente->nome }} {{ $cliente->cognome }}</span>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($ultimiClienti as $cliente)
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ $cliente->nome }} {{ $cliente->cognome }}</div>
                         </td>
-                        <td class="py-3 px-4 text-sm text-gray-600">{{ $cliente->email }}</td>
-                        <td class="py-3 px-4">
-                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                                {{ $cliente->programma_attuale ?? 'Nessuno' }}
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ $cliente->email }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full {{ $cliente->stato_cliente == 'attivo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ ucfirst($cliente->stato_cliente ?? 'N/D') }}
                             </span>
                         </td>
-                        <td class="py-3 px-4 text-sm text-gray-600">
-                            {{ $cliente->created_at->format('d/m/Y') }}
-                        </td>
-                        <td class="py-3 px-4">
-                            @if($cliente->stato_cliente === 'attivo')
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                                    <i class="fas fa-check-circle mr-1"></i>Attivo
-                                </span>
-                            @else
-                                <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
-                                    <i class="fas fa-clock mr-1"></i>{{ ucfirst($cliente->stato_cliente) }}
-                                </span>
-                            @endif
-                        </td>
-                        <td class="py-3 px-4 text-right">
-                            <a href="{{ route('admin.clienti.show', $cliente->id) }}" 
-                               class="text-fucsia-magia hover:text-viola-magia">
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ $cliente->created_at->format('d/m/Y') }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{{ route('admin.clienti.show', $cliente->id) }}" class="text-blue-600 hover:text-blue-800">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="py-8 text-center text-gray-500">
-                            <i class="fas fa-inbox text-4xl mb-2"></i>
-                            <p>Nessun cliente registrato</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
+        @else
+        <p class="text-gray-500 text-center py-8">Nessun cliente registrato</p>
+        @endif
     </div>
-
 </div>
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Grafico Iscrizioni
-const ctxIscrizioni = document.getElementById('graficoIscrizioni');
-if (ctxIscrizioni) {
-    new Chart(ctxIscrizioni, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode($iscrizioniMesi->pluck('mese')) !!},
-            datasets: [{
-                label: 'Nuove Iscrizioni',
-                data: {!! json_encode($iscrizioniMesi->pluck('totale')) !!},
-                borderColor: '#E91E8C',
-                backgroundColor: 'rgba(233, 30, 140, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Grafico Programmi
-const ctxProgrammi = document.getElementById('graficoProgrammi');
-if (ctxProgrammi) {
-    new Chart(ctxProgrammi, {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode($clientiProgramma->pluck('programma')) !!},
-            datasets: [{
-                data: {!! json_encode($clientiProgramma->pluck('totale')) !!},
-                backgroundColor: [
-                    '#7B2869',
-                    '#E91E8C',
-                    '#FF6B35',
-                    '#4ECDC4',
-                    '#95E1D3'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-}
-</script>
-@endpush
 @endsection

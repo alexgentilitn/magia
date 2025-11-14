@@ -1,0 +1,14 @@
+========================================
+  FILE DI TEST - UPLOAD FTP
+========================================
+
+Questo file è stato caricato automaticamente
+da Claude per testare la connessione FTP.
+
+Data: 2 Novembre 2025
+Ora: 17:20 circa
+
+Se vedi questo file sul server FTP,
+significa che la connessione funziona!
+
+========================================

@@ -1,0 +1,10 @@
+[08-Nov-2025 23:02:25 UTC] PHP Fatal error:  Uncaught Exception: Unable to prepare statement: 1, no such table: clienti in /home/agstudiodiital/public_html/magia/dashboard.php:10
+Stack trace:
+#0 /home/agstudiodiital/public_html/magia/dashboard.php(10): SQLite3->query()
+#1 {main}
+  thrown in /home/agstudiodiital/public_html/magia/dashboard.php on line 10
+[08-Nov-2025 23:02:52 UTC] PHP Fatal error:  Uncaught Exception: Unable to prepare statement: 1, no such table: clienti in /home/agstudiodiital/public_html/magia/dashboard.php:10
+Stack trace:
+#0 /home/agstudiodiital/public_html/magia/dashboard.php(10): SQLite3->query()
+#1 {main}
+  thrown in /home/agstudiodiital/public_html/magia/dashboard.php on line 10

@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    # Attiva il modulo di riscrittura
+    RewriteEngine On
+    
+    # Reindirizza tutto il traffico SOLO alla cartella public di Laravel
+    # Questo NON influenza altre cartelle fuori da /magia
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Impedisce l'accesso ai file nascosti (come .env)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,591 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1762847078205,
+    "data": [
+        {
+            "type": "file",
+            "name": "EMAIL_SETUP.md",
+            "size": 6975,
+            "hash": "ff448ce79563a1247b900bee3a5f58bd43a1aa563f4e1ec4b98fdc7cc6782f12"
+        },
+        {
+            "type": "folder",
+            "name": "PHPMailer"
+        },
+        {
+            "type": "file",
+            "name": "SETUP_SECRETS.md",
+            "size": 3554,
+            "hash": "00b590fae229ac457c13ffbc4d603862af5b8aca0071b3b2c7681dd264c2c060"
+        },
+        {
+            "type": "file",
+            "name": "TESTS_PASSED.md",
+            "size": 6898,
+            "hash": "1a257e13a57050b202dc1b998d85d5dcc496e30d36470a742a570ffcf62f58a6"
+        },
+        {
+            "type": "file",
+            "name": "alert_config.php",
+            "size": 9284,
+            "hash": "e7f47826ffe229794e446ec083610d0cbbb85229b857cc307e634b02cf80a59e"
+        },
+        {
+            "type": "file",
+            "name": "calendar.php",
+            "size": 29118,
+            "hash": "f7dce38a2181e9976ad789a39c5b76afb185c5bc05ad48cbed8491ba10d82139"
+        },
+        {
+            "type": "file",
+            "name": "calendar_api.php",
+            "size": 17733,
+            "hash": "fde7fa3017be46eb9bc1e96ea3e3ba61931b1f567b9e7ed020f870277976ca14"
+        },
+        {
+            "type": "file",
+            "name": "check_alerts.php",
+            "size": 10504,
+            "hash": "06fd2260a7df8eace9e678a8eef07bad81d1533ced44fa5602f2d5843099810d"
+        },
+        {
+            "type": "file",
+            "name": "cliente_edit.php",
+            "size": 12997,
+            "hash": "be927033a7cb2ee84fffc65345ffb73927d0ec89aae609967d0de3251664eee6"
+        },
+        {
+            "type": "file",
+            "name": "clienti.php",
+            "size": 4209,
+            "hash": "ee0990707792ba85578e947d58bc6d6fc4a34b281091b909baf3fed5e0f2bcd0"
+        },
+        {
+            "type": "file",
+            "name": "config.php",
+            "size": 3902,
+            "hash": "fdfe1e59afda3cdfc253a4909207cca31ea0adbc9f5d45a276f88ce7fb495978"
+        },
+        {
+            "type": "file",
+            "name": "contratti.php",
+            "size": 13505,
+            "hash": "e8813f0425856102e88a15a0b8f1f363f1530942998b74194a05e72121a07321"
+        },
+        {
+            "type": "file",
+            "name": "dashboard.php",
+            "size": 6697,
+            "hash": "da5fa795c449baad6f535366e4b5a83b3c4301cbd83e54525a85cf85cacab689"
+        },
+        {
+            "type": "file",
+            "name": "debug_info.php",
+            "size": 5540,
+            "hash": "9b129499b4d4a09c84a1ff4cbf74fb42bb766f6dd4315f2d881565068a7055f8"
+        },
+        {
+            "type": "file",
+            "name": "delete_document.php",
+            "size": 1089,
+            "hash": "385647e64d386548e99138401a36e36a440630bbb0449ddd5ebb35ae0057899f"
+        },
+        {
+            "type": "file",
+            "name": "documenti.php",
+            "size": 12239,
+            "hash": "ed72adf9c6954b7b76347275ea6dfbab85d407efab07c38d539bb3d7551e7859"
+        },
+        {
+            "type": "file",
+            "name": "documento_edit.php",
+            "size": 14525,
+            "hash": "dd0e8aba5aaf3b28651c06696f5ee1baa60b929dafee9bbd69dcd962ea1a1a65"
+        },
+        {
+            "type": "file",
+            "name": "download.php",
+            "size": 1091,
+            "hash": "be8778a6fdba20551b2cd1b80a5b31d05e3ea088ba431e6e35246f0268a96b26"
+        },
+        {
+            "type": "file",
+            "name": "download_website.py",
+            "size": 926,
+            "hash": "353d4e18266f511fc8cbd1eedb7273013c16ecadfe913ecdc6a7a5a02e31867a"
+        },
+        {
+            "type": "file",
+            "name": "download_website_magia.py",
+            "size": 2855,
+            "hash": "0610ecee98f9c8703c3c3f5186c84b6dbb77e7450054d193184009a9d656acdc"
+        },
+        {
+            "type": "file",
+            "name": "email_templates.php",
+            "size": 16538,
+            "hash": "02ec0087bf2738ad47dfd6583d9122b95f15ff0bca3540e0f51f34001155a4f1"
+        },
+        {
+            "type": "file",
+            "name": "export_clienti.php",
+            "size": 2153,
+            "hash": "792c43a371e5447b5dfb99dfd4da30d7c8ef40591bc3755ae3aa88d652c1abcb"
+        },
+        {
+            "type": "file",
+            "name": "export_progetti.php",
+            "size": 2556,
+            "hash": "e9213cb63a3ca0e97d7c224cd790606cd2adafbe9428b04ac3524e138d4ef5c7"
+        },
+        {
+            "type": "file",
+            "name": "export_scadenze.php",
+            "size": 2109,
+            "hash": "0f0a28b7812a51448e49aa94b6ede8a9953425620d853479bfb86add2aaf3f99"
+        },
+        {
+            "type": "file",
+            "name": "google_calendar_setup.php",
+            "size": 10810,
+            "hash": "375beb4de39fb763aa1a4843b0d958731bfba6be4d6a429c31cadbd82f84cf72"
+        },
+        {
+            "type": "file",
+            "name": "google_oauth.php",
+            "size": 948,
+            "hash": "b6d211a837a357030fbfbc92b055a1e7bebf97c9d44d08efb835c13c8f962f85"
+        },
+        {
+            "type": "file",
+            "name": "google_oauth_callback.php",
+            "size": 2235,
+            "hash": "375a686dc47f572c2fe79226c705b93ade74047e683b911de532ae3e2ad9b2a3"
+        },
+        {
+            "type": "file",
+            "name": "import_clienti.php",
+            "size": 15863,
+            "hash": "7749668f4667890520e8a64532a4f0f96db753ba4c09cdcd7d282afc17f0e2f0"
+        },
+        {
+            "type": "file",
+            "name": "impostazioni.php",
+            "size": 11393,
+            "hash": "0d14408f215c3cee0471d14533ba64c14e7ce483263b0a6a93735547d31feb2a"
+        },
+        {
+            "type": "file",
+            "name": "includes_footer.php",
+            "size": 28,
+            "hash": "03ee57719d235c3934b58ec52012b326279e1b977fe53eb03bfc43cd24f52a18"
+        },
+        {
+            "type": "file",
+            "name": "includes_header.php",
+            "size": 15476,
+            "hash": "5f63fab31752863a643650b0d0787a73611e0a1b5e6c3a35cbc88689a56f4efe"
+        },
+        {
+            "type": "file",
+            "name": "lead_detail.php",
+            "size": 16353,
+            "hash": "256a884b0ed2f56510132cd9753edc1b0a850aa80cfb9a4f6ff713687d496651"
+        },
+        {
+            "type": "file",
+            "name": "leads.php",
+            "size": 26098,
+            "hash": "d0a5404b3e1df9504964078cd5daf24f34658a11b5867f5232fbca4001acf765"
+        },
+        {
+            "type": "file",
+            "name": "login.php",
+            "size": 6317,
+            "hash": "d79cb62f327197c72923258252d2decf52f645c253075f64f116f1a96ba4fbc3"
+        },
+        {
+            "type": "file",
+            "name": "logout.php",
+            "size": 164,
+            "hash": "4096b0bcef19a8cf9695687646de343e6f5e8a67781fe959f2093bab9512bbca"
+        },
+        {
+            "type": "file",
+            "name": "notifiche.php",
+            "size": 12369,
+            "hash": "640f96fdb45e15a6a11333b204cfcef72eed8410aa78079c5f90546961424938"
+        },
+        {
+            "type": "file",
+            "name": "progetti.php",
+            "size": 11163,
+            "hash": "510f527c648bf496a968637c398be154edf2d9106016d74efa036f01652aaf99"
+        },
+        {
+            "type": "file",
+            "name": "progetto_delete.php",
+            "size": 9698,
+            "hash": "495ce31539a86246925afafd6d021a5479ba241928c675fa3aba9605ddce22e8"
+        },
+        {
+            "type": "file",
+            "name": "progetto_edit.php",
+            "size": 23059,
+            "hash": "7942f69e77180729ad1feb4a751b4145c2eb167d2616de57a3b19c7b93f9d5ab"
+        },
+        {
+            "type": "folder",
+            "name": "progetto_magia"
+        },
+        {
+            "type": "file",
+            "name": "progetto_spese.php",
+            "size": 11576,
+            "hash": "ede2b29d06fa1a6792f70bc6ba4cf173ec9c2b31e0611f347964b135059bdeea"
+        },
+        {
+            "type": "file",
+            "name": "scadenza_edit.php",
+            "size": 9889,
+            "hash": "76c33b733676792d69d5b86aa923bf812b7a123d7e1d3ea94f46d0800c1aa611"
+        },
+        {
+            "type": "file",
+            "name": "scadenze.php",
+            "size": 14453,
+            "hash": "f2f671061f0b503619f78439ff8100991d90e6d8ca12cc63836856f1eb64d070"
+        },
+        {
+            "type": "file",
+            "name": "send_email_helper.php",
+            "size": 8894,
+            "hash": "a3dbd6dcfc71064945d48b7cffc58cc863ec7b7466524b8e3b8c38fd8dc83858"
+        },
+        {
+            "type": "file",
+            "name": "setup.php",
+            "size": 12273,
+            "hash": "5d56b0fa3be82653b094b3fe98897e0ba0d7b172a2fee684639ca5bfa3919ee4"
+        },
+        {
+            "type": "file",
+            "name": "smtp_settings.php",
+            "size": 16246,
+            "hash": "3ab27547c91cdc89840c3632f128efd30fdcc790fd592852cad44631c50e5cf3"
+        },
+        {
+            "type": "file",
+            "name": "statistiche.php",
+            "size": 15295,
+            "hash": "6121f41f55b0a2292b4897f6b165a52bebf57a6199cbe388a902f0b434e4ff6d"
+        },
+        {
+            "type": "file",
+            "name": "task_detail.php",
+            "size": 24110,
+            "hash": "4380a8435bace7d0942059fe34998ea4ec08d59dc2188be8a0fe8fbb47d30d27"
+        },
+        {
+            "type": "file",
+            "name": "tasks.php",
+            "size": 27638,
+            "hash": "33dac37b7683636d217c437361de72e2455e5408387cc1001fb8f4ce56e1afc5"
+        },
+        {
+            "type": "file",
+            "name": "test-upload.txt",
+            "size": 357,
+            "hash": "365bcbdd00aad1e89086bafe44e5f3fead3951c5ef430484853e38b034f384f0"
+        },
+        {
+            "type": "file",
+            "name": "test_email.php",
+            "size": 13823,
+            "hash": "ba5b73e8dc7d1d8cd28816a212fbedcb488f0c7a8bdf81ad99c97d34f278aaae"
+        },
+        {
+            "type": "file",
+            "name": "test_simple_smtp.php",
+            "size": 1081,
+            "hash": "49f132c647531943f702cc3f903045777512790b785ce99d8d7763699b694160"
+        },
+        {
+            "type": "file",
+            "name": "test_smtp_page.php",
+            "size": 3699,
+            "hash": "30348eee6a85adc86ead0a23936f1df3734c44d19c8d0b150eb97434d618d940"
+        },
+        {
+            "type": "file",
+            "name": "time_tracking.php",
+            "size": 15684,
+            "hash": "e69086006a70cb663d68296759d5d3ed2a0927b53d8dbe6122ef460dc9c6bab1"
+        },
+        {
+            "type": "file",
+            "name": "update_database.php",
+            "size": 27022,
+            "hash": "520645f45491a075a1dc77a86a25aa0375716031b88c9794bb3defe1d387915d"
+        },
+        {
+            "type": "file",
+            "name": "upload_project_document.php",
+            "size": 2726,
+            "hash": "5df446a278f6e33c6b03a1296f53f16d8fc893bbfe0f96709c6fed1bbcd62d0d"
+        },
+        {
+            "type": "file",
+            "name": "upload_test.py",
+            "size": 1712,
+            "hash": "9785f04a3a2ce6e79fa0289fe96dafe9d0fa71913aab38171128b24523f21ede"
+        },
+        {
+            "type": "folder",
+            "name": "uploads"
+        },
+        {
+            "type": "file",
+            "name": "users_management.php",
+            "size": 20429,
+            "hash": "9298a91e49d477e99d1310dae09e5845a7a41e0501bc355ac9d55bec14e8d0f7"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/DSNConfigurator.php",
+            "size": 6867,
+            "hash": "20f4ac66187ef3c9c5bdee2dbe82e0be76160e254a08b8acda1700ab2a825c99"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/Exception.php",
+            "size": 1240,
+            "hash": "655e82ae2e40561a4c125115ffd49fb172a5221fa224bcdb10d41bf72eae9a87"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/OAuth.php",
+            "size": 3774,
+            "hash": "3b272d5f1fd9e185ad8daab260ad0b548a679e351701b6b78f80a6e523f1f961"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/OAuthTokenProvider.php",
+            "size": 1522,
+            "hash": "322e38b26c529df073d0bff59a94a262d3c02b23885f685a47963d280fafe46d"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/PHPMailer.php",
+            "size": 183169,
+            "hash": "d66914f20b56320a687be59a5bcd1b81056486bc0eee1453193908a8893ad485"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/POP3.php",
+            "size": 12259,
+            "hash": "cc460579d1729f271879e0f494be96418a7e1d2bba41cecfe8ca2fdc5afd2113"
+        },
+        {
+            "type": "file",
+            "name": "PHPMailer/SMTP.php",
+            "size": 48507,
+            "hash": "bb60757402b60f487ae3f36d711bfa0a4c5fb4e1569be0208b4ce69e6d6d85bd"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/.htaccess",
+            "size": 2005,
+            "hash": "5cf78c8c62d16f48dd047490c5724215c5234bd170019cf8fcc8825998453b8c"
+        },
+        {
+            "type": "folder",
+            "name": "progetto_magia/admin"
+        },
+        {
+            "type": "folder",
+            "name": "progetto_magia/assets"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/config.php",
+            "size": 2026,
+            "hash": "b226077afa0c173cf4074caaa04138cbd0cde1c13fe2f4dcbd7153a6af6062c4"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/database_setup.php",
+            "size": 4462,
+            "hash": "da707d2b0898b6f8b9d6c8c0e7776f09def6563f3a38ae7380b55b22378fdb65"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/index.php",
+            "size": 4308,
+            "hash": "0d4b1d80ec36590f9b31486346268f36bb75c6629230070b6b1f1562f60e4a0c"
+        },
+        {
+            "type": "file",
+            "name": "uploads/.htaccess",
+            "size": 287,
+            "hash": "0df87672f5b735e5d1080e6fcd98bd057908165be27ab6e77f6024b2b78ffa53"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/.htaccess",
+            "size": 1115,
+            "hash": "523c2f6a3f3de97ff6801e16de50389e7e194148c2d2816c6f156285818028a0"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/admin"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/api"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/assets"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/config.php",
+            "size": 2441,
+            "hash": "f4922de12f2f46923bd5d3ae2697fc186be25d480732370b07ce36297de26388"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/database_setup.php",
+            "size": 6843,
+            "hash": "8fe91d35109654e0fa73be283f87a9dd3a97db547112f2cd403d72742ff43a08"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/includes"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/index.html",
+            "size": 1729,
+            "hash": "1cc8d6d8bed0ce6a34790baad303c6e8d2b6c5ce6ca459a65606d50029653d61"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/index.php",
+            "size": 17657,
+            "hash": "815edb800fedb311e9c4393e526f1ff2ac25c2938e6adff72e065ff35bf497b6"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/admin/index.php",
+            "size": 6623,
+            "hash": "ab2da97ee5527db2be4674d8e2e4d5313f193bd1be074182a15cf337ffa7022a"
+        },
+        {
+            "type": "folder",
+            "name": "progetto_magia/assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "progetto_magia/assets/js"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/add-project.php",
+            "size": 11888,
+            "hash": "03b58be2142b7690bab47b2f94c72d987955da5915bcdc7ea5699d374d9bb3e7"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/dashboard.php",
+            "size": 5243,
+            "hash": "8dbfbb609950d5ca967d81a8a0948c26200865b9ab95a9b33ce04dec6a0efde8"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/edit-project.php",
+            "size": 8182,
+            "hash": "46deba3b3e8bd7ad2dea3c957a6630d490538dda2553bc59cc04cd1af0afd9ad"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/login.php",
+            "size": 3728,
+            "hash": "ec3e0883b9952bed3255d6310c7cd4c6f6a2f396e2da7be5d52489416218dfb2"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/logout.php",
+            "size": 86,
+            "hash": "6e63d076295c1241e8d941b11d8fad1a0fb56151b6d12d5b00f21c2b369d721b"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/messages.php",
+            "size": 8989,
+            "hash": "b7a6ec6bac6c085f2b8e77cce05306ae0e43120422cf451528c716963e8dc732"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/admin/portfolio.php",
+            "size": 7413,
+            "hash": "432b46a6ddbb72640cdc2f08dc9620c83449bb8fac88d4c93f13c9826258aed1"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/assets/css"
+        },
+        {
+            "type": "folder",
+            "name": "website-agstudio/assets/js"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/includes/footer.php",
+            "size": 2962,
+            "hash": "333d413643f8cd1c84743d5cd13fc073fa4c257cb05eca30edc5bfee9be5a924"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/includes/header.php",
+            "size": 3165,
+            "hash": "180fcdd4c0b66d39637219ba67c9a84c064b270a146337b051c838f8788c32d1"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/api/send-contact.php",
+            "size": 2339,
+            "hash": "583b7d7c4ae5e600c94a2c180e81e9fedf1c1864eb9e20fe03987ae69e6b082f"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/assets/css/style.css",
+            "size": 3418,
+            "hash": "e99668a4b88f98bcf0954dca061462a112f31a80bafa76d47f38648672e6e78e"
+        },
+        {
+            "type": "file",
+            "name": "progetto_magia/assets/js/main.js",
+            "size": 4963,
+            "hash": "8e6c286f6bf23070dd0d6f6eb669657f70566f49bf9a6ac1f9e18a973dd0d700"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/assets/css/main.css",
+            "size": 8875,
+            "hash": "3984c1bdedb1e9803bdc7776f2031962d485e649f1d401e71fdb4660ed0fca71"
+        },
+        {
+            "type": "file",
+            "name": "website-agstudio/assets/js/main.js",
+            "size": 5153,
+            "hash": "b5808d58237d5c5e0e2c52f84c3a73aab928d48ec265f76b3a6b9f6f35aa07b7"
+        }
+    ]
+}

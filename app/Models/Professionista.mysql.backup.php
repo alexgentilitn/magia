@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Model: Professionista
- * Backend: JSON file-based (database/jsondb/professionisti.json)
  * Gestisce i dettagli dei professionisti (istruttori, personal trainer, nutrizionisti)
  */
-class Professionista extends JsonEloquentModel
+class Professionista extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'professionisti';
-    public static $jsonTable = 'professionisti';
 
     protected $fillable = [
         'utente_id',

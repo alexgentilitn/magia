@@ -185,6 +185,22 @@ abstract class JsonEloquentModel extends Model
 
         return $this->save($options);
     }
+
+    /**
+     * Override getDateFormat per evitare connessione database
+     */
+    public function getDateFormat()
+    {
+        return 'Y-m-d H:i:s';
+    }
+
+    /**
+     * Override getConnection per restituire null senza errori
+     */
+    public function getConnection()
+    {
+        return null;
+    }
 }
 
 /**

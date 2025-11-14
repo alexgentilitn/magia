@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Model: Programma
- * Backend: JSON file-based (database/jsondb/programmi.json)
  * Funzione: Gestisce i programmi/corsi offerti (Balla & Snella, Alimentazione, ecc.)
  */
-class Programma extends JsonEloquentModel
+class Programma extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'programmi';
-    public static $jsonTable = 'programmi';
 
     protected $fillable = [
         'nome',

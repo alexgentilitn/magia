@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Model: Pagamento
- * Backend: JSON file-based (database/jsondb/pagamenti.json)
  * Funzione: Gestisce i pagamenti dei clienti per programmi e lezioni
  */
-class Pagamento extends JsonEloquentModel
+class Pagamento extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'pagamenti';
-    public static $jsonTable = 'pagamenti';
 
     protected $fillable = [
         'cliente_id',

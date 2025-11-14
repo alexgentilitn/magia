@@ -4,17 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Model: Sede
- * Backend: JSON file-based (database/jsondb/sedi.json)
  * Funzione: Gestisce le sedi fisiche del centro fitness
  */
-class Sede extends JsonEloquentModel
+class Sede extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'sedi';
-    public static $jsonTable = 'sedi';
 
     protected $fillable = [
         'nome',

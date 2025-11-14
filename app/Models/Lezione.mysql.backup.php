@@ -4,19 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 /**
  * Model: Lezione
- * Backend: JSON file-based (database/jsondb/lezioni.json)
  * Funzione: Gestisce le lezioni/corsi del centro fitness
  */
-class Lezione extends JsonEloquentModel
+class Lezione extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'lezioni';
-    public static $jsonTable = 'lezioni';
 
     protected $fillable = [
         'titolo',

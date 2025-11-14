@@ -10,10 +10,9 @@ use Illuminate\Notifications\Notifiable;
 
 /**
  * Model: Utente
- * Backend: JSON file-based (database/jsondb/utenti.json)
- *
+ * 
  * Funzione: Gestisce gli utenti del sistema (amministratori, professionisti, clienti)
- * Tabella: utenti (ora JSON)
+ * Tabella: utenti
  * 
  * Relazioni:
  * - Appartiene a: Ruolo (ruolo_id)
@@ -26,15 +25,14 @@ use Illuminate\Notifications\Notifiable;
  * - Verifica permessi tramite ruolo
  * - Soft delete per non perdere dati storici
  */
-class Utente extends JsonAuthenticatable
+class Utente extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Nome della tabella nel database
      */
     protected $table = 'utenti';
-    public static $jsonTable = 'utenti';
 
     /**
      * Campi che possono essere assegnati in massa

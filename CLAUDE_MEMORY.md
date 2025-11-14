@@ -86,6 +86,39 @@ Password: $Magia2015!
 ### Migrations Eseguite
 Tutte le migrations sono state eseguite. Flag: `storage/migrations_executed.flag`
 
+### Database JSON Locale (File-Based) 🆕
+
+**Implementato:** 14 Novembre 2025
+
+Per gestire dati locali senza dipendere da MySQL, è stato implementato un database JSON file-based:
+
+**Libreria:** `jajo/jsondb` - Database puro PHP senza SQLite
+- **Repository:** https://github.com/donjajo/php-jsondb
+- **Requisiti:** Solo PHP (no estensioni)
+- **Directory:** `database/jsondb/`
+- **File tabelle:** `database/jsondb/*.json`
+
+**Helper creato:** `App\Helpers\JsonDatabase`
+- Metodi: all(), where(), find(), insert(), update(), delete(), count()
+- Pattern: `JsonDatabase::all('tabella')`
+
+**Model creato:** `App\Models\ClienteJson`
+- CRUD completo con ID automatici e timestamps
+- Metodi: all(), find(), create(), update(), delete(), search()
+- Pattern: `ClienteJson::create(['nome' => 'Maria', ...])`
+
+**Test disponibili:**
+- `test-jsondb.php` - Test base libreria
+- `test-json-helper.php` - Test helper Laravel
+- `test-cliente-json.php` - Test Model CRUD completo
+
+**Documentazione:** Vedi `GUIDA PROGETTO/DATABASE_JSON_LOCALE.md`
+
+**⚠️ Limitazioni:**
+- Ottimale per dataset piccoli (<1000 record)
+- No relazioni, no transazioni ACID
+- Backup: copia manuale file .json
+
 ---
 
 ## ⚙️ CONFIGURAZIONE AMBIENTE (.env)

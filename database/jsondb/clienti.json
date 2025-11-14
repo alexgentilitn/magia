@@ -1,0 +1,22 @@
+[
+    {
+        "nome": "Maria",
+        "cognome": "Rossi",
+        "email": "maria.rossi@example.com",
+        "telefono": "333-9999999",
+        "data_nascita": "1990-05-15",
+        "created_at": "2025-11-14 21:50:11",
+        "updated_at": "2025-11-14 21:50:11",
+        "id": 1
+    },
+    {
+        "nome": "Laura",
+        "cognome": "Verdi",
+        "email": "laura.verdi@example.com",
+        "telefono": "333-5555555",
+        "data_nascita": "1995-12-10",
+        "created_at": "2025-11-14 21:50:11",
+        "updated_at": "2025-11-14 21:50:11",
+        "id": 3
+    }
+]

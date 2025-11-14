@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\JsonDatabase;
+use App\Helpers\JsonQueryBuilder;
 
 /**
  * Model per gestire i clienti tramite database JSON file-based
@@ -13,6 +14,23 @@ use App\Helpers\JsonDatabase;
 class ClienteJson
 {
     protected static string $table = 'clienti';
+
+    /**
+     * Inizio query builder (simula Eloquent)
+     */
+    public static function query(): JsonQueryBuilder
+    {
+        $data = JsonDatabase::all(self::$table);
+        return new JsonQueryBuilder($data);
+    }
+
+    /**
+     * Alias per orderBy
+     */
+    public static function orderBy(string $field, string $direction = 'asc'): JsonQueryBuilder
+    {
+        return self::query()->orderBy($field, $direction);
+    }
 
     /**
      * Ottieni tutti i clienti

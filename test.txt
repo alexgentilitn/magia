@@ -10,3 +10,8 @@ Se vedi questo file sul server FTP, significa che il sistema di deploy funziona 
 
 Branch: claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u
 Deploy: GitHub Actions → FTP Aruba
+
+PERCORSO CORRETTO: /magia
+Ultimo aggiornamento: 2025-11-14 18:50 UTC
+
+✅ Secret FTP_PATH aggiornato correttamente!

@@ -1,0 +1,12 @@
+TEST FILE - MA.GIA DONNA Project
+==============================
+
+Data: 2025-11-14
+Progetto: MA.GIA DONNA - Web Application
+
+Questo è un file di test per verificare il deploy automatico FTP via GitHub Actions.
+
+Se vedi questo file sul server FTP, significa che il sistema di deploy funziona correttamente!
+
+Branch: claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u
+Deploy: GitHub Actions → FTP Aruba

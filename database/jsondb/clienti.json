@@ -3,20 +3,21 @@
         "nome": "Maria",
         "cognome": "Rossi",
         "email": "maria.rossi@example.com",
-        "telefono": "333-9999999",
+        "telefono": "333-1234567",
         "data_nascita": "1990-05-15",
-        "created_at": "2025-11-14 21:50:11",
-        "updated_at": "2025-11-14 21:50:11",
+        "created_at": "2025-11-14 21:55:32",
+        "updated_at": "2025-11-14 21:55:32",
         "id": 1
-    },
+    }
+,
     {
-        "nome": "Laura",
-        "cognome": "Verdi",
-        "email": "laura.verdi@example.com",
-        "telefono": "333-5555555",
-        "data_nascita": "1995-12-10",
-        "created_at": "2025-11-14 21:50:11",
-        "updated_at": "2025-11-14 21:50:11",
-        "id": 3
+        "nome": "Giulia",
+        "cognome": "Bianchi",
+        "email": "giulia.bianchi@example.com",
+        "telefono": "333-7654321",
+        "data_nascita": "1985-08-20",
+        "created_at": "2025-11-14 21:55:32",
+        "updated_at": "2025-11-14 21:55:32",
+        "id": 2
     }
 ]

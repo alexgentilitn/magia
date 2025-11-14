@@ -1,8 +1,5 @@
--- DB QUEUE: Scrivi qui le query SQL da eseguire (una per riga)
--- Il cron le eseguirà automaticamente ogni minuto
+-- DB QUEUE: Verifica tabelle e pulizia tabelle di test
 -- Risultati in: storage/logs/db-results.json
 
--- TEST AUTOMATICO CRON - Verifica che il cron esegua automaticamente
+-- Mostra tutte le tabelle per identificare quelle di test
 SHOW TABLES
-SELECT COUNT(*) as total_users FROM utenti
-SELECT DATABASE() as current_database

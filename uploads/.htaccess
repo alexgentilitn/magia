@@ -1,0 +1,14 @@
+# Protegge la cartella uploads
+# I file possono essere scaricati solo attraverso download.php
+
+# Nega accesso diretto a tutti i file
+Order Deny,Allow
+Deny from all
+
+# Impedisce directory listing
+Options -Indexes
+
+# Protezione aggiuntiva
+<FilesMatch ".*">
+    Deny from all
+</FilesMatch>

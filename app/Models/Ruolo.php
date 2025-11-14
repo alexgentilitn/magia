@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model: Ruolo
- * Backend: JSON file-based (database/jsondb/ruoli.json)
  * 
  * Funzione: Gestisce i ruoli del sistema RBAC (Role-Based Access Control)
  * per controllare i permessi degli utenti
@@ -27,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * - Gestione livelli gerarchici
  * - Assegnazione dinamica permessi
  */
-class Ruolo extends JsonEloquentModel
+class Ruolo extends Model
 {
     use HasFactory;
 
@@ -35,7 +34,6 @@ class Ruolo extends JsonEloquentModel
      * Nome della tabella nel database
      */
     protected $table = 'ruoli';
-    public static $jsonTable = 'ruoli';
 
     /**
      * Campi che possono essere assegnati in massa

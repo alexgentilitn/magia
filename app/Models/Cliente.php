@@ -3,21 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 /**
  * Model: Cliente
- * Backend: JSON file-based (database/jsondb/clienti.json)
- *
- * NOTA: Questo Model usa JsonEloquentModel invece di Model standard
- * I controller pensano di usare MySQL ma in realtà usano JSON!
+ * Funzione: Gestisce l'anagrafica completa delle clienti
  */
-class Cliente extends JsonEloquentModel
+class Cliente extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'clienti';
-    public static $jsonTable = 'clienti';
 
     protected $fillable = [
         'utente_id',

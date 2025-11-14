@@ -28,6 +28,7 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
+            .env
             .env.example
             README.md
             .github/**

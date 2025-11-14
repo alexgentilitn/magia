@@ -6,7 +6,7 @@
  */
 
 // ==================== CONFIGURAZIONE ====================
-define('DB_MANAGER_PASSWORD', 'MagiaDB2025!'); // <-- CAMBIA QUESTA PASSWORD!
+define('DB_MANAGER_PASSWORD', '$Magia2025!'); // Password Database Manager
 define('SESSION_TIMEOUT', 3600); // 1 ora
 
 // ==================== AUTENTICAZIONE ====================

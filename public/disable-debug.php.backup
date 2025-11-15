@@ -1,8 +1,5 @@
 <?php
 
-// ==================== SECURITY GUARD ====================
-$securityGuard = require_once __DIR__.'/security-guard.php';
-
 /**
  * Questo script disabilita il debug mode
  */

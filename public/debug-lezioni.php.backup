@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-
-// ==================== SECURITY GUARD ====================
-$securityGuard = require_once __DIR__.'/security-guard.php';
 <html lang="it">
 <head>
     <meta charset="UTF-8">

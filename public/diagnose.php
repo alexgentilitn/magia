@@ -6,6 +6,9 @@
  * Accesso: https://www.agstudio.digital/magia/public/diagnose.php
  */
 
+// ==================== SECURITY GUARD ====================
+$securityGuard = require_once __DIR__.'/security-guard.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 

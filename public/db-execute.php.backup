@@ -1,7 +1,4 @@
 <?php
-
-// ==================== SECURITY GUARD ====================
-$securityGuard = require_once __DIR__.'/security-guard.php';
 /**
  * DB EXECUTE - Esegue query SQL via HTTP
  * Permette a Claude di eseguire query automaticamente sul database

@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProfessionistiController;
 use App\Http\Controllers\Admin\ProfiloController;
 use App\Http\Controllers\Admin\ImpostazioniController;
 use App\Http\Controllers\Admin\CalendarioController;
+use App\Http\Controllers\Cliente\ClienteAreaController;
 
 /**
  * File: Routes Web
@@ -34,7 +35,9 @@ Route::get('/', function () {
 // ============================================
 
 Route::get('/admin/login', [AuthController::class, 'mostraLoginAdmin'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.post');
+Route::post('/admin/login', [AuthController::class, 'loginAdmin'])
+    ->middleware('throttle:5,1') // 🔒 Max 5 tentativi in 1 minuto
+    ->name('admin.login.post');
 
 
 // ============================================
@@ -42,7 +45,9 @@ Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.
 // ============================================
 
 Route::get('/cliente/accedi', [AuthController::class, 'mostraLoginCliente'])->name('cliente.login');
-Route::post('/cliente/accedi', [AuthController::class, 'loginCliente'])->name('cliente.login.post');
+Route::post('/cliente/accedi', [AuthController::class, 'loginCliente'])
+    ->middleware('throttle:5,1') // 🔒 Max 5 tentativi in 1 minuto
+    ->name('cliente.login.post');
 
 
 // ============================================
@@ -56,6 +61,42 @@ Route::post('/registrazione', [RegistrazioneController::class, 'registraCliente'
 Route::post('/verifica-email', [RegistrazioneController::class, 'verificaEmail'])->name('verifica.email');
 Route::post('/verifica-codice-fiscale', [RegistrazioneController::class, 'verificaCodiceFiscale'])->name('verifica.cf');
 Route::post('/verifica-codice-invito', [RegistrazioneController::class, 'verificaCodiceInvito'])->name('verifica.codice');
+
+
+// ============================================
+// AREA PRIVATA CLIENTE 🔐
+// ============================================
+// Tutte le rotte protette da autenticazione cliente
+
+Route::prefix('cliente')->middleware(['auth', 'tipo_utente:cliente'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [ClienteAreaController::class, 'dashboard'])->name('cliente.dashboard');
+
+    // Profilo
+    Route::get('/profilo', [ClienteAreaController::class, 'profilo'])->name('cliente.profilo');
+    Route::post('/profilo', [ClienteAreaController::class, 'aggiornaProfilo'])->name('cliente.profilo.aggiorna');
+
+    // Parametri Corporei
+    Route::get('/parametri', [ClienteAreaController::class, 'parametri'])->name('cliente.parametri');
+    Route::post('/parametri', [ClienteAreaController::class, 'salvaParametri'])->name('cliente.parametri.salva');
+
+    // Prenotazioni Lezioni
+    Route::get('/prenotazioni', [ClienteAreaController::class, 'prenotazioni'])->name('cliente.prenotazioni');
+    Route::post('/prenotazioni/{lezione}', [ClienteAreaController::class, 'prenotaLezione'])->name('cliente.prenota');
+    Route::delete('/prenotazioni/{prenotazione}', [ClienteAreaController::class, 'cancellaPrenotazione'])->name('cliente.cancella-prenotazione');
+
+    // Storico Pagamenti
+    Route::get('/pagamenti', [ClienteAreaController::class, 'pagamenti'])->name('cliente.pagamenti');
+
+    // Materiali (Schede, Ricette, Documenti)
+    Route::get('/materiali', [ClienteAreaController::class, 'materiali'])->name('cliente.materiali');
+
+    // Upload Documenti
+    Route::get('/documenti', [ClienteAreaController::class, 'documenti'])->name('cliente.documenti');
+    Route::post('/documenti', [ClienteAreaController::class, 'caricaDocumento'])->name('cliente.carica-documento');
+
+});
 
 
 // ============================================

@@ -1,7 +1,4 @@
 <?php
-
-// ==================== SECURITY GUARD ====================
-$securityGuard = require_once __DIR__.'/security-guard.php';
 /**
  * DB QUEUE RUNNER - Esecuzione automatica code SQL
  * Da chiamare via cron ogni minuto

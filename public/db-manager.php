@@ -5,6 +5,10 @@
  * Password di accesso: puoi cambiarla qui sotto
  */
 
+// ==================== SECURITY GUARD ====================
+$securityGuard = require_once __DIR__.'/security-guard.php';
+// IMPORTANTE: Modifica security-guard.php per aggiungere IP autorizzati alla whitelist!
+
 // ==================== CONFIGURAZIONE ====================
 define('DB_MANAGER_PASSWORD', '$Magia2025!'); // Password Database Manager
 define('SESSION_TIMEOUT', 3600); // 1 ora

@@ -274,6 +274,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Dettagli lezione
         Route::get('/{id}', [CalendarioController::class, 'show'])->name('show');
 
+        // Sposta lezione (drag & drop)
+        Route::post('/{id}/move', [CalendarioController::class, 'move'])->name('move');
+
         // Prenotazioni
         Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
         Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');

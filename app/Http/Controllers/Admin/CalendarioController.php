@@ -287,4 +287,92 @@ class CalendarioController extends Controller
             'posti_totali' => $lezione->posti_totali
         ]);
     }
+
+    /**
+     * Sposta lezione (drag & drop calendario)
+     */
+    public function move(Request $request, $id)
+    {
+        $request->validate([
+            'start' => 'required|date',
+            'end' => 'required|date|after:start'
+        ]);
+
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+
+        try {
+            // Parse nuove date/orari
+            $nuovaData = Carbon::parse($request->start);
+            $nuovaDataFine = Carbon::parse($request->end);
+
+            $nuovaOraInizio = $nuovaData->format('H:i:s');
+            $nuovaOraFine = $nuovaDataFine->format('H:i:s');
+
+            // Verifica conflitti con stesso professionista
+            $conflittoProfessionista = Lezione::where('id', '!=', $id)
+                ->where('professionista_id', $lezione->professionista_id)
+                ->where('data', $nuovaData->format('Y-m-d'))
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoProfessionista) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: il professionista ha già un\'altra lezione in questo orario.'
+                ], 422);
+            }
+
+            // Verifica conflitti con stessa sede
+            $conflittoSede = Lezione::where('id', '!=', $id)
+                ->where('sede_id', $lezione->sede_id)
+                ->where('data', $nuovaData->format('Y-m-d'))
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoSede) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: la sede è già occupata in questo orario.'
+                ], 422);
+            }
+
+            // Aggiorna lezione
+            $lezione->update([
+                'data' => $nuovaData->format('Y-m-d'),
+                'ora_inizio' => $nuovaOraInizio,
+                'ora_fine' => $nuovaOraFine
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lezione spostata con successo!',
+                'lezione' => [
+                    'id' => $lezione->id,
+                    'data' => $lezione->data->format('d/m/Y'),
+                    'ora_inizio' => Carbon::parse($lezione->ora_inizio)->format('H:i'),
+                    'ora_fine' => Carbon::parse($lezione->ora_fine)->format('H:i')
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante lo spostamento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

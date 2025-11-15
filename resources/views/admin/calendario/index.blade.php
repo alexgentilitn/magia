@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         height: 'auto',
         navLinks: true,
-        editable: false,
+        editable: true,
         selectable: true,
         selectMirror: true,
         dayMaxEvents: true,
@@ -233,6 +233,66 @@ document.addEventListener('DOMContentLoaded', function() {
         // Click su una data per creare nuova lezione
         dateClick: function(info) {
             apriModalCreaLezione(info.dateStr);
+        },
+
+        // Gestione drag & drop
+        eventDrop: function(info) {
+            const lezioneId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end;
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Spostamento in corso...',
+                text: 'Verifica conflitti di orario...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('admin/calendario') }}/${lezioneId}/move`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    start: newStart.toISOString(),
+                    end: newEnd.toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Lezione spostata!',
+                        html: `Nuova data: <strong>${data.lezione.data}</strong><br>Orario: <strong>${data.lezione.ora_inizio} - ${data.lezione.ora_fine}</strong>`,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Errore - ripristina posizione originale
+                    info.revert();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Impossibile spostare',
+                        text: data.message || 'Errore durante lo spostamento'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                info.revert();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: 'Si è verificato un errore durante lo spostamento'
+                });
+            });
         },
 
         // Carica eventi dal server
@@ -256,6 +316,43 @@ document.addEventListener('DOMContentLoaded', function() {
         eventClick: function(info) {
             info.jsEvent.preventDefault();
             mostraDettagli(info.event.id);
+        },
+
+        // Renderizzazione custom eventi per mostrare più informazioni
+        eventContent: function(arg) {
+            const props = arg.event.extendedProps;
+            const title = arg.event.title;
+            const professionista = props.professionista || 'Non assegnato';
+            const posti = props.posti || '';
+
+            // Crea contenitore principale
+            const container = document.createElement('div');
+            container.className = 'fc-event-main-frame p-1';
+            container.style.fontSize = '0.75rem'; // text-xs
+            container.style.lineHeight = '1.1';
+
+            // Titolo lezione
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'font-semibold truncate';
+            titleDiv.textContent = title;
+            titleDiv.style.fontSize = '0.8rem';
+            container.appendChild(titleDiv);
+
+            // Nome istruttore (più piccolo)
+            const profDiv = document.createElement('div');
+            profDiv.className = 'text-white/90 truncate mt-0.5';
+            profDiv.innerHTML = `<i class="fas fa-user-tie mr-1" style="font-size: 0.65rem;"></i><span style="font-size: 0.7rem;">${professionista}</span>`;
+            container.appendChild(profDiv);
+
+            // Posti (solo per lezioni di gruppo)
+            if (posti && props.tipologia === 'gruppo') {
+                const postiDiv = document.createElement('div');
+                postiDiv.className = 'text-white/80 truncate mt-0.5';
+                postiDiv.innerHTML = `<i class="fas fa-users mr-1" style="font-size: 0.65rem;"></i><span style="font-size: 0.65rem;">${posti}</span>`;
+                container.appendChild(postiDiv);
+            }
+
+            return { domNodes: [container] };
         },
 
         // Tooltip al passaggio mouse

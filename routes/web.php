@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProfiloController;
 use App\Http\Controllers\Admin\ImpostazioniController;
 use App\Http\Controllers\Admin\CalendarioController;
 use App\Http\Controllers\Cliente\ClienteAreaController;
+use App\Http\Controllers\LandingPageController;
 
 /**
  * File: Routes Web
@@ -28,6 +29,16 @@ use App\Http\Controllers\Cliente\ClienteAreaController;
 Route::get('/', function () {
     return view('homepage');
 })->name('home');
+
+
+// ============================================
+// LANDING PAGE - GIORNATA DI PROVA 🎯
+// ============================================
+// Pagina pubblica per acquisizione nuovi clienti
+
+Route::get('/giornata-di-prova', [LandingPageController::class, 'index'])->name('landing.giornata-prova');
+Route::post('/giornata-di-prova', [LandingPageController::class, 'registraProva'])->name('landing.registra-prova');
+Route::get('/grazie', [LandingPageController::class, 'grazie'])->name('landing.giornata-prova.grazie');
 
 
 // ============================================

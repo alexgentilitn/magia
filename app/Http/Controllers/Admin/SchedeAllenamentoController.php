@@ -371,26 +371,94 @@ class SchedeAllenamentoController extends Controller
     }
 
     /**
-     * Genera PDF della scheda (placeholder - da implementare con libreria PDF)
+     * Genera PDF della scheda
      */
     public function generaPDF(SchedaAllenamento $scheda)
     {
-        // TODO: Implementare generazione PDF con Dompdf o TCPDF
-        // Per ora ritorna messaggio
+        try {
+            // Carica la scheda con le relazioni
+            $scheda->load(['cliente', 'professionista', 'esercizi']);
 
-        return back()
-            ->with('info', 'Funzione generazione PDF in fase di implementazione.');
+            // Genera il PDF usando DomPDF
+            $pdf = \PDF::loadView('admin.schede.pdf', compact('scheda'));
+
+            // Nome file
+            $filename = 'scheda-' . $scheda->id . '-' . now()->format('YmdHis') . '.pdf';
+            $filepath = 'schede/' . $filename;
+
+            // Salva il PDF su storage
+            Storage::put($filepath, $pdf->output());
+
+            // Aggiorna il campo pdf_path nella scheda
+            $scheda->update([
+                'pdf_path' => $filepath,
+            ]);
+
+            // Download del PDF
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Errore durante la generazione del PDF: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Invia scheda via email alla cliente (placeholder)
+     * Invia scheda via email alla cliente
      */
     public function inviaEmail(SchedaAllenamento $scheda)
     {
-        // TODO: Implementare invio email con PDF allegato
-        // Per ora ritorna messaggio
+        try {
+            // Carica la scheda con le relazioni
+            $scheda->load(['cliente', 'professionista', 'esercizi']);
 
-        return back()
-            ->with('info', 'Funzione invio email in fase di implementazione.');
+            // Verifica che il cliente abbia una email
+            if (empty($scheda->cliente->email)) {
+                return back()
+                    ->with('error', 'La cliente non ha un indirizzo email configurato.');
+            }
+
+            // Se non esiste un PDF, generalo
+            if (!$scheda->pdf_path || !Storage::exists($scheda->pdf_path)) {
+                // Genera il PDF
+                $pdf = \PDF::loadView('admin.schede.pdf', compact('scheda'));
+
+                // Nome file
+                $filename = 'scheda-' . $scheda->id . '-' . now()->format('YmdHis') . '.pdf';
+                $filepath = 'schede/' . $filename;
+
+                // Salva il PDF su storage
+                Storage::put($filepath, $pdf->output());
+
+                // Aggiorna il campo pdf_path
+                $scheda->update(['pdf_path' => $filepath]);
+            }
+
+            // Recupera il PDF dallo storage
+            $pdfContent = Storage::get($scheda->pdf_path);
+            $pdfFilename = 'Scheda_Allenamento_' . $scheda->cliente->cognome . '_' . $scheda->cliente->nome . '.pdf';
+
+            // Invia l'email con il PDF allegato
+            Mail::send('emails.scheda-allenamento', ['scheda' => $scheda], function ($message) use ($scheda, $pdfContent, $pdfFilename) {
+                $message->to($scheda->cliente->email, $scheda->cliente->cognome . ' ' . $scheda->cliente->nome)
+                    ->subject('La tua Scheda di Allenamento Personalizzata - MA.GIA DONNA')
+                    ->attachData($pdfContent, $pdfFilename, [
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+
+            // Aggiorna i campi di tracking
+            $scheda->update([
+                'inviata_email' => true,
+                'data_invio_email' => now(),
+            ]);
+
+            return back()
+                ->with('success', 'Scheda inviata con successo a ' . $scheda->cliente->email . '!');
+
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Errore durante l\'invio dell\'email: ' . $e->getMessage());
+        }
     }
 }

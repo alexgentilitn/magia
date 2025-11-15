@@ -807,6 +807,222 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
+
+    // ===================================================================
+    // PRESENZE: CHECK-IN, CHECK-OUT, ASSENTI
+    // ===================================================================
+
+    // Check-in cliente
+    window.checkIn = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Conferma check-in',
+            html: `Confermi il check-in per<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, check-in',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/check-in/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Check-in effettuato',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Check-out cliente
+    window.checkOut = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Conferma check-out',
+            html: `Confermi il check-out per<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, check-out',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/check-out/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Check-out effettuato',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Segna assente
+    window.segnaAssente = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Segna come assente',
+            html: `Vuoi segnare come assente<br><strong>${nomeCliente}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, segna assente',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/segna-assente/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cliente segnato assente',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Annulla assenza
+    window.annullaAssenza = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Annulla assenza',
+            html: `Vuoi annullare l'assenza di<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, annulla assenza',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/annulla-assenza/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Assenza annullata',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
 });
 </script>
 @endpush

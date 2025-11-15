@@ -286,6 +286,12 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Prenotazioni
         Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
         Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');
+
+        // Presenze (Check-in/Check-out)
+        Route::post('/{lezione}/check-in/{cliente}', [CalendarioController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezione}/check-out/{cliente}', [CalendarioController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezione}/segna-assente/{cliente}', [CalendarioController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezione}/annulla-assenza/{cliente}', [CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
     });
 
     // ============================================

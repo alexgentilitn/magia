@@ -512,4 +512,161 @@ class CalendarioController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Check-in cliente
+     */
+    public function checkIn($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia prenotato
+            $prenotazione = $lezione->clienti()->where('cliente_id', $clienteId)->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non prenotato per questa lezione.'
+                ], 404);
+            }
+
+            // Aggiorna stato e check-in
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'presente',
+                'check_in' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-in effettuato con successo!',
+                'check_in' => now()->format('H:i')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante il check-in: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check-out cliente
+     */
+    public function checkOut($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia presente
+            $prenotazione = $lezione->clienti()
+                ->where('cliente_id', $clienteId)
+                ->wherePivot('stato', 'presente')
+                ->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non presente o non ha effettuato il check-in.'
+                ], 404);
+            }
+
+            // Aggiorna check-out
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'check_out' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-out effettuato con successo!',
+                'check_out' => now()->format('H:i')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante il check-out: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Segna cliente come assente
+     */
+    public function segnaAssente($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia prenotato
+            $prenotazione = $lezione->clienti()->where('cliente_id', $clienteId)->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non prenotato per questa lezione.'
+                ], 404);
+            }
+
+            // Aggiorna stato
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'assente',
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cliente segnato come assente.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Annulla assenza cliente
+     */
+    public function annullaAssenza($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia assente
+            $prenotazione = $lezione->clienti()
+                ->where('cliente_id', $clienteId)
+                ->wherePivot('stato', 'assente')
+                ->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non segnato come assente.'
+                ], 404);
+            }
+
+            // Ripristina stato prenotato
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'prenotato',
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Assenza annullata. Cliente ripristinato.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -739,4 +739,57 @@ class CalendarioController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Export calendario in PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        // Parametri mese/anno (default: mese corrente)
+        $mese = $request->get('mese', now()->month);
+        $anno = $request->get('anno', now()->year);
+
+        // Crea date inizio e fine mese
+        $dataInizio = Carbon::create($anno, $mese, 1)->startOfMonth();
+        $dataFine = Carbon::create($anno, $mese, 1)->endOfMonth();
+
+        // Recupera lezioni del mese
+        $lezioni = Lezione::with(['professionista.utente', 'sede', 'programma', 'clienti'])
+            ->where('visibile_calendario', true)
+            ->whereBetween('data', [$dataInizio, $dataFine])
+            ->orderBy('data')
+            ->orderBy('ora_inizio')
+            ->get();
+
+        // Raggruppa lezioni per giorno
+        $lezioniPerGiorno = $lezioni->groupBy(function($lezione) {
+            return $lezione->data->format('Y-m-d');
+        });
+
+        // Statistiche mese
+        $statistiche = [
+            'totale_lezioni' => $lezioni->count(),
+            'totale_partecipanti' => $lezioni->sum(function($lezione) {
+                return $lezione->clienti->count();
+            }),
+            'posti_disponibili' => $lezioni->sum('posti_totali'),
+            'posti_occupati' => $lezioni->sum('posti_occupati'),
+        ];
+
+        // Genera PDF
+        $pdf = \PDF::loadView('admin.calendario.pdf.mensile', [
+            'lezioni' => $lezioni,
+            'lezioniPerGiorno' => $lezioniPerGiorno,
+            'statistiche' => $statistiche,
+            'mese' => $mese,
+            'anno' => $anno,
+            'dataInizio' => $dataInizio,
+            'dataFine' => $dataFine,
+            'nomeMese' => $dataInizio->locale('it')->isoFormat('MMMM YYYY'),
+        ]);
+
+        $nomeFile = "calendario-{$anno}-{$mese}.pdf";
+
+        return $pdf->download($nomeFile);
+    }
 }

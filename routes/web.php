@@ -271,6 +271,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // API per eventi calendario
         Route::get('/events', [CalendarioController::class, 'getEvents'])->name('events');
 
+        // Export PDF
+        Route::get('/export-pdf', [CalendarioController::class, 'exportPdf'])->name('export-pdf');
+
         // Dettagli lezione
         Route::get('/{id}', [CalendarioController::class, 'show'])->name('show');
 

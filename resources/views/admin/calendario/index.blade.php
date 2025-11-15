@@ -14,7 +14,13 @@
             <p class="text-gray-600">Visualizza e gestisci tutte le lezioni programmate</p>
         </div>
 
-        <div>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.calendario.export-pdf') }}"
+               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+               title="Esporta calendario mese corrente in PDF">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Export PDF
+            </a>
             <a href="{{ route('admin.lezioni.create') }}" class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition-colors">
                 <i class="fas fa-plus mr-2"></i>
                 Nuova Lezione

@@ -373,6 +373,48 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
             'oggi' => now()->format('Y-m-d')
         ]);
     });
+
+    Route::get('/debug/report-data', function () {
+        $dataInizio = now()->subMonth()->format('Y-m-d');
+        $dataFine = now()->format('Y-m-d');
+
+        // Test statistiche generali
+        $totaleLezioni = \App\Models\Lezione::whereBetween('data', [$dataInizio, $dataFine])->count();
+
+        // Test statistiche presenze
+        $presenti = DB::table('cliente_lezione')
+            ->join('lezioni', 'cliente_lezione.lezione_id', '=', 'lezioni.id')
+            ->whereBetween('lezioni.data', [$dataInizio, $dataFine])
+            ->where('cliente_lezione.stato', 'presente')
+            ->count();
+
+        // Test lezioni per stato
+        $lezioniPerStato = \App\Models\Lezione::whereBetween('data', [$dataInizio, $dataFine])
+            ->select('stato', DB::raw('count(*) as totale'))
+            ->groupBy('stato')
+            ->get();
+
+        // Test top professionisti
+        $topProfessionisti = DB::table('lezioni')
+            ->join('utenti', 'lezioni.professionista_id', '=', 'utenti.id')
+            ->whereBetween('lezioni.data', [$dataInizio, $dataFine])
+            ->select(
+                'lezioni.professionista_id',
+                'utenti.nome as professionista_nome',
+                'utenti.cognome as professionista_cognome',
+                DB::raw('count(*) as totale_lezioni')
+            )
+            ->groupBy('lezioni.professionista_id', 'utenti.nome', 'utenti.cognome')
+            ->get();
+
+        return response()->json([
+            'periodo' => ['inizio' => $dataInizio, 'fine' => $dataFine],
+            'totale_lezioni' => $totaleLezioni,
+            'presenti' => $presenti,
+            'lezioni_per_stato' => $lezioniPerStato,
+            'top_professionisti' => $topProfessionisti,
+        ]);
+    });
 });
 
 

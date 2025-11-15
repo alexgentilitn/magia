@@ -286,6 +286,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Prenotazioni
         Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
         Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');
+        Route::post('/{id}/invia-reminder', [CalendarioController::class, 'inviaReminder'])->name('invia-reminder');
 
         // Presenze (Check-in/Check-out)
         Route::post('/{lezione}/check-in/{cliente}', [CalendarioController::class, 'checkIn'])->name('check-in');

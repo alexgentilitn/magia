@@ -808,6 +808,67 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
+    // Invia reminder email
+    window.inviaReminder = function(lezioneId) {
+        Swal.fire({
+            title: 'Invia promemoria',
+            text: 'Vuoi inviare l\'email di promemoria a tutti i clienti prenotati?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, invia',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostra loading
+                Swal.fire({
+                    title: 'Invio in corso...',
+                    text: 'Invio email ai partecipanti...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/invia-reminder`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Email inviate!',
+                            html: `<strong>${data.inviati}</strong> email inviate con successo` +
+                                  (data.errori > 0 ? `<br>${data.errori} errori` : ''),
+                            timer: 3000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message || 'Errore durante l\'invio delle email'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore durante l\'invio'
+                    });
+                });
+            }
+        });
+    };
+
     // ===================================================================
     // PRESENZE: CHECK-IN, CHECK-OUT, ASSENTI
     // ===================================================================

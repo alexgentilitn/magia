@@ -201,11 +201,20 @@
                 <i class="fas fa-users text-fucsia-magia mr-2"></i>
                 <h4 class="font-semibold text-gray-900">Partecipanti (<span id="contatorePartecipanti">{{ $lezione->clienti->where('pivot.stato', '!=', 'lista_attesa')->count() }}</span>/{{ $lezione->posti_totali }})</h4>
             </div>
-            <button onclick="toggleAggiungiPartecipante()"
-                    class="px-3 py-1.5 bg-fucsia-magia text-white text-sm rounded-lg hover:bg-viola-magia transition-colors">
-                <i class="fas fa-plus mr-1"></i>
-                Aggiungi
-            </button>
+            <div class="flex items-center gap-2">
+                @if($lezione->clienti->where('pivot.stato', 'prenotato')->count() > 0)
+                <button onclick="inviaReminder({{ $lezione->id }})"
+                        class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-paper-plane mr-1"></i>
+                    Invia Reminder
+                </button>
+                @endif
+                <button onclick="toggleAggiungiPartecipante()"
+                        class="px-3 py-1.5 bg-fucsia-magia text-white text-sm rounded-lg hover:bg-viola-magia transition-colors">
+                    <i class="fas fa-plus mr-1"></i>
+                    Aggiungi
+                </button>
+            </div>
         </div>
 
         <!-- Form Aggiungi Partecipante (nascosto inizialmente) -->

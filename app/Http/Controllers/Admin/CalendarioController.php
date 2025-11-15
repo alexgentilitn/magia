@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Lezione;
 use App\Models\Professionista;
 use App\Models\Sede;
+use App\Models\Cliente;
+use App\Mail\ConfermaPrenotazioneMail;
+use App\Mail\ReminderLezioneMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 /**
@@ -173,8 +177,9 @@ class CalendarioController extends Controller
             'cliente_id' => 'required|exists:clienti,id'
         ]);
 
-        $lezione = Lezione::findOrFail($id);
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
         $clienteId = $request->cliente_id;
+        $cliente = Cliente::findOrFail($clienteId);
 
         // Verifica se il cliente è già prenotato
         if ($lezione->clienti()->where('cliente_id', $clienteId)->exists()) {
@@ -196,6 +201,13 @@ class CalendarioController extends Controller
                 'updated_at' => now()
             ]);
 
+            // Invia email di conferma lista d'attesa
+            try {
+                Mail::to($cliente->email)->send(new ConfermaPrenotazioneMail($lezione, $cliente, true));
+            } catch (\Exception $e) {
+                \Log::error('Errore invio email lista attesa: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
                 'lista_attesa' => true,
@@ -216,11 +228,58 @@ class CalendarioController extends Controller
         // Incrementa posti occupati
         $lezione->increment('posti_occupati');
 
+        // Invia email di conferma prenotazione
+        try {
+            Mail::to($cliente->email)->send(new ConfermaPrenotazioneMail($lezione, $cliente, false));
+        } catch (\Exception $e) {
+            \Log::error('Errore invio email conferma prenotazione: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Prenotazione effettuata con successo!',
             'posti_occupati' => $lezione->posti_occupati,
             'posti_totali' => $lezione->posti_totali
+        ]);
+    }
+
+    /**
+     * Invia reminder email a tutti i clienti prenotati per una lezione
+     */
+    public function inviaReminder($id)
+    {
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+
+        // Ottieni tutti i clienti con stato 'prenotato' (non lista d'attesa)
+        $clienti = $lezione->clienti()
+            ->wherePivot('stato', 'prenotato')
+            ->get();
+
+        if ($clienti->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nessun cliente prenotato per questa lezione.'
+            ], 422);
+        }
+
+        $inviati = 0;
+        $errori = 0;
+
+        foreach ($clienti as $cliente) {
+            try {
+                Mail::to($cliente->email)->send(new ReminderLezioneMail($lezione, $cliente));
+                $inviati++;
+            } catch (\Exception $e) {
+                \Log::error("Errore invio reminder a {$cliente->email}: " . $e->getMessage());
+                $errori++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Reminder inviati: {$inviati} successi, {$errori} errori.",
+            'inviati' => $inviati,
+            'errori' => $errori
         ]);
     }
 

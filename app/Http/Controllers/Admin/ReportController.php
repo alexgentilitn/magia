@@ -147,15 +147,18 @@ class ReportController extends Controller
      */
     private function getTopProfessionisti($dataInizio, $dataFine, $limit = 5)
     {
-        return Lezione::whereBetween('data', [$dataInizio, $dataFine])
+        return DB::table('lezioni')
+            ->join('utenti', 'lezioni.professionista_id', '=', 'utenti.id')
+            ->whereBetween('lezioni.data', [$dataInizio, $dataFine])
             ->select(
-                'professionista_id',
+                'lezioni.professionista_id',
+                'utenti.nome as professionista_nome',
+                'utenti.cognome as professionista_cognome',
                 DB::raw('count(*) as totale_lezioni'),
-                DB::raw('sum(posti_occupati) as totale_partecipanti'),
-                DB::raw('avg(posti_occupati) as media_partecipanti')
+                DB::raw('sum(lezioni.posti_occupati) as totale_partecipanti'),
+                DB::raw('avg(lezioni.posti_occupati) as media_partecipanti')
             )
-            ->with('professionista')
-            ->groupBy('professionista_id')
+            ->groupBy('lezioni.professionista_id', 'utenti.nome', 'utenti.cognome')
             ->orderByDesc('totale_lezioni')
             ->limit($limit)
             ->get();
@@ -247,18 +250,21 @@ class ReportController extends Controller
         $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
         $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
 
-        $performance = Lezione::whereBetween('data', [$dataInizio, $dataFine])
+        $performance = DB::table('lezioni')
+            ->join('utenti', 'lezioni.professionista_id', '=', 'utenti.id')
+            ->whereBetween('lezioni.data', [$dataInizio, $dataFine])
             ->select(
-                'professionista_id',
+                'lezioni.professionista_id',
+                'utenti.nome as professionista_nome',
+                'utenti.cognome as professionista_cognome',
                 DB::raw('count(*) as totale_lezioni'),
-                DB::raw('sum(posti_totali) as posti_totali'),
-                DB::raw('sum(posti_occupati) as posti_occupati'),
-                DB::raw('round(avg(posti_occupati / posti_totali * 100), 1) as tasso_occupazione'),
-                DB::raw('count(case when stato = "completata" then 1 end) as lezioni_completate'),
-                DB::raw('count(case when stato = "cancellata" then 1 end) as lezioni_cancellate')
+                DB::raw('sum(lezioni.posti_totali) as posti_totali'),
+                DB::raw('sum(lezioni.posti_occupati) as posti_occupati'),
+                DB::raw('round(avg(lezioni.posti_occupati / lezioni.posti_totali * 100), 1) as tasso_occupazione'),
+                DB::raw('count(case when lezioni.stato = "completata" then 1 end) as lezioni_completate'),
+                DB::raw('count(case when lezioni.stato = "cancellata" then 1 end) as lezioni_cancellate')
             )
-            ->with('professionista')
-            ->groupBy('professionista_id')
+            ->groupBy('lezioni.professionista_id', 'utenti.nome', 'utenti.cognome')
             ->orderByDesc('totale_lezioni')
             ->get();
 
@@ -343,21 +349,23 @@ class ReportController extends Controller
     {
         fputcsv($file, ['Professionista', 'Totale Lezioni', 'Posti Totali', 'Posti Occupati', 'Tasso Occupazione %']);
 
-        $performance = Lezione::whereBetween('data', [$dataInizio, $dataFine])
+        $performance = DB::table('lezioni')
+            ->join('utenti', 'lezioni.professionista_id', '=', 'utenti.id')
+            ->whereBetween('lezioni.data', [$dataInizio, $dataFine])
             ->select(
-                'professionista_id',
+                'utenti.nome as professionista_nome',
+                'utenti.cognome as professionista_cognome',
                 DB::raw('count(*) as totale_lezioni'),
-                DB::raw('sum(posti_totali) as posti_totali'),
-                DB::raw('sum(posti_occupati) as posti_occupati'),
-                DB::raw('round(avg(posti_occupati / posti_totali * 100), 1) as tasso_occupazione')
+                DB::raw('sum(lezioni.posti_totali) as posti_totali'),
+                DB::raw('sum(lezioni.posti_occupati) as posti_occupati'),
+                DB::raw('round(avg(lezioni.posti_occupati / lezioni.posti_totali * 100), 1) as tasso_occupazione')
             )
-            ->with('professionista')
-            ->groupBy('professionista_id')
+            ->groupBy('utenti.nome', 'utenti.cognome')
             ->get();
 
         foreach ($performance as $perf) {
             fputcsv($file, [
-                $perf->professionista ? $perf->professionista->nome . ' ' . $perf->professionista->cognome : 'N/D',
+                $perf->professionista_nome . ' ' . $perf->professionista_cognome,
                 $perf->totale_lezioni,
                 $perf->posti_totali,
                 $perf->posti_occupati,

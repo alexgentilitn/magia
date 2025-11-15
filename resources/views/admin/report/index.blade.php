@@ -162,7 +162,7 @@
                         </div>
                         <div class="ml-3">
                             <p class="text-sm font-semibold text-gray-900">
-                                {{ $prof->professionista ? $prof->professionista->nome . ' ' . $prof->professionista->cognome : 'N/D' }}
+                                {{ $prof->professionista_nome }} {{ $prof->professionista_cognome }}
                             </p>
                             <p class="text-xs text-gray-500">{{ $prof->totale_lezioni }} lezioni</p>
                         </div>

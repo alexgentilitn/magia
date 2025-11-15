@@ -64,11 +64,11 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-10 h-10 rounded-full bg-gradient-to-r from-viola-magia to-fucsia-magia flex items-center justify-center text-white font-bold">
-                                {{ substr($perf->professionista->nome ?? 'N', 0, 1) }}{{ substr($perf->professionista->cognome ?? 'D', 0, 1) }}
+                                {{ substr($perf->professionista_nome ?? 'N', 0, 1) }}{{ substr($perf->professionista_cognome ?? 'D', 0, 1) }}
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ $perf->professionista ? $perf->professionista->nome . ' ' . $perf->professionista->cognome : 'N/D' }}
+                                    {{ $perf->professionista_nome }} {{ $perf->professionista_cognome }}
                                 </div>
                             </div>
                         </div>

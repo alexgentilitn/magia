@@ -16,6 +16,15 @@
     <!-- Chart.js per grafici professionali -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- jQuery (richiesto da DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- DataTables.js per tabelle avanzate -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -31,13 +40,54 @@
     
     <style>
         [x-cloak] { display: none !important; }
-        
+
         /* Personalizza SweetAlert con i colori del brand */
         .swal2-popup {
             font-family: inherit;
         }
         .swal2-confirm {
             background: linear-gradient(to right, #7B2869, #E91E8C) !important;
+        }
+
+        /* Personalizza DataTables con i colori MA.GIA DONNA */
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin: 0 0.5rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(to right, #7B2869, #E91E8C) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: linear-gradient(to right, #7B2869, #E91E8C) !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            color: #6b7280;
+            padding-top: 1rem;
+        }
+
+        table.dataTable thead th {
+            border-bottom: 2px solid #E91E8C !important;
+        }
+
+        table.dataTable.stripe tbody tr.odd,
+        table.dataTable.display tbody tr.odd {
+            background-color: #fdf2f8 !important;
+        }
+
+        table.dataTable.hover tbody tr:hover,
+        table.dataTable.display tbody tr:hover {
+            background-color: #fce7f3 !important;
         }
     </style>
     
@@ -496,6 +546,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Script Globali DataTables -->
+    <script>
+        // Configurazione italiana per DataTables
+        const dataTablesItaliano = {
+            "sEmptyTable": "Nessun dato disponibile",
+            "sInfo": "Mostra da _START_ a _END_ di _TOTAL_ elementi",
+            "sInfoEmpty": "Mostra da 0 a 0 di 0 elementi",
+            "sInfoFiltered": "(filtrati da _MAX_ elementi totali)",
+            "sInfoPostFix": "",
+            "sInfoThousands": ".",
+            "sLengthMenu": "Mostra _MENU_ elementi",
+            "sLoadingRecords": "Caricamento...",
+            "sProcessing": "Elaborazione...",
+            "sSearch": "Cerca:",
+            "sZeroRecords": "Nessun elemento trovato",
+            "oPaginate": {
+                "sFirst": "Inizio",
+                "sPrevious": "Precedente",
+                "sNext": "Successivo",
+                "sLast": "Fine"
+            },
+            "oAria": {
+                "sSortAscending": ": attiva per ordinare la colonna in modo crescente",
+                "sSortDescending": ": attiva per ordinare la colonna in modo decrescente"
+            }
+        };
+
+        /**
+         * Inizializza DataTable su tabella specifica
+         * @param {string} selector - Selettore jQuery della tabella
+         * @param {object} options - Opzioni personalizzate (opzionale)
+         */
+        function initDataTable(selector, options = {}) {
+            const defaultOptions = {
+                language: dataTablesItaliano,
+                responsive: true,
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tutti"]],
+                order: [[0, 'asc']],
+                dom: '<"flex justify-between items-center mb-4"lf>rt<"flex justify-between items-center mt-4"ip>',
+            };
+
+            return $(selector).DataTable({...defaultOptions, ...options});
+        }
+
+        // Auto-inizializza tabelle con classe .datatable
+        $(document).ready(function() {
+            $('.datatable').each(function() {
+                const customOptions = $(this).data('dt-options') || {};
+                initDataTable(this, customOptions);
+            });
+        });
+    </script>
 
     <!-- Script Globali per Conferme SweetAlert -->
     <script>

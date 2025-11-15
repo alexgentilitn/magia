@@ -153,12 +153,138 @@ class CalendarioController extends Controller
             'professionista',
             'sede',
             'programma',
-            'clienti'
+            'clienti' => function($query) {
+                $query->withPivot('stato', 'check_in', 'check_out', 'created_at');
+            }
         ])->findOrFail($id);
 
         return response()->json([
             'lezione' => $lezione,
             'html' => view('admin.calendario.partials.modal-dettagli', compact('lezione'))->render()
+        ]);
+    }
+
+    /**
+     * Prenota un cliente a una lezione
+     */
+    public function prenota(Request $request, $id)
+    {
+        $request->validate([
+            'cliente_id' => 'required|exists:clienti,id'
+        ]);
+
+        $lezione = Lezione::findOrFail($id);
+        $clienteId = $request->cliente_id;
+
+        // Verifica se il cliente è già prenotato
+        if ($lezione->clienti()->where('cliente_id', $clienteId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Il cliente è già prenotato per questa lezione.'
+            ], 422);
+        }
+
+        // Verifica posti disponibili
+        $postiDisponibili = $lezione->posti_totali - $lezione->posti_occupati;
+
+        if ($postiDisponibili <= 0) {
+            // Nessun posto disponibile - aggiungi a lista d'attesa
+            $lezione->clienti()->attach($clienteId, [
+                'stato' => 'lista_attesa',
+                'data_prenotazione' => now()->format('Y-m-d'),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'lista_attesa' => true,
+                'message' => 'Nessun posto disponibile. Cliente aggiunto alla lista d\'attesa.',
+                'posti_occupati' => $lezione->posti_occupati,
+                'posti_totali' => $lezione->posti_totali
+            ]);
+        }
+
+        // Prenota il cliente
+        $lezione->clienti()->attach($clienteId, [
+            'stato' => 'prenotato',
+            'data_prenotazione' => now()->format('Y-m-d'),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Incrementa posti occupati
+        $lezione->increment('posti_occupati');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prenotazione effettuata con successo!',
+            'posti_occupati' => $lezione->posti_occupati,
+            'posti_totali' => $lezione->posti_totali
+        ]);
+    }
+
+    /**
+     * Annulla prenotazione di un cliente
+     */
+    public function annullaPrenotazione($lezioneId, $clienteId)
+    {
+        $lezione = Lezione::findOrFail($lezioneId);
+
+        // Verifica se il cliente è prenotato
+        $prenotazione = $lezione->clienti()
+            ->where('cliente_id', $clienteId)
+            ->first();
+
+        if (!$prenotazione) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Prenotazione non trovata.'
+            ], 404);
+        }
+
+        $statoPrenotazione = $prenotazione->pivot->stato;
+
+        // Rimuovi prenotazione
+        $lezione->clienti()->detach($clienteId);
+
+        // Se era una prenotazione confermata/prenotata, decrementa posti occupati
+        if (in_array($statoPrenotazione, ['prenotato', 'confermato'])) {
+            $lezione->decrement('posti_occupati');
+
+            // Controlla se c'è qualcuno in lista d'attesa
+            $primoInAttesa = $lezione->clienti()
+                ->wherePivot('stato', 'lista_attesa')
+                ->orderBy('cliente_lezione.created_at')
+                ->first();
+
+            if ($primoInAttesa) {
+                // Promuovi da lista d'attesa a prenotato
+                $lezione->clienti()->updateExistingPivot($primoInAttesa->id, [
+                    'stato' => 'prenotato',
+                    'updated_at' => now()
+                ]);
+
+                $lezione->increment('posti_occupati');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Prenotazione annullata. Un cliente dalla lista d\'attesa è stato promosso.',
+                    'posti_occupati' => $lezione->posti_occupati,
+                    'posti_totali' => $lezione->posti_totali,
+                    'promosso' => [
+                        'id' => $primoInAttesa->id,
+                        'nome' => $primoInAttesa->nome . ' ' . $primoInAttesa->cognome
+                    ]
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prenotazione annullata con successo.',
+            'posti_occupati' => $lezione->posti_occupati,
+            'posti_totali' => $lezione->posti_totali
         ]);
     }
 }

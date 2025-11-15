@@ -381,6 +381,30 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         ]);
     });
 
+    Route::get('/test-report-noLayout', function () {
+        $controller = new \App\Http\Controllers\Admin\ReportController();
+        $reflection = new \ReflectionClass($controller);
+
+        $dataInizio = now()->subMonth()->format('Y-m-d');
+        $dataFine = now()->format('Y-m-d');
+
+        $method = $reflection->getMethod('getStatisticheGenerali');
+        $method->setAccessible(true);
+        $stats = $method->invoke($controller, $dataInizio, $dataFine);
+
+        return '<html><head><title>Test Report</title></head><body style="padding: 50px; font-family: Arial;">
+        <h1 style="color: red;">TEST REPORT - NO LAYOUT</h1>
+        <h2>Statistiche Generali</h2>
+        <ul>
+            <li>Totale Lezioni: ' . $stats['totale_lezioni'] . '</li>
+            <li>Lezioni Completate: ' . $stats['lezioni_completate'] . '</li>
+            <li>Totale Partecipanti: ' . $stats['totale_partecipanti'] . '</li>
+            <li>Tasso Occupazione: ' . $stats['tasso_occupazione'] . '%</li>
+        </ul>
+        <pre>' . print_r($stats, true) . '</pre>
+        </body></html>';
+    });
+
     Route::get('/debug/report-data', function () {
         $dataInizio = now()->subMonth()->format('Y-m-d');
         $dataFine = now()->format('Y-m-d');

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\CalendarioController;
 use App\Http\Controllers\Cliente\ClienteAreaController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PayPalController;
 
 /**
  * File: Routes Web
@@ -50,6 +51,22 @@ Route::get('/grazie', [LandingPageController::class, 'grazie'])->name('landing.g
 Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
 Route::get('/locations/{slug}', [LocationController::class, 'show'])->name('locations.show');
 Route::get('/api/locations', [LocationController::class, 'api'])->name('locations.api');
+
+
+// ============================================
+// PAYPAL - PAGAMENTI ONLINE 💳
+// ============================================
+// Integrazione PayPal per pagamenti sicuri
+
+Route::get('/paypal/checkout', [PayPalController::class, 'showCheckout'])->name('paypal.checkout');
+Route::post('/paypal/create', [PayPalController::class, 'createPayment'])->name('paypal.create');
+Route::get('/paypal/success', [PayPalController::class, 'paymentSuccess'])->name('paypal.success');
+Route::get('/paypal/cancel', [PayPalController::class, 'paymentCancel'])->name('paypal.cancel');
+Route::get('/paypal/thank-you', [PayPalController::class, 'thankYou'])->name('paypal.thank-you');
+Route::post('/paypal/webhook', [PayPalController::class, 'webhook'])->name('paypal.webhook');
+
+// Debug route (rimuovere in produzione)
+Route::get('/paypal/test', [PayPalController::class, 'testConnection'])->name('paypal.test');
 
 
 // ============================================

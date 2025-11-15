@@ -187,6 +187,15 @@
                             </a>
                         </li>
 
+                        <!-- Report -->
+                        <li>
+                            <a href="{{ route('admin.report.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.report.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-chart-line w-5"></i>
+                                <span class="ml-3 font-medium">Report</span>
+                            </a>
+                        </li>
+
                         <!-- Divider -->
                         <li class="px-4 py-2">
                             <div class="border-t border-white border-opacity-20"></div>
@@ -390,6 +399,14 @@
                         <a href="{{ route('admin.calendario.index') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
                             <i class="fas fa-calendar-alt w-5"></i>
                             <span class="ml-3">Calendario</span>
+                        </a>
+                    </li>
+
+                    <!-- Report -->
+                    <li>
+                        <a href="{{ route('admin.report.index') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span class="ml-3">Report</span>
                         </a>
                     </li>
 

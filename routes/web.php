@@ -296,6 +296,23 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
     });
 
     // ============================================
+    // REPORT E STATISTICHE
+    // ============================================
+    Route::prefix('report')->name('report.')->group(function () {
+        // Dashboard report principale
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+
+        // Report presenze dettagliato
+        Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
+
+        // Report performance professionisti
+        Route::get('/professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'professionisti'])->name('professionisti');
+
+        // Export CSV
+        Route::get('/export-csv', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
+    });
+
+    // ============================================
     // MANUTENZIONE DATABASE (solo amministratori)
     // ============================================
     Route::middleware('tipo_utente:amministratore')->prefix('maintenance')->name('maintenance.')->group(function () {

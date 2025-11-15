@@ -62,6 +62,33 @@ class ReportController extends Controller
     }
 
     /**
+     * Debug report - Vista semplificata senza JavaScript
+     */
+    public function debug(Request $request)
+    {
+        $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
+        $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
+
+        $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
+        $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
+        $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
+        $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
+        $topClienti = $this->getTopClienti($dataInizio, $dataFine);
+        $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
+
+        return view('admin.report.debug', compact(
+            'statistiche',
+            'statistichePresenze',
+            'lezioniPerStato',
+            'topProfessionisti',
+            'topClienti',
+            'trendGiornaliero',
+            'dataInizio',
+            'dataFine'
+        ));
+    }
+
+    /**
      * Statistiche generali
      */
     private function getStatisticheGenerali($dataInizio, $dataFine)

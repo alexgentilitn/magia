@@ -302,6 +302,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Dashboard report principale
         Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
 
+        // Debug report (senza JavaScript)
+        Route::get('/debug', [\App\Http\Controllers\Admin\ReportController::class, 'debug'])->name('debug');
+
         // Report presenze dettagliato
         Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
 

@@ -494,6 +494,86 @@
         </div>
     </div>
 
+    <!-- Script Globali per Conferme SweetAlert -->
+    <script>
+        /**
+         * Conferma eliminazione con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere dopo conferma
+         * @param {string} titolo - Titolo personalizzato (opzionale)
+         * @param {string} testo - Testo personalizzato (opzionale)
+         */
+        function confermaEliminazione(formId, titolo = 'Sei sicuro?', testo = 'Questa azione non può essere annullata!') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E91E8C',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sì, elimina!',
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma azione generica con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere
+         * @param {string} titolo - Titolo della conferma
+         * @param {string} testo - Testo della conferma
+         * @param {string} bottoneConferma - Testo bottone conferma (opzionale)
+         */
+        function confermaAzione(formId, titolo, testo, bottoneConferma = 'Conferma') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: bottoneConferma,
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma con input personalizzato
+         * @param {string} formId - ID del form
+         * @param {string} titolo - Titolo
+         * @param {string} inputPlaceholder - Placeholder input
+         */
+        function confermaConInput(formId, titolo, inputPlaceholder) {
+            Swal.fire({
+                title: titolo,
+                input: 'text',
+                inputPlaceholder: inputPlaceholder,
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Conferma',
+                cancelButtonText: 'Annulla',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Devi inserire un valore!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
+
     @stack('scripts')
 
 </body>

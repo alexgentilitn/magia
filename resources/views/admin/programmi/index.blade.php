@@ -238,11 +238,11 @@
                                class="text-fucsia-magia hover:text-viola-magia" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" action="{{ route('admin.programmi.destroy', $programma->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.programmi.destroy', $programma->id) }}" class="inline" id="delete-form-{{ $programma->id }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit"
-                                        onclick="return confirm('Sei sicuro di voler eliminare questo programma?')"
+                                <button type="button"
+                                        onclick="confermaEliminazione('delete-form-{{ $programma->id }}', 'Eliminare il programma?', 'Il programma {{ $programma->nome }} sarà eliminato definitivamente. Le lezioni esistenti non saranno eliminate.')"
                                         class="text-red-600 hover:text-red-900" title="Elimina">
                                     <i class="fas fa-trash"></i>
                                 </button>

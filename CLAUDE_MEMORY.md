@@ -121,6 +121,290 @@ Per gestire dati locali senza dipendere da MySQL, è stato implementato un datab
 
 ---
 
+## 🔧 GESTIONE DATABASE - MODUS OPERANDI
+
+### Sistema di Controllo Database via File PHP
+
+**Implementato:** 14-15 Novembre 2025
+
+Per permettere a Claude di gestire il database MySQL in modo autonomo senza accesso diretto, è stato implementato un sistema basato su file PHP eseguibili via HTTP.
+
+### 📋 Scripts Disponibili
+
+#### 1. **Database Manager Web** (`public/db-manager.php`)
+Interfaccia web completa per gestione manuale database.
+
+**URL:** `https://www.agstudio.digital/magia/public/db-manager.php`
+**Password:** `$Magia2025!`
+
+**Funzionalità:**
+- Esecuzione query SQL interattive
+- Visualizzazione tabelle e strutture
+- Gestione dati (INSERT/UPDATE/DELETE)
+- Amministrazione completa database
+
+**Uso:** Per operazioni manuali o verifiche rapide.
+
+---
+
+#### 2. **Trova Tabelle Test** (`public/trova-tabelle-test.php`)
+Identifica tabelle di test/temporanee nel database.
+
+**URL:** `https://www.agstudio.digital/magia/public/trova-tabelle-test.php?secret=$Magia2025!`
+
+**Output:**
+- Lista completa tabelle (divise in PROD e TEST)
+- Identifica tabelle con pattern: test*, temp*, tmp*, demo*, backup*
+- Riepilogo: N tabelle produzione vs N tabelle test
+
+**Uso:** Prima di fare pulizia database, per identificare cosa eliminare.
+
+---
+
+#### 3. **Elimina Tabelle Test** (`public/elimina-tabelle-test.php`)
+Elimina solo le tabelle identificate come test.
+
+**URL:** `https://www.agstudio.digital/magia/public/elimina-tabelle-test.php?secret=$Magia2025!`
+
+**Funzionalità:**
+- Verifica esistenza tabelle prima di eliminare
+- Mostra struttura e count record
+- Elimina solo tabelle nella whitelist
+- Report dettagliato operazioni
+
+**⚠️ Sicurezza:** Le tabelle da eliminare sono hardcoded nello script, non c'è rischio di eliminare tabelle di produzione per errore.
+
+**Uso:** Dopo aver identificato tabelle test con lo script precedente.
+
+---
+
+#### 4. **Verifica Risultati Cron** (`public/check-results.php`)
+Visualizza risultati ultime query eseguite (se usato con sistema queue).
+
+**URL:** `https://www.agstudio.digital/magia/public/check-results.php?secret=$Magia2025!`
+
+**Output:**
+- Timestamp ultima esecuzione
+- Riepilogo comandi eseguiti
+- Dettaglio risultati per ogni query
+- Stato queue (query in attesa)
+
+---
+
+#### 5. **Test Diagnostica Cron** (`public/test-cron.php`)
+Verifica configurazione e funzionamento sistema.
+
+**URL:** `https://www.agstudio.digital/magia/public/test-cron.php?secret=$Magia2025!`
+
+**Verifica:**
+- File db-queue-run.php presente
+- File db-queue.sql presente
+- Directory storage/logs scrivibile
+- Laravel bootstrap funzionante
+- Connessione database OK
+
+---
+
+### 🎯 MODUS OPERANDI: Come Gestire il Database
+
+**Principio fondamentale:**
+> "Ogni volta che devi vedere/creare/modificare una tabella, crea un file PHP specifico per quella operazione."
+
+#### Processo Standard
+
+**Step 1: Analisi**
+- Usa `trova-tabelle-test.php` per vedere stato attuale database
+- Identifica quali tabelle esistono e quali sono di test
+
+**Step 2: Creazione Script**
+- Crea un nuovo file in `public/[operazione]-[descrizione].php`
+- Includi sempre autenticazione con secret
+- Bootstrap Laravel per usare DB facade
+- Output testuale chiaro e formattato
+- Gestione errori con try/catch
+
+**Step 3: Deploy**
+- Commit e push del nuovo script
+- Attendi deploy GitHub Actions (30-60 secondi)
+
+**Step 4: Esecuzione**
+- Apri URL dello script via browser
+- Copia output completo
+- Verifica risultati
+
+**Step 5: Verifica**
+- Usa `trova-tabelle-test.php` o `db-manager.php` per confermare modifiche
+- Documenta cosa è stato fatto
+
+#### Template Script Database
+
+```php
+<?php
+/**
+ * NOME OPERAZIONE - Descrizione
+ */
+
+define('SECRET', '$Magia2025!');
+
+if (!isset($_GET['secret']) || $_GET['secret'] !== SECRET) {
+    http_response_code(401);
+    die('❌ Unauthorized');
+}
+
+header('Content-Type: text/plain; charset=utf-8');
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+echo "📝 TITOLO OPERAZIONE\n";
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+use Illuminate\Support\Facades\DB;
+
+try {
+    // TUA LOGICA QUI
+    $result = DB::select('SELECT * FROM tabella');
+
+    echo "✅ Operazione completata\n";
+    echo "Risultati: " . count($result) . "\n";
+
+} catch (\Exception $e) {
+    echo "❌ ERRORE: " . $e->getMessage() . "\n";
+}
+```
+
+#### Esempi Pratici
+
+**Esempio 1: Creare una nuova tabella**
+
+File: `public/crea-tabella-nuova.php`
+
+```php
+DB::statement("
+    CREATE TABLE nuova_tabella (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        nome VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+");
+echo "✅ Tabella creata\n";
+```
+
+**Esempio 2: Modificare struttura tabella**
+
+File: `public/modifica-tabella-clienti.php`
+
+```php
+// Aggiungi colonna
+DB::statement("ALTER TABLE clienti ADD COLUMN telefono_secondario VARCHAR(20)");
+echo "✅ Colonna aggiunta\n";
+
+// Verifica
+$columns = DB::select("DESCRIBE clienti");
+foreach ($columns as $col) {
+    echo "- {$col->Field}\n";
+}
+```
+
+**Esempio 3: Popolare dati di test**
+
+File: `public/popola-dati-test.php`
+
+```php
+$data = [
+    ['nome' => 'Test 1', 'email' => 'test1@example.com'],
+    ['nome' => 'Test 2', 'email' => 'test2@example.com'],
+];
+
+foreach ($data as $record) {
+    DB::table('utenti')->insert($record);
+}
+
+echo "✅ Inseriti " . count($data) . " record\n";
+```
+
+### ⚠️ Best Practices
+
+**Sicurezza:**
+- ✅ Sempre autenticazione con secret (`$Magia2025!`)
+- ✅ Mai esporre credenziali database nell'output
+- ✅ Validare input se lo script accetta parametri GET/POST
+- ✅ Usare prepared statements per query dinamiche
+
+**Organizzazione:**
+- ✅ Nome file descrittivo: `[azione]-[cosa].php`
+- ✅ Header chiaro con descrizione operazione
+- ✅ Output formattato con emoji e separatori
+- ✅ Try/catch per gestione errori
+
+**Pulizia:**
+- ✅ Dopo aver usato uno script, valuta se mantenerlo o eliminarlo
+- ✅ Script di test possono essere eliminati dopo verifica
+- ✅ Script di utility (trova-tabelle-test) vanno mantenuti
+
+**Documentazione:**
+- ✅ Aggiorna questo file dopo operazioni importanti
+- ✅ Documenta modifiche struttura database
+- ✅ Annota URL script creati e loro scopo
+
+### 📊 Tabelle Database Produzione (Attuali)
+
+**Totale:** 23 tabelle + 1 test (da eliminare: test_deployment)
+
+**Tabelle Core:**
+- `utenti` - Utenti sistema
+- `clienti` - Anagrafica clienti
+- `ruoli` - Ruoli utenti
+- `permessi` - Permessi granulari
+
+**Tabelle Funzionali:**
+- `lezioni` - Lezioni/sessioni
+- `programmi` - Programmi wellness
+- `pagamenti` - Gestione pagamenti
+- `sedi` / `sedes` - Sedi fisiche
+- `professionisti` - Istruttori
+
+**Tabelle Relazioni:**
+- `cliente_lezione` - Molti-a-molti
+- `cliente_programma` - Molti-a-molti
+- `professionista_sede` - Molti-a-molti
+- `ruolo_permesso` - Molti-a-molti
+- `utente_permesso` - Molti-a-molti
+
+**Tabelle Sistema:**
+- `migrations` - Migrazioni Laravel
+- `failed_jobs` - Job falliti
+- `password_reset_tokens` - Reset password
+- `personal_access_tokens` - API tokens
+- `users` - Utenti Laravel (duplicato di utenti?)
+- `log_attivita` - Log azioni
+- `impostazioni` - Config app
+- `impostazioni_sistema` - Config sistema
+
+**Tabelle Test (da eliminare):**
+- `test_deployment` ⚠️
+
+### 🔄 Sistema Queue (Opzionale - Attualmente non attivo)
+
+È stato implementato anche un sistema a queue per esecuzione batch di query SQL via cron, ma **attualmente non è in uso** per preferenza dell'utente.
+
+**File disponibili ma non attivi:**
+- `db-queue-executor.php` - CLI executor
+- `public/db-queue-run.php` - HTTP endpoint per cron
+- `storage/db-queue.sql` - File queue query
+
+**Se si vuole riattivare:**
+1. Configurare cron: `* * * * * curl -s "URL/db-queue-run.php?secret=$Magia2025!"`
+2. Scrivere query in `storage/db-queue.sql`
+3. Il cron esegue automaticamente ogni minuto
+4. Risultati in `storage/logs/db-results.json`
+
+**Motivo disattivazione:** L'utente preferisce approccio "un file PHP per operazione" più semplice e controllabile.
+
+---
+
 ## ⚙️ CONFIGURAZIONE AMBIENTE (.env)
 
 ### File .env Produzione
@@ -593,9 +877,9 @@ php artisan key:generate
 
 ---
 
-**📅 Ultimo aggiornamento:** 14 Novembre 2025
+**📅 Ultimo aggiornamento:** 15 Novembre 2025
 **✍️ Creato da:** Claude Code - Sessione confirm-status-01NaRPJZBUHxak94aM2zKA1u
-**🔄 Versione:** 1.0
+**🔄 Versione:** 2.0 - Aggiunto sistema gestione database via file PHP
 
 ---
 

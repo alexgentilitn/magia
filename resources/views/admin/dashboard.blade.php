@@ -326,16 +326,6 @@
     window.dashboardChartsInitialized = true;
 
     // ========================================
-    // HELPER: Crea Gradiente
-    // ========================================
-    function createGradient(ctx, color1, color2) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(1, color2);
-        return gradient;
-    }
-
-    // ========================================
     // HELPER: Distruggi e ricrea grafico
     // ========================================
     function destroyAndRecreateChart(canvasId) {
@@ -364,7 +354,7 @@
                     datasets: [{
                         label: 'Incassi (€)',
                         data: {!! json_encode($incassiMesi->pluck('totale')) !!},
-                        backgroundColor: createGradient(ctxIncassi, fucsiaMagia, violaMagia),
+                        backgroundColor: fucsiaMagia,
                         borderColor: violaMagia,
                         borderWidth: 1,
                         borderRadius: 6
@@ -372,9 +362,9 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2,
+                    maintainAspectRatio: false,
                     animation: false,
+                    onResize: null,
                     plugins: {
                         legend: {
                             display: false
@@ -429,9 +419,9 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2,
+                    maintainAspectRatio: false,
                     animation: false,
+                    onResize: null,
                     plugins: {
                         legend: {
                             display: false
@@ -463,7 +453,7 @@
                     datasets: [{
                         label: 'Presenze',
                         data: {!! json_encode($presenzeMesi->pluck('totale')) !!},
-                        backgroundColor: createGradient(ctxPresenze, '#a855f7', '#7e22ce'),
+                        backgroundColor: '#a855f7',
                         borderColor: '#7e22ce',
                         borderWidth: 1,
                         borderRadius: 6
@@ -471,9 +461,9 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2,
+                    maintainAspectRatio: false,
                     animation: false,
+                    onResize: null,
                     plugins: {
                         legend: {
                             display: false

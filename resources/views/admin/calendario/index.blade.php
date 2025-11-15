@@ -5,32 +5,40 @@
 @section('contenuto')
 <div class="p-6">
     <!-- Header -->
-    <div class="mb-6 flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-calendar-alt text-fucsia-magia mr-2"></i>
-                Calendario Lezioni
-            </h1>
-            <p class="text-gray-600">Visualizza e gestisci tutte le lezioni programmate</p>
-        </div>
+    <div class="mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                    <i class="fas fa-calendar-alt text-fucsia-magia mr-2"></i>
+                    Calendario Lezioni
+                </h1>
+                <p class="text-gray-600 text-sm sm:text-base">Visualizza e gestisci tutte le lezioni programmate</p>
+            </div>
 
-        <div class="flex gap-3">
-            <a href="{{ route('admin.calendario.export-pdf') }}"
-               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-               title="Esporta calendario mese corrente in PDF">
-                <i class="fas fa-file-pdf mr-2"></i>
-                Export PDF
-            </a>
-            <a href="{{ route('admin.lezioni.create') }}" class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition-colors">
-                <i class="fas fa-plus mr-2"></i>
-                Nuova Lezione
-            </a>
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                <!-- Toggle Filtri (solo mobile) -->
+                <button id="toggleFiltri" class="lg:hidden px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex-1 sm:flex-initial">
+                    <i class="fas fa-filter mr-2"></i>
+                    <span class="text-sm">Filtri</span>
+                </button>
+
+                <a href="{{ route('admin.calendario.export-pdf') }}"
+                   class="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex-1 sm:flex-initial"
+                   title="Esporta calendario mese corrente in PDF">
+                    <i class="fas fa-file-pdf mr-1 sm:mr-2"></i>
+                    <span class="text-sm sm:text-base">PDF</span>
+                </a>
+                <a href="{{ route('admin.lezioni.create') }}" class="px-3 sm:px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition-colors flex-1 sm:flex-initial">
+                    <i class="fas fa-plus mr-1 sm:mr-2"></i>
+                    <span class="text-sm sm:text-base">Nuova</span>
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <!-- Filtri e Legenda (Sidebar) -->
-        <div class="lg:col-span-1 space-y-6">
+        <!-- Filtri e Legenda (Sidebar) - Collassabile su mobile -->
+        <div id="sidebarFiltri" class="hidden lg:block lg:col-span-1 space-y-6">
             <!-- Filtri -->
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">
@@ -204,17 +212,57 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/it.global.min.js"></script>
 
+<!-- Stili mobile-friendly per il calendario -->
+<style>
+    @media (max-width: 768px) {
+        /* Migliora i pulsanti di navigazione su mobile */
+        .fc .fc-button {
+            padding: 0.4em 0.5em;
+            font-size: 0.85em;
+        }
+
+        /* Rendi il titolo più compatto */
+        .fc .fc-toolbar-title {
+            font-size: 1.2em;
+        }
+
+        /* Ottimizza gli eventi nella vista lista */
+        .fc-list-event {
+            font-size: 0.9em;
+        }
+
+        /* Migliora la leggibilità del testo negli eventi */
+        .fc-event-title {
+            font-size: 0.85em;
+        }
+
+        /* Sidebar filtri: quando visibile su mobile, occupa tutta la larghezza */
+        #sidebarFiltri:not(.hidden) {
+            display: block !important;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Compatta i padding su mobile */
+        .fc .fc-daygrid-day-frame {
+            min-height: 60px;
+        }
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendario');
 
+    // Rileva se siamo su mobile
+    const isMobile = window.innerWidth < 768;
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'it',
-        initialView: 'dayGridMonth',
+        initialView: isMobile ? 'listWeek' : 'dayGridMonth',
         headerToolbar: {
-            left: 'prev,next today',
+            left: isMobile ? 'prev,next' : 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            right: isMobile ? 'dayGridMonth,listWeek' : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
         buttonText: {
             today: 'Oggi',
@@ -223,7 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'Giorno',
             list: 'Lista'
         },
-        height: 'auto',
+        height: isMobile ? 'auto' : 'auto',
+        contentHeight: isMobile ? 'auto' : 'auto',
         navLinks: true,
         editable: true,
         selectable: true,
@@ -441,6 +490,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
+
+    // ===================================================================
+    // TOGGLE FILTRI MOBILE
+    // ===================================================================
+    const toggleFiltriBtn = document.getElementById('toggleFiltri');
+    const sidebarFiltri = document.getElementById('sidebarFiltri');
+
+    if (toggleFiltriBtn && sidebarFiltri) {
+        toggleFiltriBtn.addEventListener('click', function() {
+            sidebarFiltri.classList.toggle('hidden');
+
+            // Cambia icona
+            const icon = this.querySelector('i');
+            if (sidebarFiltri.classList.contains('hidden')) {
+                icon.className = 'fas fa-filter mr-2';
+            } else {
+                icon.className = 'fas fa-times mr-2';
+            }
+        });
+    }
 
     // Gestione filtri
     const filters = ['filterProfessionista', 'filterSede', 'filterTipologia', 'filterStato'];

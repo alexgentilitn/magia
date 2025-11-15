@@ -355,6 +355,10 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
     // ============================================
     // DEBUG DATABASE (TEMPORANEO)
     // ============================================
+    Route::get('/test-simple', function () {
+        return view('test-simple');
+    });
+
     Route::get('/debug/database', function () {
         $totaleLezioni = \App\Models\Lezione::count();
         $dataMin = \App\Models\Lezione::min('data');

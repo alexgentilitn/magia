@@ -135,41 +135,126 @@
         </div>
     </div>
 
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center">
+            <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+            Azioni Rapide
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="{{ route('admin.lezioni.create') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-plus-circle text-3xl mb-2"></i>
+                <span class="text-sm font-medium">Nuova Lezione</span>
+            </a>
+            <a href="{{ route('admin.clienti.create') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-user-plus text-3xl mb-2"></i>
+                <span class="text-sm font-medium">Nuovo Cliente</span>
+            </a>
+            <a href="{{ route('admin.pagamenti.create') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-cash-register text-3xl mb-2"></i>
+                <span class="text-sm font-medium">Registra Pagamento</span>
+            </a>
+            <a href="{{ route('admin.calendario.index') }}" class="flex flex-col items-center p-4 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition">
+                <i class="fas fa-calendar-alt text-3xl mb-2"></i>
+                <span class="text-sm font-medium">Calendario</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Notifiche Sistema -->
+    @if($certificatiScadenza > 0 || $pagamentiScadenza->count() > 0)
+    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded-r-lg">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-xl mr-3 mt-1"></i>
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-2">Notifiche Sistema</h3>
+                <ul class="space-y-1 text-yellow-700">
+                    @if($certificatiScadenza > 0)
+                    <li class="flex items-center">
+                        <i class="fas fa-file-medical text-sm mr-2"></i>
+                        <span><strong>{{ $certificatiScadenza }}</strong> certificati medici in scadenza nei prossimi 30 giorni</span>
+                    </li>
+                    @endif
+                    @if($pagamentiScadenza->count() > 0)
+                    <li class="flex items-center">
+                        <i class="fas fa-euro-sign text-sm mr-2"></i>
+                        <span><strong>{{ $pagamentiScadenza->count() }}</strong> pagamenti in scadenza nei prossimi 7 giorni</span>
+                    </li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Grafici -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Grafico Incassi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Incassi Ultimi 6 Mesi</h2>
-            <div class="h-64 flex items-end justify-between space-x-2">
-                @foreach($incassiMesi as $mese)
-                    @php
-                        $maxIncasso = $incassiMesi->max('totale');
-                        $altezza = $maxIncasso > 0 ? ($mese['totale'] / $maxIncasso) * 100 : 0;
-                    @endphp
-                    <div class="flex-1 flex flex-col items-center">
-                        <div class="w-full bg-gradient-to-t from-fucsia-magia to-viola-magia rounded-t" style="height: {{ $altezza }}%;min-height: 20px;"></div>
-                        <p class="text-xs text-gray-600 mt-2 transform -rotate-45 origin-top-left">{{ $mese['mese'] }}</p>
-                        <p class="text-xs font-bold text-gray-800">€{{ number_format($mese['totale'], 0) }}</p>
-                    </div>
-                @endforeach
-            </div>
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-euro-sign text-green-500 mr-2"></i>
+                Incassi Ultimi 6 Mesi
+            </h2>
+            <canvas id="chartIncassi" height="120"></canvas>
         </div>
 
         <!-- Grafico Nuovi Clienti -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Nuovi Clienti Ultimi 6 Mesi</h2>
-            <div class="h-64 flex items-end justify-between space-x-2">
-                @foreach($clientiMesi as $mese)
-                    @php
-                        $maxClienti = $clientiMesi->max('totale');
-                        $altezza = $maxClienti > 0 ? ($mese['totale'] / $maxClienti) * 100 : 0;
-                    @endphp
-                    <div class="flex-1 flex flex-col items-center">
-                        <div class="w-full bg-gradient-to-t from-blue-500 to-blue-700 rounded-t" style="height: {{ $altezza }}%; min-height: 20px;"></div>
-                        <p class="text-xs text-gray-600 mt-2 transform -rotate-45 origin-top-left">{{ $mese['mese'] }}</p>
-                        <p class="text-xs font-bold text-gray-800">{{ $mese['totale'] }}</p>
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-user-plus text-blue-500 mr-2"></i>
+                Nuovi Clienti Ultimi 6 Mesi
+            </h2>
+            <canvas id="chartClienti" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- Grafici Riga 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Grafico Presenze -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-user-check text-purple-500 mr-2"></i>
+                Presenze Ultimi 6 Mesi
+            </h2>
+            <canvas id="chartPresenze" height="120"></canvas>
+        </div>
+
+        <!-- Calendario Mini Prossimi Eventi -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-calendar-week text-fucsia-magia mr-2"></i>
+                Prossimi Eventi (7 giorni)
+            </h2>
+            <div class="space-y-2">
+                @php
+                    $prossimiEventi = \App\Models\Lezione::with(['programma', 'sede'])
+                        ->whereBetween('data', [now(), now()->addDays(7)])
+                        ->orderBy('data')
+                        ->orderBy('ora_inizio')
+                        ->limit(5)
+                        ->get();
+                @endphp
+                @if($prossimiEventi->count() > 0)
+                    @foreach($prossimiEventi as $evento)
+                    <div class="flex items-center p-2 bg-gray-50 rounded hover:bg-gray-100 transition">
+                        <div class="flex-shrink-0 w-12 text-center">
+                            <p class="text-xs text-gray-500">{{ $evento->data->format('d') }}</p>
+                            <p class="text-xs font-bold text-fucsia-magia">{{ $evento->data->format('M') }}</p>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-gray-800">{{ $evento->titolo }}</p>
+                            <p class="text-xs text-gray-600">
+                                <i class="far fa-clock"></i> {{ substr($evento->ora_inizio, 0, 5) }}
+                                @if($evento->sede)
+                                <span class="ml-2"><i class="fas fa-map-marker-alt"></i> {{ $evento->sede->nome }}</span>
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                @endforeach
+                    @endforeach
+                @else
+                    <p class="text-gray-500 text-center py-8">Nessun evento nei prossimi 7 giorni</p>
+                @endif
             </div>
         </div>
     </div>
@@ -222,4 +307,155 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colori Brand MA.GIA DONNA
+    const violaMagia = '#7B2869';
+    const fucsiaMagia = '#E91E8C';
+
+    // ========================================
+    // GRAFICO INCASSI
+    // ========================================
+    const ctxIncassi = document.getElementById('chartIncassi').getContext('2d');
+    new Chart(ctxIncassi, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($incassiMesi->pluck('mese')) !!},
+            datasets: [{
+                label: 'Incassi (€)',
+                data: {!! json_encode($incassiMesi->pluck('totale')) !!},
+                backgroundColor: createGradient(ctxIncassi, fucsiaMagia, violaMagia),
+                borderColor: violaMagia,
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '€ ' + context.parsed.y.toLocaleString('it-IT');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '€' + value.toLocaleString('it-IT');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // ========================================
+    // GRAFICO NUOVI CLIENTI
+    // ========================================
+    const ctxClienti = document.getElementById('chartClienti').getContext('2d');
+    new Chart(ctxClienti, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($clientiMesi->pluck('mese')) !!},
+            datasets: [{
+                label: 'Nuovi Clienti',
+                data: {!! json_encode($clientiMesi->pluck('totale')) !!},
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: '#3b82f6',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ========================================
+    // GRAFICO PRESENZE
+    // ========================================
+    const ctxPresenze = document.getElementById('chartPresenze').getContext('2d');
+    new Chart(ctxPresenze, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($presenzeMesi->pluck('mese')) !!},
+            datasets: [{
+                label: 'Presenze',
+                data: {!! json_encode($presenzeMesi->pluck('totale')) !!},
+                backgroundColor: createGradient(ctxPresenze, '#a855f7', '#7e22ce'),
+                borderColor: '#7e22ce',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' presenze';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // ========================================
+    // HELPER: Crea Gradiente
+    // ========================================
+    function createGradient(ctx, color1, color2) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        return gradient;
+    }
+});
+</script>
+@endpush
+
 @endsection

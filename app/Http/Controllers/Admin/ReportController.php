@@ -70,27 +70,12 @@ class ReportController extends Controller
             $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
             $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
 
-            \Log::info('DEBUG: Inizio caricamento debug report');
-
             $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
-            \Log::info('DEBUG: Statistiche caricate', $statistiche);
-
             $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
-            \Log::info('DEBUG: Statistiche presenze caricate');
-
             $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
-            \Log::info('DEBUG: Lezioni per stato caricate');
-
             $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
-            \Log::info('DEBUG: Top professionisti caricati');
-
             $topClienti = $this->getTopClienti($dataInizio, $dataFine);
-            \Log::info('DEBUG: Top clienti caricati');
-
             $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
-            \Log::info('DEBUG: Trend giornaliero caricato');
-
-            \Log::info('DEBUG: Rendering vista');
 
             return view('admin.report.debug', compact(
                 'statistiche',
@@ -103,7 +88,7 @@ class ReportController extends Controller
                 'dataFine'
             ));
         } catch (\Exception $e) {
-            \Log::error('ERRORE DEBUG REPORT: ' . $e->getMessage());
+            \Log::error('Errore caricamento debug report: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
 
             return view('admin.report.debug-simple', [

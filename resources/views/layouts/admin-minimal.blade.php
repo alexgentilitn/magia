@@ -1,3 +1,12 @@
+{{--
+    LAYOUT ADMIN MINIMAL
+
+    Questo layout è usato SOLO per routes di debug in ambiente local.
+    NON usare per pagine di produzione - usa layouts/admin.blade.php invece.
+
+    View che usano questo layout:
+    - admin/report/debug-minimal.blade.php (route debug)
+--}}
 <!DOCTYPE html>
 <html lang="it">
 <head>

@@ -348,6 +348,31 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
     });
+
+    // ============================================
+    // DEBUG DATABASE (TEMPORANEO)
+    // ============================================
+    Route::get('/debug/database', function () {
+        $totaleLezioni = \App\Models\Lezione::count();
+        $dataMin = \App\Models\Lezione::min('data');
+        $dataMax = \App\Models\Lezione::max('data');
+
+        $dataInizio = now()->subMonth()->format('Y-m-d');
+        $dataFine = now()->format('Y-m-d');
+        $lezioniPeriodo = \App\Models\Lezione::whereBetween('data', [$dataInizio, $dataFine])->count();
+
+        return response()->json([
+            'totale_lezioni' => $totaleLezioni,
+            'prima_lezione' => $dataMin,
+            'ultima_lezione' => $dataMax,
+            'periodo_report' => [
+                'data_inizio' => $dataInizio,
+                'data_fine' => $dataFine,
+                'lezioni_nel_periodo' => $lezioniPeriodo
+            ],
+            'oggi' => now()->format('Y-m-d')
+        ]);
+    });
 });
 
 

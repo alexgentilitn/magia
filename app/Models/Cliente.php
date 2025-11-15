@@ -172,6 +172,29 @@ class Cliente extends Model
     }
 
     /**
+     * Relazione: Cliente ha molte Schede di Allenamento
+     */
+    public function schedeAllenamento()
+    {
+        return $this->hasMany(SchedaAllenamento::class, 'cliente_id')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Ottieni la scheda di allenamento attiva
+     */
+    public function schedaAttiva()
+    {
+        return $this->hasOne(SchedaAllenamento::class, 'cliente_id')
+            ->where('stato', 'attiva')
+            ->whereDate('data_inizio', '<=', now())
+            ->where(function ($query) {
+                $query->whereDate('data_fine', '>=', now())
+                      ->orWhereNull('data_fine');
+            })
+            ->latest();
+    }
+
+    /**
      * Scope: Solo clienti attivi
      */
     public function scopeAttivi($query)

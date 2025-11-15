@@ -93,12 +93,13 @@ class RegistrazioneController extends Controller
             'telefono_fisso' => ['nullable', 'string', 'max:20'],
             'sesso' => ['nullable', 'in:F,M,Altro'],
             
-            // Consensi obbligatori
-            'consenso_privacy' => ['required', 'accepted'],
-            
+            // Consensi GDPR obbligatori
+            'privacy_accettata' => ['required', 'accepted'],
+            'termini_accettati' => ['required', 'accepted'],
+            'consenso_dati_sensibili' => ['required', 'accepted'],
+
             // Consensi opzionali
-            'consenso_marketing' => ['nullable', 'boolean'],
-            'consenso_foto' => ['nullable', 'boolean'],
+            'marketing_accettato' => ['nullable', 'boolean'],
             
             // Referral opzionale
             'codice_invito' => ['nullable', 'string', 'exists:clienti,codice_referral'],
@@ -115,8 +116,12 @@ class RegistrazioneController extends Controller
             'telefono_mobile.required' => 'Il numero di cellulare è obbligatorio',
             'data_nascita.required' => 'La data di nascita è obbligatoria',
             'data_nascita.before' => 'La data di nascita non può essere nel futuro',
-            'consenso_privacy.required' => 'Devi accettare la privacy policy per registrarti',
-            'consenso_privacy.accepted' => 'Devi accettare la privacy policy per registrarti',
+            'privacy_accettata.required' => 'Devi accettare la Privacy Policy per registrarti',
+            'privacy_accettata.accepted' => 'Devi accettare la Privacy Policy per registrarti',
+            'termini_accettati.required' => 'Devi accettare i Termini e Condizioni per registrarti',
+            'termini_accettati.accepted' => 'Devi accettare i Termini e Condizioni per registrarti',
+            'consenso_dati_sensibili.required' => 'Devi fornire il consenso al trattamento dei dati relativi alla salute',
+            'consenso_dati_sensibili.accepted' => 'Devi fornire il consenso al trattamento dei dati relativi alla salute',
             'provincia.size' => 'Inserisci la sigla della provincia (es: TN)',
             'cap.size' => 'Il CAP deve essere di 5 cifre',
         ]);
@@ -158,15 +163,25 @@ class RegistrazioneController extends Controller
                 'telefono_fisso' => $dati_validati['telefono_fisso'] ?? null,
                 'data_nascita' => $dati_validati['data_nascita'],
                 'sesso' => $dati_validati['sesso'] ?? 'F',
-                'indirizzo' => $dati_validati['indirizzo'],
-                'citta' => $dati_validati['citta'],
-                'provincia' => strtoupper($dati_validati['provincia']),
-                'cap' => $dati_validati['cap'],
-                'nazione' => 'Italia',
-                'consenso_privacy' => true,
-                'consenso_privacy_data' => now(),
-                'consenso_marketing' => $request->boolean('consenso_marketing'),
-                'consenso_foto' => $request->boolean('consenso_foto'),
+                'indirizzo_via' => $dati_validati['indirizzo'],
+                'indirizzo_citta' => $dati_validati['citta'],
+                'indirizzo_provincia' => strtoupper($dati_validati['provincia']),
+                'indirizzo_cap' => $dati_validati['cap'],
+                'indirizzo_nazione' => 'Italia',
+
+                // Consensi GDPR con timestamp
+                'privacy_accettata' => true,
+                'privacy_accettata_at' => now(),
+                'termini_accettati' => true,
+                'termini_accettati_at' => now(),
+                'consenso_dati_sensibili' => true,
+                'consenso_dati_sensibili_at' => now(),
+                'marketing_accettato' => $request->boolean('marketing_accettato'),
+                'marketing_accettato_at' => $request->boolean('marketing_accettato') ? now() : null,
+
+                // Tracciabilità GDPR
+                'ip_registrazione' => $request->ip(),
+
                 'stato_cliente' => 'attivo',
                 'data_iscrizione' => now(),
                 'invitato_da_cliente_id' => $invitato_da_cliente_id,

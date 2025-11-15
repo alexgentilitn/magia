@@ -164,6 +164,31 @@ class ClientiController extends Controller
             'programma_attuale' => ['nullable', 'string', 'max:100'],
             'stato_cliente' => ['required', 'in:attivo,sospeso,inattivo'],
             'note_interne' => ['nullable', 'string'],
+
+            // Nuovi campi anagrafica estesa
+            'obiettivi_personali' => ['nullable', 'string'],
+            'livello_attivita' => ['nullable', 'in:sedentario,leggero,moderato,intenso,molto_intenso'],
+            'note_mediche' => ['nullable', 'string'],
+            'allergie_intolleranze' => ['nullable', 'string'],
+            'patologie' => ['nullable', 'string'],
+            'farmaci_assunti' => ['nullable', 'string'],
+            'certificato_medico_presente' => ['nullable', 'boolean'],
+            'preferenze_alimentari' => ['nullable', 'string'],
+            'regime_alimentare' => ['nullable', 'in:onnivoro,vegetariano,vegano,pescetariano,altro'],
+            'cibi_da_evitare' => ['nullable', 'string'],
+            'peso' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'altezza' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'bmi' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
+            'circonferenza_vita' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_fianchi' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_petto' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_braccio_dx' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_braccio_sx' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_coscia_dx' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'circonferenza_coscia_sx' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'ultima_pesata' => ['nullable', 'date'],
+            'ultima_misurazione' => ['nullable', 'date'],
+            'note_professionista' => ['nullable', 'string'],
         ];
 
         if ($request->filled('password')) {
@@ -212,6 +237,31 @@ class ClientiController extends Controller
                 'programma_attuale' => $dati_validati['programma_attuale'],
                 'stato_cliente' => $dati_validati['stato_cliente'],
                 'note_interne' => $dati_validati['note_interne'] ?? null,
+
+                // Nuovi campi anagrafica estesa
+                'obiettivi_personali' => $dati_validati['obiettivi_personali'] ?? null,
+                'livello_attivita' => $dati_validati['livello_attivita'] ?? null,
+                'note_mediche' => $dati_validati['note_mediche'] ?? null,
+                'allergie_intolleranze' => $dati_validati['allergie_intolleranze'] ?? null,
+                'patologie' => $dati_validati['patologie'] ?? null,
+                'farmaci_assunti' => $dati_validati['farmaci_assunti'] ?? null,
+                'certificato_medico_presente' => $request->boolean('certificato_medico_presente'),
+                'preferenze_alimentari' => $dati_validati['preferenze_alimentari'] ?? null,
+                'regime_alimentare' => $dati_validati['regime_alimentare'] ?? null,
+                'cibi_da_evitare' => $dati_validati['cibi_da_evitare'] ?? null,
+                'peso' => $dati_validati['peso'] ?? null,
+                'altezza' => $dati_validati['altezza'] ?? null,
+                'bmi' => $dati_validati['bmi'] ?? null,
+                'circonferenza_vita' => $dati_validati['circonferenza_vita'] ?? null,
+                'circonferenza_fianchi' => $dati_validati['circonferenza_fianchi'] ?? null,
+                'circonferenza_petto' => $dati_validati['circonferenza_petto'] ?? null,
+                'circonferenza_braccio_dx' => $dati_validati['circonferenza_braccio_dx'] ?? null,
+                'circonferenza_braccio_sx' => $dati_validati['circonferenza_braccio_sx'] ?? null,
+                'circonferenza_coscia_dx' => $dati_validati['circonferenza_coscia_dx'] ?? null,
+                'circonferenza_coscia_sx' => $dati_validati['circonferenza_coscia_sx'] ?? null,
+                'ultima_pesata' => $dati_validati['ultima_pesata'] ?? null,
+                'ultima_misurazione' => $dati_validati['ultima_misurazione'] ?? null,
+                'note_professionista' => $dati_validati['note_professionista'] ?? null,
             ];
 
             \Log::info('Update cliente:', $dati_cliente);

@@ -144,6 +144,199 @@
                 </div>
             </div>
 
+            <!-- Sezione Obiettivi e Attività -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-bullseye text-fucsia-magia mr-2"></i> Obiettivi e Livello di Attività
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Obiettivi Personali</label>
+                        <textarea name="obiettivi_personali" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Es: Perdere peso, tonificare, aumentare energia...">{{ old('obiettivi_personali', $cliente->obiettivi_personali) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Livello di Attività</label>
+                        <select name="livello_attivita" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                            <option value="">Seleziona...</option>
+                            <option value="sedentario" {{ old('livello_attivita', $cliente->livello_attivita) === 'sedentario' ? 'selected' : '' }}>Sedentario</option>
+                            <option value="leggero" {{ old('livello_attivita', $cliente->livello_attivita) === 'leggero' ? 'selected' : '' }}>Leggero</option>
+                            <option value="moderato" {{ old('livello_attivita', $cliente->livello_attivita) === 'moderato' ? 'selected' : '' }}>Moderato</option>
+                            <option value="intenso" {{ old('livello_attivita', $cliente->livello_attivita) === 'intenso' ? 'selected' : '' }}>Intenso</option>
+                            <option value="molto_intenso" {{ old('livello_attivita', $cliente->livello_attivita) === 'molto_intenso' ? 'selected' : '' }}>Molto Intenso</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Dati Medici -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-heartbeat text-fucsia-magia mr-2"></i> Dati Medici e Sanitari
+                </h3>
+                <div class="bg-pink-50 border-l-4 border-pink-500 p-4 mb-4">
+                    <p class="text-sm text-pink-700">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Questi dati sono trattati con il massimo riserbo secondo il GDPR (dati sensibili relativi alla salute)
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Note Mediche</label>
+                        <textarea name="note_mediche" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Eventuali condizioni mediche da considerare...">{{ old('note_mediche', $cliente->note_mediche) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Allergie e Intolleranze</label>
+                        <textarea name="allergie_intolleranze" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Es: lattosio, glutine, nichel...">{{ old('allergie_intolleranze', $cliente->allergie_intolleranze) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Patologie</label>
+                        <textarea name="patologie" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Eventuali patologie diagnosticate...">{{ old('patologie', $cliente->patologie) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Farmaci Assunti</label>
+                        <textarea name="farmaci_assunti" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Farmaci assunti regolarmente...">{{ old('farmaci_assunti', $cliente->farmaci_assunti) }}</textarea>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="certificato_medico_presente" value="1"
+                                   {{ old('certificato_medico_presente', $cliente->certificato_medico_presente) ? 'checked' : '' }}
+                                   class="h-5 w-5 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
+                            <span class="ml-2 text-sm font-medium text-gray-700">Certificato Medico Presente</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Alimentazione -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-utensils text-fucsia-magia mr-2"></i> Alimentazione e Preferenze
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Regime Alimentare</label>
+                        <select name="regime_alimentare" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                            <option value="">Seleziona...</option>
+                            <option value="onnivoro" {{ old('regime_alimentare', $cliente->regime_alimentare) === 'onnivoro' ? 'selected' : '' }}>Onnivoro</option>
+                            <option value="vegetariano" {{ old('regime_alimentare', $cliente->regime_alimentare) === 'vegetariano' ? 'selected' : '' }}>Vegetariano</option>
+                            <option value="vegano" {{ old('regime_alimentare', $cliente->regime_alimentare) === 'vegano' ? 'selected' : '' }}>Vegano</option>
+                            <option value="pescetariano" {{ old('regime_alimentare', $cliente->regime_alimentare) === 'pescetariano' ? 'selected' : '' }}>Pescetariano</option>
+                            <option value="altro" {{ old('regime_alimentare', $cliente->regime_alimentare) === 'altro' ? 'selected' : '' }}>Altro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preferenze Alimentari</label>
+                        <input type="text" name="preferenze_alimentari" value="{{ old('preferenze_alimentari', $cliente->preferenze_alimentari) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia"
+                               placeholder="Es: preferisce pesce a carne...">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cibi da Evitare</label>
+                        <textarea name="cibi_da_evitare" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Cibi che non gradisce o deve evitare...">{{ old('cibi_da_evitare', $cliente->cibi_da_evitare) }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Parametri Corporei -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-weight text-fucsia-magia mr-2"></i> Parametri Corporei
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Peso (kg)</label>
+                        <input type="number" step="0.01" name="peso" value="{{ old('peso', $cliente->peso) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia"
+                               placeholder="65.50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Altezza (cm)</label>
+                        <input type="number" step="0.01" name="altezza" value="{{ old('altezza', $cliente->altezza) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia"
+                               placeholder="165.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">BMI (calcolato auto)</label>
+                        <input type="number" step="0.01" name="bmi" value="{{ old('bmi', $cliente->bmi) }}"
+                               class="w-full px-4 py-2 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-fucsia-magia"
+                               placeholder="Calcolato automaticamente" readonly>
+                        <p class="text-xs text-gray-500 mt-1">Si calcola da peso/altezza²</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Circonferenze -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-ruler text-fucsia-magia mr-2"></i> Circonferenze Corporee (cm)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vita</label>
+                        <input type="number" step="0.01" name="circonferenza_vita" value="{{ old('circonferenza_vita', $cliente->circonferenza_vita) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fianchi</label>
+                        <input type="number" step="0.01" name="circonferenza_fianchi" value="{{ old('circonferenza_fianchi', $cliente->circonferenza_fianchi) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Petto</label>
+                        <input type="number" step="0.01" name="circonferenza_petto" value="{{ old('circonferenza_petto', $cliente->circonferenza_petto) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Braccio Destro</label>
+                        <input type="number" step="0.01" name="circonferenza_braccio_dx" value="{{ old('circonferenza_braccio_dx', $cliente->circonferenza_braccio_dx) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Braccio Sinistro</label>
+                        <input type="number" step="0.01" name="circonferenza_braccio_sx" value="{{ old('circonferenza_braccio_sx', $cliente->circonferenza_braccio_sx) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div></div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Coscia Destra</label>
+                        <input type="number" step="0.01" name="circonferenza_coscia_dx" value="{{ old('circonferenza_coscia_dx', $cliente->circonferenza_coscia_dx) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Coscia Sinistra</label>
+                        <input type="number" step="0.01" name="circonferenza_coscia_sx" value="{{ old('circonferenza_coscia_sx', $cliente->circonferenza_coscia_sx) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Timestamp Misurazioni -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-clock text-fucsia-magia mr-2"></i> Ultime Misurazioni
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ultima Pesata</label>
+                        <input type="datetime-local" name="ultima_pesata" value="{{ old('ultima_pesata', $cliente->ultima_pesata?->format('Y-m-d\TH:i')) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ultima Misurazione</label>
+                        <input type="datetime-local" name="ultima_misurazione" value="{{ old('ultima_misurazione', $cliente->ultima_misurazione?->format('Y-m-d\TH:i')) }}"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sezione Note Professionista -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+                    <i class="fas fa-user-md text-fucsia-magia mr-2"></i> Note Professionista
+                </h3>
+                <textarea name="note_professionista" rows="4" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-fucsia-magia" placeholder="Note riservate per l'uso del professionista (non visibili alla cliente)...">{{ old('note_professionista', $cliente->note_professionista) }}</textarea>
+            </div>
+
             <!-- Sezione Programma -->
             <div class="mb-8">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">

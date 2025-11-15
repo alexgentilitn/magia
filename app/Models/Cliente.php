@@ -67,6 +67,37 @@ class Cliente extends Model
         'codice_cliente',
         'codice_referral',
         'invitato_da_cliente_id',
+
+        // Nuovi campi GDPR consensi
+        'privacy_accettata',
+        'privacy_accettata_at',
+        'termini_accettati',
+        'termini_accettati_at',
+        'marketing_accettato',
+        'marketing_accettato_at',
+        'consenso_dati_sensibili',
+        'consenso_dati_sensibili_at',
+        'ip_registrazione',
+        'note_consensi',
+
+        // Nuovi campi anagrafica estesa
+        'eta',
+        'livello_attivita',
+        'allergie_intolleranze',
+        'patologie',
+        'certificato_medico_presente',
+        'regime_alimentare',
+        'cibi_da_evitare',
+        'peso',
+        'bmi',
+        'circonferenza_petto',
+        'circonferenza_braccio_dx',
+        'circonferenza_braccio_sx',
+        'circonferenza_coscia_dx',
+        'circonferenza_coscia_sx',
+        'ultima_pesata',
+        'ultima_misurazione',
+        'note_professionista',
     ];
 
     protected $casts = [
@@ -91,6 +122,29 @@ class Cliente extends Model
         'massa_magra' => 'decimal:2',
         'acqua_corporea' => 'decimal:2',
         'metabolismo_basale' => 'decimal:2',
+
+        // Nuovi casts GDPR consensi
+        'privacy_accettata' => 'boolean',
+        'privacy_accettata_at' => 'datetime',
+        'termini_accettati' => 'boolean',
+        'termini_accettati_at' => 'datetime',
+        'marketing_accettato' => 'boolean',
+        'marketing_accettato_at' => 'datetime',
+        'consenso_dati_sensibili' => 'boolean',
+        'consenso_dati_sensibili_at' => 'datetime',
+
+        // Nuovi casts anagrafica estesa
+        'certificato_medico_presente' => 'boolean',
+        'peso' => 'decimal:2',
+        'altezza' => 'decimal:2',
+        'bmi' => 'decimal:2',
+        'circonferenza_petto' => 'decimal:2',
+        'circonferenza_braccio_dx' => 'decimal:2',
+        'circonferenza_braccio_sx' => 'decimal:2',
+        'circonferenza_coscia_dx' => 'decimal:2',
+        'circonferenza_coscia_sx' => 'decimal:2',
+        'ultima_pesata' => 'datetime',
+        'ultima_misurazione' => 'datetime',
     ];
 
     /**

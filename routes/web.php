@@ -58,6 +58,23 @@ Route::post('/verifica-codice-invito', [RegistrazioneController::class, 'verific
 
 
 // ============================================
+// PAGINE LEGALI (Privacy, Termini, Cookie)
+// ============================================
+
+Route::get('/privacy-policy', function () {
+    return view('legal.privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/termini-condizioni', function () {
+    return view('legal.termini-condizioni');
+})->name('termini-condizioni');
+
+Route::get('/cookie-policy', function () {
+    return view('legal.cookie-policy');
+})->name('cookie-policy');
+
+
+// ============================================
 // LOGOUT GLOBALE
 // ============================================
 

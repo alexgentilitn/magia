@@ -181,36 +181,120 @@
 
             <!-- Sezione 4: Privacy -->
             <div x-show="sezione === 4" x-cloak>
-                <h3 class="text-xl font-bold text-gray-800 mb-6">Privacy e Consensi</h3>
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <input type="checkbox" name="privacy_accettata" id="privacy" required
-                               class="mt-1 h-4 w-4 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
-                        <label for="privacy" class="ml-3 text-sm text-gray-700">
-                            Accetto la <a href="#" class="text-fucsia-magia hover:underline">Privacy Policy</a> e i 
-                            <a href="#" class="text-fucsia-magia hover:underline">Termini e Condizioni</a> *
-                        </label>
-                    </div>
-                    <div class="flex items-start">
-                        <input type="checkbox" name="marketing_accettato" id="marketing"
-                               class="mt-1 h-4 w-4 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
-                        <label for="marketing" class="ml-3 text-sm text-gray-700">
-                            Acconsento a ricevere comunicazioni commerciali e promozionali
-                        </label>
-                    </div>
-                </div>
-                <div class="mt-8 bg-fucsia-magia bg-opacity-10 border-l-4 border-fucsia-magia p-4 rounded-r-lg">
-                    <p class="text-sm text-gray-700">
-                        <i class="fas fa-info-circle text-fucsia-magia mr-2"></i>
-                        Dopo la registrazione riceverai un'email con i dettagli per completare l'iscrizione e effettuare il pagamento.
+                <h3 class="text-xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-shield-alt text-fucsia-magia mr-2"></i>
+                    Privacy e Consensi
+                </h3>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Per completare la registrazione, è necessario leggere e accettare i documenti seguenti.
+                        Alcuni consensi sono obbligatori, altri facoltativi.
                     </p>
                 </div>
-                <div class="mt-6 flex justify-between">
-                    <button type="button" @click="sezione = 3" 
+
+                <div class="space-y-5">
+                    <!-- Privacy Policy - Obbligatorio -->
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="flex items-start">
+                            <input type="checkbox" name="privacy_accettata" id="privacy_accettata" required
+                                   class="mt-1 h-5 w-5 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
+                            <label for="privacy_accettata" class="ml-3 text-sm text-gray-700">
+                                <span class="font-semibold">Ho letto e accetto la
+                                    <a href="{{ route('privacy-policy') }}" target="_blank" class="text-fucsia-magia hover:underline">
+                                        Privacy Policy
+                                    </a>
+                                </span>
+                                <span class="text-red-600 font-bold ml-1">*</span>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Obbligatorio per l'iscrizione. Include informazioni su come trattiamo i tuoi dati personali.
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Termini e Condizioni - Obbligatorio -->
+                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="flex items-start">
+                            <input type="checkbox" name="termini_accettati" id="termini_accettati" required
+                                   class="mt-1 h-5 w-5 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
+                            <label for="termini_accettati" class="ml-3 text-sm text-gray-700">
+                                <span class="font-semibold">Ho letto e accetto i
+                                    <a href="{{ route('termini-condizioni') }}" target="_blank" class="text-fucsia-magia hover:underline">
+                                        Termini e Condizioni
+                                    </a>
+                                </span>
+                                <span class="text-red-600 font-bold ml-1">*</span>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Obbligatorio. Regola il rapporto contrattuale tra te e MA.GIA DONNA.
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Consenso Dati Sensibili (Salute) - Obbligatorio -->
+                    <div class="border border-pink-200 rounded-lg p-4 bg-pink-50">
+                        <div class="flex items-start">
+                            <input type="checkbox" name="consenso_dati_sensibili" id="consenso_dati_sensibili" required
+                                   class="mt-1 h-5 w-5 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
+                            <label for="consenso_dati_sensibili" class="ml-3 text-sm text-gray-700">
+                                <span class="font-semibold">Autorizzo il trattamento dei miei dati sensibili relativi alla salute</span>
+                                <span class="text-red-600 font-bold ml-1">*</span>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    Obbligatorio per la creazione del programma personalizzato. Include peso, altezza,
+                                    misure corporee, dati impedenziometrici, note mediche, allergie e obiettivi di benessere.
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Marketing - Facoltativo -->
+                    <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                        <div class="flex items-start">
+                            <input type="checkbox" name="marketing_accettato" id="marketing_accettato"
+                                   class="mt-1 h-5 w-5 text-fucsia-magia focus:ring-fucsia-magia border-gray-300 rounded">
+                            <label for="marketing_accettato" class="ml-3 text-sm text-gray-700">
+                                <span class="font-semibold">Acconsento a ricevere comunicazioni commerciali e newsletter</span>
+                                <span class="text-green-600 text-xs ml-2">(Facoltativo)</span>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    Potrai ricevere informazioni su nuovi programmi, eventi, promozioni speciali e contenuti esclusivi.
+                                    Potrai modificare questa preferenza in qualsiasi momento dalla tua area riservata.
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Post-Registrazione -->
+                <div class="mt-8 bg-gradient-to-r from-fucsia-magia to-viola-magia bg-opacity-10 border-l-4 border-fucsia-magia p-4 rounded-r-lg">
+                    <p class="text-sm text-gray-800 font-semibold mb-2">
+                        <i class="fas fa-envelope text-fucsia-magia mr-2"></i>
+                        Cosa succede dopo la registrazione?
+                    </p>
+                    <ul class="text-sm text-gray-700 space-y-1 ml-6 list-disc">
+                        <li>Riceverai un'email di benvenuto con le credenziali di accesso</li>
+                        <li>Potrai completare il tuo profilo con obiettivi e preferenze</li>
+                        <li>Ti invieremo il programma personalizzato Balla & Snella</li>
+                        <li>Potrai prenotare la tua giornata di prova gratuita</li>
+                    </ul>
+                </div>
+
+                <!-- Note GDPR -->
+                <div class="mt-4 text-xs text-gray-500 italic bg-gray-100 p-3 rounded">
+                    <i class="fas fa-lock mr-1"></i>
+                    I tuoi dati sono protetti secondo il Regolamento UE 2016/679 (GDPR).
+                    Potrai esercitare i tuoi diritti (accesso, rettifica, cancellazione) in qualsiasi momento
+                    contattando <a href="mailto:privacy@donnamagia.it" class="text-fucsia-magia hover:underline">privacy@donnamagia.it</a>
+                </div>
+
+                <!-- Pulsanti Navigazione -->
+                <div class="mt-8 flex justify-between">
+                    <button type="button" @click="sezione = 3"
                             class="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
                         <i class="fas fa-arrow-left mr-2"></i> Indietro
                     </button>
-                    <button type="submit" 
+                    <button type="submit"
                             class="px-8 py-3 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg font-bold hover:shadow-xl transition transform hover:scale-105">
                         <i class="fas fa-check-circle mr-2"></i> Completa Registrazione
                     </button>

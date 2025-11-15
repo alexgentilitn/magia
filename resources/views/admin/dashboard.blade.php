@@ -310,151 +310,165 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Colori Brand MA.GIA DONNA
-    const violaMagia = '#7B2869';
-    const fucsiaMagia = '#E91E8C';
+// Previeni esecuzione multipla dello script
+if (!window.dashboardChartsInitialized) {
+    window.dashboardChartsInitialized = true;
 
-    // ========================================
-    // GRAFICO INCASSI
-    // ========================================
-    const ctxIncassi = document.getElementById('chartIncassi').getContext('2d');
-    new Chart(ctxIncassi, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($incassiMesi->pluck('mese')) !!},
-            datasets: [{
-                label: 'Incassi (€)',
-                data: {!! json_encode($incassiMesi->pluck('totale')) !!},
-                backgroundColor: createGradient(ctxIncassi, fucsiaMagia, violaMagia),
-                borderColor: violaMagia,
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
+    document.addEventListener('DOMContentLoaded', function() {
+        // Colori Brand MA.GIA DONNA
+        const violaMagia = '#7B2869';
+        const fucsiaMagia = '#E91E8C';
+
+        // ========================================
+        // HELPER: Crea Gradiente
+        // ========================================
+        function createGradient(ctx, color1, color2) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(1, color2);
+            return gradient;
+        }
+
+        // ========================================
+        // GRAFICO INCASSI
+        // ========================================
+        const canvasIncassi = document.getElementById('chartIncassi');
+        if (canvasIncassi && !canvasIncassi.chart) {
+            const ctxIncassi = canvasIncassi.getContext('2d');
+            canvasIncassi.chart = new Chart(ctxIncassi, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($incassiMesi->pluck('mese')) !!},
+                    datasets: [{
+                        label: 'Incassi (€)',
+                        data: {!! json_encode($incassiMesi->pluck('totale')) !!},
+                        backgroundColor: createGradient(ctxIncassi, fucsiaMagia, violaMagia),
+                        borderColor: violaMagia,
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return '€ ' + context.parsed.y.toLocaleString('it-IT');
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '€ ' + context.parsed.y.toLocaleString('it-IT');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value.toLocaleString('it-IT');
+                                }
+                            }
                         }
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '€' + value.toLocaleString('it-IT');
-                        }
-                    }
-                }
-            }
+            });
         }
-    });
 
-    // ========================================
-    // GRAFICO NUOVI CLIENTI
-    // ========================================
-    const ctxClienti = document.getElementById('chartClienti').getContext('2d');
-    new Chart(ctxClienti, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode($clientiMesi->pluck('mese')) !!},
-            datasets: [{
-                label: 'Nuovi Clienti',
-                data: {!! json_encode($clientiMesi->pluck('totale')) !!},
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderColor: '#3b82f6',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#3b82f6',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-
-    // ========================================
-    // GRAFICO PRESENZE
-    // ========================================
-    const ctxPresenze = document.getElementById('chartPresenze').getContext('2d');
-    new Chart(ctxPresenze, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($presenzeMesi->pluck('mese')) !!},
-            datasets: [{
-                label: 'Presenze',
-                data: {!! json_encode($presenzeMesi->pluck('totale')) !!},
-                backgroundColor: createGradient(ctxPresenze, '#a855f7', '#7e22ce'),
-                borderColor: '#7e22ce',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
+        // ========================================
+        // GRAFICO NUOVI CLIENTI
+        // ========================================
+        const canvasClienti = document.getElementById('chartClienti');
+        if (canvasClienti && !canvasClienti.chart) {
+            const ctxClienti = canvasClienti.getContext('2d');
+            canvasClienti.chart = new Chart(ctxClienti, {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($clientiMesi->pluck('mese')) !!},
+                    datasets: [{
+                        label: 'Nuovi Clienti',
+                        data: {!! json_encode($clientiMesi->pluck('totale')) !!},
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.parsed.y + ' presenze';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
                         }
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+            });
+        }
+
+        // ========================================
+        // GRAFICO PRESENZE
+        // ========================================
+        const canvasPresenze = document.getElementById('chartPresenze');
+        if (canvasPresenze && !canvasPresenze.chart) {
+            const ctxPresenze = canvasPresenze.getContext('2d');
+            canvasPresenze.chart = new Chart(ctxPresenze, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($presenzeMesi->pluck('mese')) !!},
+                    datasets: [{
+                        label: 'Presenze',
+                        data: {!! json_encode($presenzeMesi->pluck('totale')) !!},
+                        backgroundColor: createGradient(ctxPresenze, '#a855f7', '#7e22ce'),
+                        borderColor: '#7e22ce',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' presenze';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
                     }
                 }
-            }
+            });
         }
     });
-
-    // ========================================
-    // HELPER: Crea Gradiente
-    // ========================================
-    function createGradient(ctx, color1, color2) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(1, color2);
-        return gradient;
-    }
-});
+}
 </script>
 @endpush
 

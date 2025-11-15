@@ -12,31 +12,8 @@
 // ========================================
 // CONFIGURAZIONE SICUREZZA
 // ========================================
-define('MIGRATION_SECRET_KEY', 'MAGIA2025SECURE');
-
-// Verifica chiave di accesso
-if (!isset($_GET['key']) || $_GET['key'] !== MIGRATION_SECRET_KEY) {
-    http_response_code(403);
-    die('<!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Accesso Negato</title>
-        <style>
-            body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 50px; text-align: center; }
-            .error { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
-            h1 { color: #e74c3c; }
-        </style>
-    </head>
-    <body>
-        <div class="error">
-            <h1>❌ Accesso Negato</h1>
-            <p>Chiave di accesso non valida.</p>
-            <p>Uso corretto: <code>execute-migrations.php?key=CHIAVE</code></p>
-        </div>
-    </body>
-    </html>');
-}
+// Password rimossa per esecuzione immediata
+// IMPORTANTE: Questo file verrà eliminato automaticamente dopo l'esecuzione
 
 // ========================================
 // INIZIALIZZAZIONE

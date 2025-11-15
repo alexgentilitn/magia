@@ -66,26 +66,51 @@ class ReportController extends Controller
      */
     public function debug(Request $request)
     {
-        $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
-        $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
+        try {
+            $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
+            $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
 
-        $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
-        $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
-        $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
-        $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
-        $topClienti = $this->getTopClienti($dataInizio, $dataFine);
-        $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
+            \Log::info('DEBUG: Inizio caricamento debug report');
 
-        return view('admin.report.debug', compact(
-            'statistiche',
-            'statistichePresenze',
-            'lezioniPerStato',
-            'topProfessionisti',
-            'topClienti',
-            'trendGiornaliero',
-            'dataInizio',
-            'dataFine'
-        ));
+            $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
+            \Log::info('DEBUG: Statistiche caricate', $statistiche);
+
+            $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
+            \Log::info('DEBUG: Statistiche presenze caricate');
+
+            $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
+            \Log::info('DEBUG: Lezioni per stato caricate');
+
+            $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
+            \Log::info('DEBUG: Top professionisti caricati');
+
+            $topClienti = $this->getTopClienti($dataInizio, $dataFine);
+            \Log::info('DEBUG: Top clienti caricati');
+
+            $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
+            \Log::info('DEBUG: Trend giornaliero caricato');
+
+            \Log::info('DEBUG: Rendering vista');
+
+            return view('admin.report.debug', compact(
+                'statistiche',
+                'statistichePresenze',
+                'lezioniPerStato',
+                'topProfessionisti',
+                'topClienti',
+                'trendGiornaliero',
+                'dataInizio',
+                'dataFine'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('ERRORE DEBUG REPORT: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return view('admin.report.debug-simple', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 
     /**

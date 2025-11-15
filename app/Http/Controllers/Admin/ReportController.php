@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lezione;
-use App\Models\Cliente;
-use App\Models\Professionista;
-use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -22,44 +19,46 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        // Periodo default: ultimo mese
-        $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
-        $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
+        try {
+            // Periodo default: ultimo mese
+            $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
+            $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
 
-        // Statistiche generali
-        $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
+            // Statistiche generali
+            $statistiche = $this->getStatisticheGenerali($dataInizio, $dataFine);
 
-        // Statistiche presenze
-        $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
+            // Statistiche presenze
+            $statistichePresenze = $this->getStatistichePresenze($dataInizio, $dataFine);
 
-        // Lezioni per stato
-        $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
+            // Lezioni per stato
+            $lezioniPerStato = $this->getLezioniPerStato($dataInizio, $dataFine);
 
-        // Top professionisti
-        $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
+            // Top professionisti
+            $topProfessionisti = $this->getTopProfessionisti($dataInizio, $dataFine);
 
-        // Top clienti più attivi
-        $topClienti = $this->getTopClienti($dataInizio, $dataFine);
+            // Top clienti più attivi
+            $topClienti = $this->getTopClienti($dataInizio, $dataFine);
 
-        // Trend giornaliero
-        $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
+            // Trend giornaliero
+            $trendGiornaliero = $this->getTrendGiornaliero($dataInizio, $dataFine);
 
-        // Liste per filtri
-        $professionisti = Professionista::with('utente')->where('stato', 'attivo')->get();
-        $sedi = Sede::where('stato', 'attiva')->get();
+            return view('admin.report.index', compact(
+                'statistiche',
+                'statistichePresenze',
+                'lezioniPerStato',
+                'topProfessionisti',
+                'topClienti',
+                'trendGiornaliero',
+                'dataInizio',
+                'dataFine'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Errore nel caricamento report: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
 
-        return view('admin.report.index', compact(
-            'statistiche',
-            'statistichePresenze',
-            'lezioniPerStato',
-            'topProfessionisti',
-            'topClienti',
-            'trendGiornaliero',
-            'professionisti',
-            'sedi',
-            'dataInizio',
-            'dataFine'
-        ));
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Errore nel caricamento dei report: ' . $e->getMessage());
+        }
     }
 
     /**

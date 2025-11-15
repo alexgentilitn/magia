@@ -36,6 +36,16 @@ class CalendarioController extends Controller
             ->orderBy('nome')
             ->get();
 
+        // Rileva se è un dispositivo mobile
+        $userAgent = $request->header('User-Agent');
+        $isMobile = preg_match('/(android|webos|iphone|ipad|ipod|blackberry|windows phone)/i', $userAgent);
+
+        // Se è mobile, usa la vista nativa mobile
+        if ($isMobile) {
+            return view('admin.calendario.mobile', compact('professionisti', 'sedi'));
+        }
+
+        // Altrimenti usa la vista desktop standard
         return view('admin.calendario.index', compact('professionisti', 'sedi'));
     }
 

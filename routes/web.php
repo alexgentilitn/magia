@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ImpostazioniController;
 use App\Http\Controllers\Admin\CalendarioController;
 use App\Http\Controllers\Cliente\ClienteAreaController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LocationController;
 
 /**
  * File: Routes Web
@@ -39,6 +40,16 @@ Route::get('/', function () {
 Route::get('/giornata-di-prova', [LandingPageController::class, 'index'])->name('landing.giornata-prova');
 Route::post('/giornata-di-prova', [LandingPageController::class, 'registraProva'])->name('landing.registra-prova');
 Route::get('/grazie', [LandingPageController::class, 'grazie'])->name('landing.giornata-prova.grazie');
+
+
+// ============================================
+// LOCATIONS - MAPPA SEDI PUBBLICHE 📍
+// ============================================
+// Visualizzazione pubblica delle sedi MA.GIA DONNA con Google Maps
+
+Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+Route::get('/locations/{slug}', [LocationController::class, 'show'])->name('locations.show');
+Route::get('/api/locations', [LocationController::class, 'api'])->name('locations.api');
 
 
 // ============================================

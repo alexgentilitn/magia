@@ -405,6 +405,359 @@ echo "✅ Inseriti " . count($data) . " record\n";
 
 ---
 
+## 💾 SISTEMA BACKUP E RIPRISTINO
+
+### Implementazione Backup Points (Codice + Database)
+
+**Implementato:** 15 Novembre 2025
+**Richiesta Utente:** Backup ogni ora di sviluppo per rollback sicuro
+
+Il sistema permette di creare **Backup Points** completi che salvano lo stato di:
+- ✅ **Codice** → Git tag su GitHub
+- ✅ **Database** → Dump SQL locale in `storage/backups/`
+
+### 🎯 Concetto: Backup Point
+
+Un **Backup Point** è un punto di ripristino atomico che include:
+1. **Tag Git** con nome `backup-YYYY-MM-DD_HH-MM-SS`
+2. **Dump SQL** del database completo nello stesso momento
+3. **Metadata** (tabelle, record count, dimensione file)
+
+### 📋 Scripts Disponibili
+
+#### 1. **Crea Backup Point** (`public/create-backup-point.php`) ⭐
+
+**SCRIPT PRINCIPALE** - Usa sempre questo per creare backup completi.
+
+**URL:** `https://www.agstudio.digital/magia/public/create-backup-point.php?secret=$Magia2025!`
+
+**Cosa fa:**
+1. Esporta tutte le tabelle del database in SQL
+2. Salva in `storage/backups/db-backup-[timestamp].sql`
+3. Fornisce i comandi Git per creare il tag
+4. Fornisce le istruzioni per ripristino completo
+
+**Output:**
+```
+📅 Timestamp: 15/11/2025 14:30:00
+🏷️  Tag Git: backup-2025-11-15_14-30-00
+
+Esportazione tabelle:
+  [1/23] utenti... ✅ 150 record
+  [2/23] clienti... ✅ 300 record
+  ...
+
+✅ Database esportato: 2.5 MB
+   5000 record totali
+
+COMANDI GIT:
+git tag -a backup-2025-11-15_14-30-00 -m "Backup point: ..."
+git push origin backup-2025-11-15_14-30-00
+```
+
+**Quando usare:**
+- ✅ Ogni ora di sviluppo intenso
+- ✅ Prima di modifiche rischiose (migrazioni, refactoring)
+- ✅ Prima di merge/release importanti
+- ✅ Fine giornata lavorativa
+
+---
+
+#### 2. **Backup Solo Database** (`public/backup-database.php`)
+
+**URL:** `https://www.agstudio.digital/magia/public/backup-database.php?secret=$Magia2025!`
+
+**Cosa fa:**
+- Esporta solo il database (senza creare tag Git)
+- Utile per backup rapidi senza committare codice
+
+**Output:**
+- File `storage/backups/db-backup-[timestamp].sql`
+- Statistiche (tabelle, record, dimensione)
+
+---
+
+#### 3. **Ripristina Database** (`public/restore-database.php`)
+
+**URL (Lista backups):**
+`https://www.agstudio.digital/magia/public/restore-database.php?secret=$Magia2025!`
+
+**URL (Ripristina specifico):**
+`https://www.agstudio.digital/magia/public/restore-database.php?secret=$Magia2025!&file=db-backup-[timestamp].sql&confirm=YES`
+
+**⚠️ ATTENZIONE:**
+- Elimina TUTTE le tabelle attuali
+- Sovrascrive TUTTI i dati
+- NON reversibile
+
+**Sicurezza:**
+- Richiede parametro `confirm=YES` esplicito
+- Mostra warning chiari prima dell'esecuzione
+- Lista tutti i backup disponibili se nessun file specificato
+
+**Output:**
+```
+⚠️  ATTENZIONE - OPERAZIONE PERICOLOSA!
+
+Stai per ripristinare:
+  📁 File: db-backup-2025-11-15_14-30-00.sql
+  📅 Data backup: 15/11/2025 14:30:00
+  💾 Dimensione: 2.5 MB
+
+⚠️  Questa operazione:
+  ❌ Eliminerà TUTTE le tabelle attuali
+  ❌ Sovrascriverà TUTTI i dati
+  ❌ NON può essere annullata
+```
+
+---
+
+### 🔄 PROCEDURA: Creare un Backup Point Completo
+
+**Step 1: Esegui lo script di backup**
+```bash
+# Via browser o curl
+curl "https://www.agstudio.digital/magia/public/create-backup-point.php?secret=\$Magia2025!"
+```
+
+**Step 2: Copia i comandi Git dall'output**
+```bash
+git tag -a backup-2025-11-15_14-30-00 -m "Backup point: 2025-11-15_14-30-00 - 23 tables, 5000 records"
+git push origin backup-2025-11-15_14-30-00
+```
+
+**Step 3: Verifica creazione**
+```bash
+# Lista tutti i backup points
+git tag -l 'backup-*'
+
+# Dettagli backup specifico
+git show backup-2025-11-15_14-30-00
+```
+
+**✅ Backup Point creato!**
+Ora hai un punto di ripristino completo:
+- 🏷️ Tag Git: `backup-2025-11-15_14-30-00`
+- 💾 Dump SQL: `storage/backups/db-backup-2025-11-15_14-30-00.sql`
+
+---
+
+### ♻️ PROCEDURA: Ripristinare da Backup Point
+
+**Scenario:** Qualcosa è andato storto, devi tornare indietro.
+
+**Step 1: Identifica il backup point da ripristinare**
+```bash
+# Lista tutti i backup disponibili
+git tag -l 'backup-*'
+
+# Output:
+# backup-2025-11-15_10-00-00
+# backup-2025-11-15_11-00-00
+# backup-2025-11-15_14-30-00  ← Vuoi tornare qui
+```
+
+**Step 2: Ripristina il CODICE**
+```bash
+# Torna al codice del backup point
+git checkout backup-2025-11-15_14-30-00
+
+# Oppure crea un nuovo branch da quel punto
+git checkout -b recovery-from-backup backup-2025-11-15_14-30-00
+```
+
+**Step 3: Ripristina il DATABASE**
+```bash
+# Via browser (ATTENZIONE: conferma richiesta!)
+https://www.agstudio.digital/magia/public/restore-database.php?secret=$Magia2025!&file=db-backup-2025-11-15_14-30-00.sql&confirm=YES
+```
+
+**Step 4: Verifica applicazione**
+- Controlla che l'app funzioni
+- Verifica i dati nel database
+- Testa le funzionalità critiche
+
+**✅ Ripristino completato!**
+
+---
+
+### 📊 Gestione Backup
+
+#### Lista Backup Points Disponibili
+
+```bash
+# Via Git
+git tag -l 'backup-*'
+
+# Via browser (per file SQL)
+https://www.agstudio.digital/magia/public/restore-database.php?secret=$Magia2025!
+```
+
+#### Elimina Backup Vecchi
+
+**Git tags:**
+```bash
+# Elimina tag locale
+git tag -d backup-2025-11-15_10-00-00
+
+# Elimina tag remoto
+git push --delete origin backup-2025-11-15_10-00-00
+```
+
+**File SQL:**
+```bash
+# Via SSH (se disponibile)
+rm storage/backups/db-backup-2025-11-15_10-00-00.sql
+
+# Via FTP manualmente
+```
+
+#### Politica di Retention Suggerita
+
+**Conserva:**
+- ✅ Ultimo backup di ogni giornata → 7 giorni
+- ✅ Backup settimanali → 4 settimane
+- ✅ Backup mensili → 6 mesi
+- ✅ Backup pre-release → per sempre
+
+**Elimina:**
+- ❌ Backup orari > 24 ore fa (tranne quello finale del giorno)
+- ❌ Backup giornalieri > 7 giorni fa (tranne settimanali)
+
+---
+
+### 🛡️ Sicurezza e Best Practices
+
+**File SQL:**
+- ⚠️ NON sono versionati su Git (troppo grandi)
+- ⚠️ Rimangono solo sul server in `storage/backups/`
+- ⚠️ NON fanno backup automatico esterno
+- ✅ Hanno .gitignore per evitare commit accidentali
+
+**Backup Esterno (CONSIGLIATO):**
+Per vera sicurezza, scaricare periodicamente i dump SQL:
+1. Via FTP da `storage/backups/`
+2. Su cloud storage (Dropbox, Google Drive)
+3. Su backup service professionale
+
+**Password Protected:**
+- ✅ Tutti gli script richiedono `secret=$Magia2025!`
+- ✅ Restore richiede conferma esplicita `confirm=YES`
+- ✅ Nessun parametro di default pericoloso
+
+**Logging:**
+- ✅ Output completo di ogni operazione
+- ✅ Statistiche dettagliate (tabelle, record, errori)
+- ✅ Timestamp su ogni file/tag
+
+---
+
+### 📝 Template Commit Message per Backup
+
+Quando crei un backup point manualmente (oltre allo script):
+
+```
+🔖 Backup point: [YYYY-MM-DD HH:mm]
+
+Fase: [Descrizione fase sviluppo]
+Funzionalità: [Cosa è stato implementato]
+
+Database:
+- Tabelle: [N]
+- Record: [N]
+- Dimensione: [N MB]
+
+Codice:
+- Files modificati: [N]
+- Linee aggiunte: [+N]
+- Linee rimosse: [-N]
+
+Note: [Eventuali annotazioni]
+```
+
+---
+
+### 🎯 Esempio Workflow Completo
+
+**Scenario:** Implementazione nuova feature "Calendario Drag & Drop"
+
+**10:00 - Inizio sviluppo**
+```bash
+# Backup point iniziale
+curl "https://www.agstudio.digital/magia/public/create-backup-point.php?secret=\$Magia2025!"
+git tag -a backup-2025-11-15_10-00-00 -m "Backup: Inizio implementazione drag&drop calendario"
+git push origin backup-2025-11-15_10-00-00
+```
+
+**11:30 - Primo checkpoint**
+```bash
+# Backup intermedio
+curl "https://www.agstudio.digital/magia/public/create-backup-point.php?secret=\$Magia2025!"
+git tag -a backup-2025-11-15_11-30-00 -m "Backup: Backend drag&drop completato"
+git push origin backup-2025-11-15_11-30-00
+```
+
+**14:00 - Feature completa**
+```bash
+# Backup finale
+curl "https://www.agstudio.digital/magia/public/create-backup-point.php?secret=\$Magia2025!"
+git tag -a backup-2025-11-15_14-00-00 -m "Backup: Drag&drop calendario COMPLETATO"
+git push origin backup-2025-11-15_14-00-00
+```
+
+**14:15 - PROBLEMA! Qualcosa si è rotto**
+```bash
+# Ripristino all'ultimo backup funzionante
+git checkout backup-2025-11-15_11-30-00
+
+# Ripristina database
+curl "https://www.agstudio.digital/magia/public/restore-database.php?secret=\$Magia2025!&file=db-backup-2025-11-15_11-30-00.sql&confirm=YES"
+
+# ✅ Tutto torna a funzionare!
+```
+
+---
+
+### ⚙️ File e Directory
+
+```
+magia/
+├── storage/
+│   └── backups/              # Dump SQL (gitignored)
+│       ├── .gitignore
+│       ├── db-backup-2025-11-15_10-00-00.sql
+│       ├── db-backup-2025-11-15_11-00-00.sql
+│       └── db-backup-2025-11-15_14-00-00.sql
+│
+└── public/
+    ├── backup-database.php          # Backup solo DB
+    ├── restore-database.php         # Ripristino DB
+    └── create-backup-point.php      # ⭐ Crea backup point completo
+```
+
+---
+
+### 📌 Promemoria per Claude
+
+**OGNI ORA di sviluppo:**
+```bash
+1. curl create-backup-point.php
+2. Copia comandi Git dall'output
+3. Esegui git tag + git push
+4. Annota nel commit il tag creato
+```
+
+**PRIMA di operazioni rischiose:**
+- ✅ Migrazioni database
+- ✅ Refactoring massiccio
+- ✅ Modifiche strutturali
+- ✅ Merge/rebase complessi
+- ✅ Deploy in produzione
+
+**Backup Point = Salvavita!** 🛟
+
+---
+
 ## ⚙️ CONFIGURAZIONE AMBIENTE (.env)
 
 ### File .env Produzione
@@ -879,7 +1232,7 @@ php artisan key:generate
 
 **📅 Ultimo aggiornamento:** 15 Novembre 2025
 **✍️ Creato da:** Claude Code - Sessione confirm-status-01NaRPJZBUHxak94aM2zKA1u
-**🔄 Versione:** 2.0 - Aggiunto sistema gestione database via file PHP
+**🔄 Versione:** 3.0 - Aggiunto sistema backup completo (codice + database) con Git tags
 
 ---
 
@@ -895,6 +1248,14 @@ Il deploy è automatico via GitHub Actions, ma ricorda che `.env` va modificato 
 `vendor/` è versionato (stranezza necessaria per hosting senza SSH - accettalo).
 
 Se vedi errori, usa `diagnose.php` - è il tuo migliore amico.
+
+**🆕 Sistema Backup (IMPORTANTE!):**
+- **OGNI ORA** crea un backup point con `create-backup-point.php`
+- Segui le istruzioni per creare il Git tag
+- In caso di problemi, puoi ripristinare codice + database
+- Vedi sezione "💾 SISTEMA BACKUP E RIPRISTINO" in questo file
+
+**Backup Point = Salvavita!** 🛟
 
 Buon lavoro! 🚀
 

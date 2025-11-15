@@ -320,16 +320,26 @@
     </div>
 
     <!-- Azioni -->
-    <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-        <a href="{{ route('admin.lezioni.show', $lezione->id) }}"
-           class="inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-            <i class="fas fa-eye mr-2"></i>
-            Dettagli Completi
-        </a>
-        <a href="{{ route('admin.lezioni.edit', $lezione->id) }}?return=calendario"
-           class="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition-all font-medium">
-            <i class="fas fa-edit mr-2"></i>
-            Modifica Lezione
-        </a>
+    <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <!-- Azione Elimina (sinistra) -->
+        <button onclick="eliminaLezione({{ $lezione->id }}, '{{ $lezione->titolo }}')"
+                class="inline-flex items-center justify-center px-5 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium">
+            <i class="fas fa-trash-alt mr-2"></i>
+            Elimina Lezione
+        </button>
+
+        <!-- Azioni Visualizza/Modifica (destra) -->
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a href="{{ route('admin.lezioni.show', $lezione->id) }}"
+               class="inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                <i class="fas fa-eye mr-2"></i>
+                Dettagli Completi
+            </a>
+            <a href="{{ route('admin.lezioni.edit', $lezione->id) }}?return=calendario"
+               class="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition-all font-medium">
+                <i class="fas fa-edit mr-2"></i>
+                Modifica Lezione
+            </a>
+        </div>
     </div>
 </div>

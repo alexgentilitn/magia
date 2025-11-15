@@ -295,6 +295,69 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         },
 
+        // Gestione resize (modifica durata)
+        eventResize: function(info) {
+            const lezioneId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end;
+
+            // Calcola nuova durata
+            const durataMinuti = Math.round((newEnd - newStart) / 1000 / 60);
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Modifica durata...',
+                text: `Nuova durata: ${durataMinuti} minuti`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('admin/calendario') }}/${lezioneId}/resize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    start: newStart.toISOString(),
+                    end: newEnd.toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Durata modificata!',
+                        html: `Orario: <strong>${data.lezione.ora_inizio} - ${data.lezione.ora_fine}</strong><br>Durata: <strong>${data.lezione.durata_minuti} minuti</strong>`,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Errore - ripristina durata originale
+                    info.revert();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Impossibile modificare',
+                        text: data.message || 'Errore durante la modifica della durata'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                info.revert();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: 'Si è verificato un errore durante la modifica'
+                });
+            });
+        },
+
         // Carica eventi dal server
         events: function(info, successCallback, failureCallback) {
             const params = new URLSearchParams({
@@ -670,6 +733,75 @@ document.addEventListener('DOMContentLoaded', function() {
                         icon: 'error',
                         title: 'Errore',
                         text: 'Si è verificato un errore durante l\'annullamento'
+                    });
+                });
+            }
+        });
+    };
+
+    // ===================================================================
+    // ELIMINA LEZIONE
+    // ===================================================================
+
+    window.eliminaLezione = function(lezioneId, titoloLezione) {
+        Swal.fire({
+            title: 'Conferma eliminazione',
+            html: `Vuoi davvero eliminare la lezione<br><strong>${titoloLezione}</strong>?<br><br>` +
+                  `<span class="text-red-600 text-sm">⚠️ Questa azione eliminerà anche tutte le prenotazioni associate!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e91e63',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, elimina',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostra loading
+                Swal.fire({
+                    title: 'Eliminazione in corso...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Lezione eliminata',
+                            text: data.message || 'La lezione è stata eliminata con successo.',
+                            timer: 2000
+                        });
+
+                        // Chiudi modal
+                        closeModal();
+
+                        // Ricarica eventi calendario
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message || 'Errore durante l\'eliminazione'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore durante l\'eliminazione'
                     });
                 });
             }

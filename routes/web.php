@@ -277,6 +277,12 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Sposta lezione (drag & drop)
         Route::post('/{id}/move', [CalendarioController::class, 'move'])->name('move');
 
+        // Modifica durata lezione (resize)
+        Route::post('/{id}/resize', [CalendarioController::class, 'resize'])->name('resize');
+
+        // Elimina lezione
+        Route::delete('/{id}', [CalendarioController::class, 'destroy'])->name('destroy');
+
         // Prenotazioni
         Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
         Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');

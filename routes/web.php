@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ClientiController;
 use App\Http\Controllers\Admin\LezioniController;
 use App\Http\Controllers\Admin\ProgrammiController;
+use App\Http\Controllers\Admin\SchedeAllenamentoController;
 use App\Http\Controllers\Admin\PagamentiController;
 use App\Http\Controllers\Admin\SedeController;
 use App\Http\Controllers\Admin\ProfessionistiController;
@@ -183,6 +184,34 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
 
         // Duplica programma
         Route::post('/{id}/duplica', [ProgrammiController::class, 'duplica'])->name('duplica');
+    });
+
+    // ============================================
+    // GESTIONE SCHEDE ALLENAMENTO PERSONALIZZATE
+    // ============================================
+    Route::prefix('schede')->name('schede.')->group(function () {
+        // Lista
+        Route::get('/', [SchedeAllenamentoController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [SchedeAllenamentoController::class, 'create'])->name('create');
+        Route::post('/', [SchedeAllenamentoController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{scheda}', [SchedeAllenamentoController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{scheda}/modifica', [SchedeAllenamentoController::class, 'edit'])->name('edit');
+        Route::put('/{scheda}', [SchedeAllenamentoController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{scheda}', [SchedeAllenamentoController::class, 'destroy'])->name('destroy');
+
+        // Azioni speciali
+        Route::post('/{scheda}/duplica', [SchedeAllenamentoController::class, 'duplica'])->name('duplica');
+        Route::patch('/{scheda}/cambia-stato', [SchedeAllenamentoController::class, 'cambiaStato'])->name('cambia-stato');
+        Route::post('/{scheda}/genera-pdf', [SchedeAllenamentoController::class, 'generaPDF'])->name('genera-pdf');
+        Route::post('/{scheda}/invia-email', [SchedeAllenamentoController::class, 'inviaEmail'])->name('invia-email');
     });
 
     // ============================================

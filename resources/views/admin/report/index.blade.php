@@ -1,8 +1,8 @@
-@extends('layouts.admin-minimal')
+@extends('layouts.admin')
 
-@section('title', 'Report e Statistiche')
+@section('titolo', 'Report e Statistiche')
 
-@section('content')
+@section('contenuto')
 <div class="container mx-auto px-4 py-6">
     <!-- Header -->
     <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

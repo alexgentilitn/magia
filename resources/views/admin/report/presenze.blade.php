@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Report Presenze')
+@section('titolo', 'Report Presenze')
 
-@section('content')
+@section('contenuto')
 <div class="container mx-auto px-4 py-6">
     <!-- Header -->
     <div class="mb-6 flex justify-between items-center">

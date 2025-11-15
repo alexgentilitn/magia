@@ -743,11 +743,45 @@ document.addEventListener('DOMContentLoaded', function() {
     // ELIMINA LEZIONE
     // ===================================================================
 
-    window.eliminaLezione = function(lezioneId, titoloLezione) {
+    window.eliminaLezione = function(lezioneId, titoloLezione, isRicorrente = false) {
+        // Se la lezione è ricorrente, mostra opzioni aggiuntive
+        if (isRicorrente) {
+            Swal.fire({
+                title: 'Elimina lezione ricorrente',
+                html: `<strong>${titoloLezione}</strong> fa parte di una serie ricorrente.<br><br>Cosa vuoi eliminare?`,
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '<i class="fas fa-calendar-day mr-1"></i> Solo questa',
+                denyButtonText: '<i class="fas fa-calendar-week mr-1"></i> Tutta la serie',
+                cancelButtonText: 'Annulla',
+                confirmButtonColor: '#f59e0b',
+                denyButtonColor: '#e91e63',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Elimina solo questa occorrenza
+                    confermaEliminazione(lezioneId, titoloLezione, false);
+                } else if (result.isDenied) {
+                    // Elimina tutta la serie
+                    confermaEliminazione(lezioneId, titoloLezione, true);
+                }
+            });
+        } else {
+            // Lezione singola, conferma diretta
+            confermaEliminazione(lezioneId, titoloLezione, false);
+        }
+    };
+
+    function confermaEliminazione(lezioneId, titoloLezione, eliminaSerie) {
+        const messaggioWarning = eliminaSerie
+            ? '⚠️ Verranno eliminate TUTTE le occorrenze future di questa serie ricorrente!'
+            : '⚠️ Questa azione eliminerà anche tutte le prenotazioni associate!';
+
         Swal.fire({
             title: 'Conferma eliminazione',
-            html: `Vuoi davvero eliminare la lezione<br><strong>${titoloLezione}</strong>?<br><br>` +
-                  `<span class="text-red-600 text-sm">⚠️ Questa azione eliminerà anche tutte le prenotazioni associate!</span>`,
+            html: `Vuoi davvero eliminare <strong>${titoloLezione}</strong>?<br><br>` +
+                  `<span class="text-red-600 text-sm">${messaggioWarning}</span>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e91e63',
@@ -765,13 +799,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
+                const body = eliminaSerie ? JSON.stringify({ elimina_serie: true }) : null;
+
                 fetch(`{{ url('admin/calendario') }}/${lezioneId}`, {
                     method: 'DELETE',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: body
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -806,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    };
+    }
 
     // Invia reminder email
     window.inviaReminder = function(lezioneId) {

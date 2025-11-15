@@ -407,10 +407,13 @@
     <!-- Azioni -->
     <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <!-- Azione Elimina (sinistra) -->
-        <button onclick="eliminaLezione({{ $lezione->id }}, '{{ $lezione->titolo }}')"
+        <button onclick="eliminaLezione({{ $lezione->id }}, '{{ $lezione->titolo }}', {{ $lezione->isLezioneRicorrente() ? 'true' : 'false' }})"
                 class="inline-flex items-center justify-center px-5 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium">
             <i class="fas fa-trash-alt mr-2"></i>
             Elimina Lezione
+            @if($lezione->isLezioneRicorrente())
+            <i class="fas fa-sync-alt ml-1 text-sm" title="Lezione ricorrente"></i>
+            @endif
         </button>
 
         <!-- Azioni Visualizza/Modifica (destra) -->

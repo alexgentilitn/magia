@@ -544,20 +544,31 @@ class CalendarioController extends Controller
     /**
      * Elimina lezione
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
             $lezione = Lezione::findOrFail($id);
+            $eliminaTutteSerie = $request->input('elimina_serie', false);
 
             // Controlla se ci sono prenotazioni
             $prenotazioni = $lezione->clienti()->count();
 
-            // Elimina la lezione (le prenotazioni vengono eliminate in cascata)
-            $lezione->delete();
+            // Se è una lezione ricorrente e si vuole eliminare tutta la serie
+            if ($eliminaTutteSerie && $lezione->isLezioneRicorrente()) {
+                $count = $lezione->eliminaOccorrenzeFuture($lezione->isLezionePadre());
 
-            $message = $prenotazioni > 0
-                ? "Lezione eliminata con successo. {$prenotazioni} prenotazioni sono state cancellate."
-                : "Lezione eliminata con successo.";
+                $message = "Eliminate {$count} occorrenze della serie ricorrente.";
+                if ($prenotazioni > 0) {
+                    $message .= " Le prenotazioni associate sono state cancellate.";
+                }
+            } else {
+                // Elimina solo questa lezione
+                $lezione->delete();
+
+                $message = $prenotazioni > 0
+                    ? "Lezione eliminata con successo. {$prenotazioni} prenotazioni sono state cancellate."
+                    : "Lezione eliminata con successo.";
+            }
 
             return response()->json([
                 'success' => true,

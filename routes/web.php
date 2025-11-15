@@ -311,8 +311,16 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Report performance professionisti
         Route::get('/professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'professionisti'])->name('professionisti');
 
-        // Export CSV
+        // Export CSV (legacy)
         Route::get('/export-csv', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
+
+        // Export Excel
+        Route::get('/export-excel-presenze', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelPresenze'])->name('export-excel-presenze');
+        Route::get('/export-excel-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelCalendario'])->name('export-excel-calendario');
+
+        // Export PDF
+        Route::get('/export-pdf-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfCalendario'])->name('export-pdf-calendario');
+        Route::get('/export-pdf-professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfProfessionisti'])->name('export-pdf-professionisti');
     });
 
     // ============================================

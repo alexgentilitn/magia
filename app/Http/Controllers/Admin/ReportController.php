@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lezione;
+use App\Exports\PresenzeExport;
+use App\Exports\LezioniExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Controller: Gestione Report e Statistiche
@@ -425,5 +429,115 @@ class ReportController extends Controller
         fputcsv($file, ['Lezioni Completate', $statistiche['lezioni_completate']]);
         fputcsv($file, ['Totale Partecipanti', $statistiche['totale_partecipanti']]);
         fputcsv($file, ['Tasso Occupazione %', $statistiche['tasso_occupazione']]);
+    }
+
+    /**
+     * Export Report Presenze in Excel
+     */
+    public function exportExcelPresenze(Request $request)
+    {
+        $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
+        $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
+
+        $filename = 'report-presenze-' . $dataInizio . '-' . $dataFine . '.xlsx';
+
+        return Excel::download(
+            new PresenzeExport($dataInizio, $dataFine),
+            $filename
+        );
+    }
+
+    /**
+     * Export Calendario Lezioni in Excel
+     */
+    public function exportExcelCalendario(Request $request)
+    {
+        $dataInizio = $request->input('data_inizio', now()->startOfMonth()->format('Y-m-d'));
+        $dataFine = $request->input('data_fine', now()->endOfMonth()->format('Y-m-d'));
+
+        // Filtri opzionali
+        $filtri = [];
+        if ($request->filled('professionista_id')) {
+            $filtri['professionista_id'] = $request->professionista_id;
+        }
+        if ($request->filled('sede_id')) {
+            $filtri['sede_id'] = $request->sede_id;
+        }
+        if ($request->filled('tipologia')) {
+            $filtri['tipologia'] = $request->tipologia;
+        }
+        if ($request->filled('stato')) {
+            $filtri['stato'] = $request->stato;
+        }
+
+        $filename = 'calendario-lezioni-' . $dataInizio . '-' . $dataFine . '.xlsx';
+
+        return Excel::download(
+            new LezioniExport($dataInizio, $dataFine, $filtri),
+            $filename
+        );
+    }
+
+    /**
+     * Export Calendario Mensile in PDF
+     */
+    public function exportPdfCalendario(Request $request)
+    {
+        $dataInizio = $request->input('data_inizio', now()->startOfMonth()->format('Y-m-d'));
+        $dataFine = $request->input('data_fine', now()->endOfMonth()->format('Y-m-d'));
+
+        // Recupera lezioni del periodo
+        $lezioni = Lezione::with(['professionista', 'sede', 'programma'])
+            ->whereBetween('data', [$dataInizio, $dataFine])
+            ->orderBy('data')
+            ->orderBy('ora_inizio')
+            ->get();
+
+        // Raggruppa lezioni per data
+        $lezioniPerData = $lezioni->groupBy(function($lezione) {
+            return Carbon::parse($lezione->data)->format('Y-m-d');
+        });
+
+        // Statistiche periodo
+        $statistiche = [
+            'totale_lezioni' => $lezioni->count(),
+            'lezioni_per_tipologia' => $lezioni->countBy('tipologia'),
+            'totale_posti' => $lezioni->sum('posti_totali'),
+            'posti_occupati' => $lezioni->sum('posti_occupati'),
+        ];
+
+        $pdf = Pdf::loadView('admin.report.pdf-calendario', [
+            'lezioniPerData' => $lezioniPerData,
+            'statistiche' => $statistiche,
+            'dataInizio' => $dataInizio,
+            'dataFine' => $dataFine,
+        ]);
+
+        $filename = 'calendario-' . $dataInizio . '-' . $dataFine . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export Report Professionisti in PDF
+     */
+    public function exportPdfProfessionisti(Request $request)
+    {
+        $dataInizio = $request->input('data_inizio', now()->subMonth()->format('Y-m-d'));
+        $dataFine = $request->input('data_fine', now()->format('Y-m-d'));
+
+        $performance = $this->getTopProfessionisti($dataInizio, $dataFine, 100); // Tutti
+
+        $pdf = Pdf::loadView('admin.report.pdf-professionisti', [
+            'performance' => $performance,
+            'dataInizio' => $dataInizio,
+            'dataFine' => $dataFine,
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'report-professionisti-' . $dataInizio . '-' . $dataFine . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

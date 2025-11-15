@@ -45,11 +45,58 @@
                 <i class="fas fa-filter mr-2"></i>
                 Applica Filtri
             </button>
-            <a href="{{ route('admin.report.export-csv', ['tipo' => 'generale', 'data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
-               class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                <i class="fas fa-file-csv mr-2"></i>
-                Export CSV
-            </a>
+
+            <!-- Dropdown Export -->
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" type="button"
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2">
+                    <i class="fas fa-download"></i>
+                    Export
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+
+                <div x-show="open" @click.away="open = false" x-transition
+                     class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                    <!-- Excel -->
+                    <div class="p-2 border-b border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 px-2 mb-1">📊 EXCEL</p>
+                        <a href="{{ route('admin.report.export-excel-calendario', ['data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
+                           class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 rounded">
+                            <i class="fas fa-calendar text-green-600 mr-2"></i>
+                            Calendario Lezioni
+                        </a>
+                        <a href="{{ route('admin.report.export-excel-presenze', ['data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
+                           class="block px-3 py-2 text-sm text-gray-700 hover:bg-green-50 rounded">
+                            <i class="fas fa-users text-green-600 mr-2"></i>
+                            Report Presenze
+                        </a>
+                    </div>
+
+                    <!-- PDF -->
+                    <div class="p-2 border-b border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 px-2 mb-1">📄 PDF</p>
+                        <a href="{{ route('admin.report.export-pdf-calendario', ['data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
+                           class="block px-3 py-2 text-sm text-gray-700 hover:bg-red-50 rounded">
+                            <i class="fas fa-calendar text-red-600 mr-2"></i>
+                            Calendario Mensile
+                        </a>
+                        <a href="{{ route('admin.report.export-pdf-professionisti', ['data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
+                           class="block px-3 py-2 text-sm text-gray-700 hover:bg-red-50 rounded">
+                            <i class="fas fa-user-tie text-red-600 mr-2"></i>
+                            Performance Professionisti
+                        </a>
+                    </div>
+
+                    <!-- CSV (legacy) -->
+                    <div class="p-2">
+                        <a href="{{ route('admin.report.export-csv', ['tipo' => 'generale', 'data_inizio' => $dataInizio, 'data_fine' => $dataFine]) }}"
+                           class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                            <i class="fas fa-file-csv mr-2"></i>
+                            CSV Generale
+                        </a>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 

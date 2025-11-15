@@ -305,6 +305,21 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Debug report (senza JavaScript)
         Route::get('/debug', [\App\Http\Controllers\Admin\ReportController::class, 'debug'])->name('debug');
 
+        // Debug report con layout minimal
+        Route::get('/debug-minimal', function() {
+            $controller = new \App\Http\Controllers\Admin\ReportController();
+            $reflection = new \ReflectionClass($controller);
+
+            $dataInizio = now()->subMonth()->format('Y-m-d');
+            $dataFine = now()->format('Y-m-d');
+
+            $method = $reflection->getMethod('getStatisticheGenerali');
+            $method->setAccessible(true);
+            $statistiche = $method->invoke($controller, $dataInizio, $dataFine);
+
+            return view('admin.report.debug-minimal', compact('statistiche'));
+        })->name('debug-minimal');
+
         // Report presenze dettagliato
         Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
 

@@ -4,42 +4,35 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold mb-6">DEBUG REPORT</h1>
+    <h1 class="text-3xl font-bold mb-6" style="color: red; background: yellow;">DEBUG REPORT - QUESTA RIGA DEVE ESSERE VISIBILE</h1>
 
-    <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Periodo</h2>
-        <p>Data Inizio: {{ $dataInizio }}</p>
-        <p>Data Fine: {{ $dataFine }}</p>
+    <div class="bg-white rounded-lg shadow p-6 mb-4" style="border: 3px solid red;">
+        <h2 class="text-xl font-bold mb-4">TEST BASICO</h2>
+        <p style="font-size: 20px; color: blue;">Se vedi questo testo, la vista si carica correttamente.</p>
+        <p>Data Inizio: {{ $dataInizio ?? 'NON DEFINITO' }}</p>
+        <p>Data Fine: {{ $dataFine ?? 'NON DEFINITO' }}</p>
     </div>
 
     <div class="bg-white rounded-lg shadow p-6 mb-4">
         <h2 class="text-xl font-bold mb-4">Statistiche Generali</h2>
-        <pre>{{ json_encode($statistiche, JSON_PRETTY_PRINT) }}</pre>
+        <p>Totale Lezioni: {{ $statistiche['totale_lezioni'] ?? 'N/A' }}</p>
+        <p>Lezioni Completate: {{ $statistiche['lezioni_completate'] ?? 'N/A' }}</p>
+        <p>Totale Partecipanti: {{ $statistiche['totale_partecipanti'] ?? 'N/A' }}</p>
+        <p>Tasso Occupazione: {{ $statistiche['tasso_occupazione'] ?? 'N/A' }}%</p>
     </div>
 
     <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Statistiche Presenze</h2>
-        <pre>{{ json_encode($statistichePresenze, JSON_PRETTY_PRINT) }}</pre>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Lezioni Per Stato</h2>
-        <pre>{{ json_encode($lezioniPerStato, JSON_PRETTY_PRINT) }}</pre>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Top Professionisti</h2>
-        <pre>{{ json_encode($topProfessionisti, JSON_PRETTY_PRINT) }}</pre>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Top Clienti</h2>
-        <pre>{{ json_encode($topClienti, JSON_PRETTY_PRINT) }}</pre>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 mb-4">
-        <h2 class="text-xl font-bold mb-4">Trend Giornaliero</h2>
-        <pre>{{ json_encode($trendGiornaliero, JSON_PRETTY_PRINT) }}</pre>
+        <h2 class="text-xl font-bold mb-4">Raw Data (JSON)</h2>
+        <textarea style="width: 100%; height: 300px; font-family: monospace;">
+{{ json_encode([
+    'statistiche' => $statistiche,
+    'statistichePresenze' => $statistichePresenze,
+    'lezioniPerStato' => $lezioniPerStato,
+    'topProfessionisti' => $topProfessionisti,
+    'topClienti' => $topClienti,
+    'trendGiornaliero' => $trendGiornaliero
+], JSON_PRETTY_PRINT) }}
+        </textarea>
     </div>
 </div>
 @endsection

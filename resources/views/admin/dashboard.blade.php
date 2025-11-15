@@ -310,9 +310,34 @@
 
 @push('scripts')
 <script>
-// Previeni esecuzione multipla dello script
-if (!window.dashboardChartsInitialized) {
+(function() {
+    'use strict';
+
+    // Previeni esecuzione multipla dello script
+    if (window.dashboardChartsInitialized) {
+        return;
+    }
     window.dashboardChartsInitialized = true;
+
+    // ========================================
+    // HELPER: Crea Gradiente
+    // ========================================
+    function createGradient(ctx, color1, color2) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        return gradient;
+    }
+
+    // ========================================
+    // HELPER: Distruggi e ricrea grafico
+    // ========================================
+    function destroyAndRecreateChart(canvasId) {
+        const existingChart = Chart.getChart(canvasId);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         // Colori Brand MA.GIA DONNA
@@ -320,22 +345,13 @@ if (!window.dashboardChartsInitialized) {
         const fucsiaMagia = '#E91E8C';
 
         // ========================================
-        // HELPER: Crea Gradiente
-        // ========================================
-        function createGradient(ctx, color1, color2) {
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, color1);
-            gradient.addColorStop(1, color2);
-            return gradient;
-        }
-
-        // ========================================
         // GRAFICO INCASSI
         // ========================================
         const canvasIncassi = document.getElementById('chartIncassi');
-        if (canvasIncassi && !canvasIncassi.chart) {
+        if (canvasIncassi) {
+            destroyAndRecreateChart('chartIncassi');
             const ctxIncassi = canvasIncassi.getContext('2d');
-            canvasIncassi.chart = new Chart(ctxIncassi, {
+            new Chart(ctxIncassi, {
                 type: 'bar',
                 data: {
                     labels: {!! json_encode($incassiMesi->pluck('mese')) !!},
@@ -351,6 +367,7 @@ if (!window.dashboardChartsInitialized) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                         legend: {
                             display: false
@@ -381,9 +398,10 @@ if (!window.dashboardChartsInitialized) {
         // GRAFICO NUOVI CLIENTI
         // ========================================
         const canvasClienti = document.getElementById('chartClienti');
-        if (canvasClienti && !canvasClienti.chart) {
+        if (canvasClienti) {
+            destroyAndRecreateChart('chartClienti');
             const ctxClienti = canvasClienti.getContext('2d');
-            canvasClienti.chart = new Chart(ctxClienti, {
+            new Chart(ctxClienti, {
                 type: 'line',
                 data: {
                     labels: {!! json_encode($clientiMesi->pluck('mese')) !!},
@@ -405,6 +423,7 @@ if (!window.dashboardChartsInitialized) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                         legend: {
                             display: false
@@ -426,9 +445,10 @@ if (!window.dashboardChartsInitialized) {
         // GRAFICO PRESENZE
         // ========================================
         const canvasPresenze = document.getElementById('chartPresenze');
-        if (canvasPresenze && !canvasPresenze.chart) {
+        if (canvasPresenze) {
+            destroyAndRecreateChart('chartPresenze');
             const ctxPresenze = canvasPresenze.getContext('2d');
-            canvasPresenze.chart = new Chart(ctxPresenze, {
+            new Chart(ctxPresenze, {
                 type: 'bar',
                 data: {
                     labels: {!! json_encode($presenzeMesi->pluck('mese')) !!},
@@ -444,6 +464,7 @@ if (!window.dashboardChartsInitialized) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                         legend: {
                             display: false
@@ -467,8 +488,8 @@ if (!window.dashboardChartsInitialized) {
                 }
             });
         }
-    });
-}
+    }, { once: true });
+})();
 </script>
 @endpush
 

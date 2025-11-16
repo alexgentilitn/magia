@@ -65,9 +65,6 @@ Route::get('/paypal/cancel', [PayPalController::class, 'paymentCancel'])->name('
 Route::get('/paypal/thank-you', [PayPalController::class, 'thankYou'])->name('paypal.thank-you');
 Route::post('/paypal/webhook', [PayPalController::class, 'webhook'])->name('paypal.webhook');
 
-// Debug route (rimuovere in produzione)
-Route::get('/paypal/test', [PayPalController::class, 'testConnection'])->name('paypal.test');
-
 
 // ============================================
 // AREA ADMIN - LOGIN
@@ -454,9 +451,6 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         // Dashboard report principale
         Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
 
-        // Debug report (senza JavaScript)
-        Route::get('/debug', [\App\Http\Controllers\Admin\ReportController::class, 'debug'])->name('debug');
-
         // Report presenze dettagliato
         Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
 
@@ -551,6 +545,20 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/{id}/test', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'inviaTest'])->name('test');
     });
 
+    // ============================================
+    // SISTEMA REFERRAL "PORTA UN'AMICA" (Admin)
+    // ============================================
+    Route::prefix('referral')->name('referral.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ReferralController::class, 'index'])->name('index');
+        Route::get('/statistiche', [\App\Http\Controllers\Admin\ReferralController::class, 'statistiche'])->name('statistiche');
+        Route::get('/report', [\App\Http\Controllers\Admin\ReferralController::class, 'report'])->name('report');
+        Route::get('/export', [\App\Http\Controllers\Admin\ReferralController::class, 'export'])->name('export');
+        Route::get('/cliente/{id}', [\App\Http\Controllers\Admin\ReferralController::class, 'cliente'])->name('cliente');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\ReferralController::class, 'show'])->name('show');
+        Route::patch('/{id}/convertito', [\App\Http\Controllers\Admin\ReferralController::class, 'marcaConvertito'])->name('marca-convertito');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\ReferralController::class, 'destroy'])->name('destroy');
+    });
+
 });
 
 
@@ -602,5 +610,28 @@ Route::middleware(['auth', 'tipo_utente:cliente'])->prefix('cliente')->name('cli
     Route::get('/profilo', function() {
         return view('cliente.profilo');
     })->name('profilo');
+
+    // ============================================
+    // PRIVACY E CONSENSI GDPR (Cliente)
+    // ============================================
+    Route::prefix('privacy')->name('privacy.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Cliente\PrivacyController::class, 'index'])->name('index');
+        Route::post('/update', [\App\Http\Controllers\Cliente\PrivacyController::class, 'update'])->name('update');
+        Route::post('/revoca-all', [\App\Http\Controllers\Cliente\PrivacyController::class, 'revocaAll'])->name('revoca-all');
+        Route::get('/export', [\App\Http\Controllers\Cliente\PrivacyController::class, 'exportDati'])->name('export');
+        Route::post('/cancellazione', [\App\Http\Controllers\Cliente\PrivacyController::class, 'richiestaCancellazione'])->name('cancellazione');
+    });
+
+    // ============================================
+    // SISTEMA REFERRAL "PORTA UN'AMICA" (Cliente)
+    // ============================================
+    Route::prefix('referral')->name('referral.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Cliente\ReferralController::class, 'index'])->name('index');
+        Route::post('/invia-invito', [\App\Http\Controllers\Cliente\ReferralController::class, 'inviaInvito'])->name('invia-invito');
+        Route::post('/{id}/promemoria', [\App\Http\Controllers\Cliente\ReferralController::class, 'inviaPromemoria'])->name('invia-promemoria');
+        Route::get('/{id}', [\App\Http\Controllers\Cliente\ReferralController::class, 'show'])->name('show');
+        Route::delete('/{id}', [\App\Http\Controllers\Cliente\ReferralController::class, 'annullaInvito'])->name('annulla');
+        Route::get('/condividi/social', [\App\Http\Controllers\Cliente\ReferralController::class, 'condividi'])->name('condividi');
+    });
 });
 

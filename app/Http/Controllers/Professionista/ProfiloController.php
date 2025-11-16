@@ -19,9 +19,16 @@ class ProfiloController extends Controller
      */
     public function index()
     {
-        $professionista = Auth::user();
+        $utente = Auth::user();
+        $professionista = $utente->professionista;
 
-        return view('professionista.profilo.index', compact('professionista'));
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
+
+        return view('professionista.profilo.index', compact('utente', 'professionista'));
     }
 
     /**
@@ -29,17 +36,37 @@ class ProfiloController extends Controller
      */
     public function aggiornaProfilo(Request $request)
     {
-        $professionista = Auth::user();
+        $utente = Auth::user();
+        $professionista = $utente->professionista;
+
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
 
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'cognome' => 'required|string|max:255',
-            'email' => 'required|email|unique:utenti,email,' . $professionista->id,
+            'email' => 'required|email|unique:utenti,email,' . $utente->id,
             'telefono' => 'nullable|string|max:20',
             'bio' => 'nullable|string|max:1000',
         ]);
 
-        $professionista->update($validated);
+        // Aggiorna campi utente
+        $utente->update([
+            'nome' => $validated['nome'],
+            'cognome' => $validated['cognome'],
+            'email' => $validated['email'],
+            'telefono' => $validated['telefono'] ?? null,
+        ]);
+
+        // Aggiorna campi professionista
+        if (isset($validated['bio'])) {
+            $professionista->update([
+                'bio' => $validated['bio'],
+            ]);
+        }
 
         return redirect()->route('professionista.profilo.index')
             ->with('success', 'Profilo aggiornato con successo!');
@@ -63,16 +90,17 @@ class ProfiloController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $professionista = Auth::user();
+        $utente = Auth::user();
 
         // Verifica password attuale
-        if (!Hash::check($request->password_attuale, $professionista->password)) {
+        if (!Hash::check($request->password_attuale, $utente->password)) {
             return back()->withErrors(['password_attuale' => 'La password attuale non è corretta']);
         }
 
         // Aggiorna password
-        $professionista->update([
-            'password' => Hash::make($request->password)
+        $utente->update([
+            'password' => Hash::make($request->password),
+            'deve_cambiare_password' => false,  // Segna che la password è stata cambiata
         ]);
 
         return redirect()->route('professionista.profilo.index')

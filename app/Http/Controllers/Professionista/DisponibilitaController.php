@@ -19,10 +19,17 @@ class DisponibilitaController extends Controller
      */
     public function index()
     {
-        $professionista = Auth::user();
+        $utente = Auth::user();
+        $professionista = $utente->professionista;
+
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
 
         // Ottieni disponibilità salvate (se esistono nel campo JSON)
-        $disponibilita = $professionista->disponibilita ?? [];
+        $disponibilita = $professionista->disponibilita_settimanale ?? [];
 
         return view('professionista.disponibilita.index', compact('professionista', 'disponibilita'));
     }
@@ -32,7 +39,14 @@ class DisponibilitaController extends Controller
      */
     public function salva(Request $request)
     {
-        $professionista = Auth::user();
+        $utente = Auth::user();
+        $professionista = $utente->professionista;
+
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
 
         $validated = $request->validate([
             'disponibilita' => 'nullable|array',
@@ -40,7 +54,7 @@ class DisponibilitaController extends Controller
 
         // Salva le disponibilità nel campo JSON
         $professionista->update([
-            'disponibilita' => $validated['disponibilita'] ?? []
+            'disponibilita_settimanale' => $validated['disponibilita'] ?? []
         ]);
 
         return redirect()->route('professionista.disponibilita.index')

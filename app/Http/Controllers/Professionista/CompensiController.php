@@ -26,7 +26,14 @@ class CompensiController extends Controller
         $utente = Auth::user();
         $professionistaId = $utente->id;
         $professionista = $utente->professionista;
-        $tariffaOraria = $professionista->tariffa_oraria ?? 0;
+
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
+
+        $tariffaOraria = $professionista?->tariffa_oraria ?? 0;
 
         // Calcola compenso totale
         $lezioniCompletate = Lezione::where('professionista_id', $professionistaId)
@@ -128,7 +135,14 @@ class CompensiController extends Controller
         $utente = Auth::user();
         $professionistaId = $utente->id;
         $professionista = $utente->professionista;
-        $tariffaOraria = $professionista->tariffa_oraria ?? 0;
+
+        // Verifica che il professionista abbia un profilo completo
+        if (!$professionista) {
+            return redirect()->route('professionista.dashboard')
+                ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
+        }
+
+        $tariffaOraria = $professionista?->tariffa_oraria ?? 0;
 
         // Ottieni tutte le lezioni completate nel periodo
         $lezioni = Lezione::with(['programma', 'sede'])

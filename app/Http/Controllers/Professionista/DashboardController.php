@@ -31,6 +31,30 @@ class DashboardController extends Controller
             // Carica il profilo professionista con i dettagli estesi
             $professionista = $utente->professionista;
 
+            // Se il professionista non ha un profilo completo, mostra dashboard ridotta
+            if (!$professionista) {
+                return view('professionista.dashboard', [
+                    'utente' => $utente,
+                    'professionista' => null,
+                    'totaleLezioni' => 0,
+                    'lezioniOggi' => 0,
+                    'lezioniSettimana' => 0,
+                    'lezioniMese' => 0,
+                    'sedi' => collect([]),
+                    'totaleSedi' => 0,
+                    'compensoTotale' => 0,
+                    'compensoMese' => 0,
+                    'tariffaOraria' => 0,
+                    'totalePartecipanti' => 0,
+                    'mediaPartecipanti' => 0,
+                    'prossimeLezioni' => collect([]),
+                    'lezioniRecenti' => collect([]),
+                    'lezioniMesi' => collect([]),
+                    'compensiMesi' => collect([]),
+                    'presenzeMesi' => collect([])
+                ])->with('warning', 'Profilo professionista non completato. Contatta l\'amministratore per completare la configurazione.');
+            }
+
             // ==========================================
             // STATISTICHE LEZIONI (solo proprie)
             // ==========================================
@@ -67,7 +91,7 @@ class DashboardController extends Controller
             // ==========================================
             // Nota: Il compenso si basa sulla tariffa_oraria del professionista
             // Se non esiste un profilo professionista, usa 0 come default
-            $tariffaOraria = $professionista->tariffa_oraria ?? 0;
+            $tariffaOraria = $professionista?->tariffa_oraria ?? 0;
 
             // Calcola compenso totale (lezioni completate)
             $lezioniCompletate = Lezione::where('professionista_id', $professionistaId)

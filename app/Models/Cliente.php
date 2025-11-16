@@ -118,6 +118,42 @@ class Cliente extends Model
     }
 
     /**
+     * Relazione: Documenti del Cliente
+     */
+    public function documenti()
+    {
+        return $this->hasMany(Documento::class);
+    }
+
+    /**
+     * Relazione: Pagamenti del Cliente
+     */
+    public function pagamenti()
+    {
+        return $this->hasMany(Pagamento::class);
+    }
+
+    /**
+     * Relazione: Programmi iscritti
+     */
+    public function programmi()
+    {
+        return $this->belongsToMany(Programma::class, 'cliente_programma')
+                    ->withPivot('data_iscrizione', 'data_scadenza', 'stato')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relazione: Lezioni prenotate
+     */
+    public function lezioni()
+    {
+        return $this->belongsToMany(Lezione::class, 'cliente_lezione')
+                    ->withPivot('stato_prenotazione', 'check_in', 'check_out', 'presente')
+                    ->withTimestamps();
+    }
+
+    /**
      * Scope: Solo clienti attivi
      */
     public function scopeAttivi($query)

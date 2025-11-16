@@ -90,20 +90,39 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
     Route::prefix('clienti')->name('clienti.')->group(function () {
         // Lista
         Route::get('/', [ClientiController::class, 'index'])->name('index');
-        
+
         // Crea
         Route::get('/crea', [ClientiController::class, 'create'])->name('create');
         Route::post('/', [ClientiController::class, 'store'])->name('store');
-        
+
         // Visualizza
         Route::get('/{id}', [ClientiController::class, 'show'])->name('show');
-        
+
         // Modifica
         Route::get('/{id}/modifica', [ClientiController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ClientiController::class, 'update'])->name('update');
-        
+
         // Elimina
         Route::delete('/{id}', [ClientiController::class, 'destroy'])->name('destroy');
+
+        // GESTIONE DOCUMENTI CLIENTE
+        Route::prefix('{cliente}/documenti')->name('documenti.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\DocumentiController::class, 'index'])->name('index');
+            Route::get('/carica', [\App\Http\Controllers\Admin\DocumentiController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\DocumentiController::class, 'store'])->name('store');
+        });
+    });
+
+    // GESTIONE DOCUMENTI (azioni singolo documento)
+    Route::prefix('documenti')->name('documenti.')->group(function () {
+        Route::get('/{id}/visualizza', [\App\Http\Controllers\Admin\DocumentiController::class, 'show'])->name('show');
+        Route::get('/{id}/download', [\App\Http\Controllers\Admin\DocumentiController::class, 'download'])->name('download');
+        Route::get('/{id}/modifica', [\App\Http\Controllers\Admin\DocumentiController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\DocumentiController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\DocumentiController::class, 'destroy'])->name('destroy');
+
+        // Alert scadenze
+        Route::get('/scadenza', [\App\Http\Controllers\Admin\DocumentiController::class, 'scadenza'])->name('scadenza');
     });
 
     // GESTIONE LEZIONI

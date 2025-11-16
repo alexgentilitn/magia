@@ -111,14 +111,14 @@ class ProfessionistiController extends Controller
             // Applica configurazioni SMTP dal database
             \App\Models\Impostazione::applySmtpConfig();
 
-            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
+            Mail::to($utente->email)->send(new PasswordTemporaneaMail(
                 $professionista,
                 $passwordTemporanea,
                 $scadenza
             ));
-            $emailMessage = ' Email inviata con successo!';
+            $emailMessage = ' Email inviata con successo a ' . $utente->email;
         } catch (\Exception $e) {
-            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea;
+            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea . ' - Errore: ' . $e->getMessage();
         }
 
         return redirect()->route('admin.professionisti.show', $professionista->id)
@@ -351,14 +351,14 @@ class ProfessionistiController extends Controller
             // Applica configurazioni SMTP dal database
             \App\Models\Impostazione::applySmtpConfig();
 
-            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
+            Mail::to($professionista->utente->email)->send(new PasswordTemporaneaMail(
                 $professionista,
                 $nuovaPassword,
                 $scadenza
             ));
-            $emailMessage = ' Email inviata con successo a ' . $professionista->email;
+            $emailMessage = ' Email inviata con successo a ' . $professionista->utente->email;
         } catch (\Exception $e) {
-            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente la password: ' . $nuovaPassword;
+            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente la password: ' . $nuovaPassword . ' - Errore: ' . $e->getMessage();
         }
 
         return redirect()->route('admin.professionisti.show', $professionista->id)

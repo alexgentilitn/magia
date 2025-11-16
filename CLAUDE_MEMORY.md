@@ -16,14 +16,26 @@ Questo file contiene TUTTO il contesto necessario per continuare a lavorare su q
 - **Sito Produzione:** https://www.agstudio.digital/magia/public/
 
 ### Branch Strategy
-- **Branch main:** `main` - Produzione stabile (non usato attualmente)
-- **Branch sviluppo:** `claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u` - Branch corrente di lavoro
-- **Pattern branch:** `claude/[descrizione]-[session-id]` per nuovi branch
+
+⚠️ **ATTENZIONE - BRANCH POLICY CRITICA:**
+
+**Branch di lavoro UFFICIALE:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
+**TUTTE le modifiche vanno fatte SOLO ed ESCLUSIVAMENTE su questo branch!**
+
+**Regole branch:**
+- ✅ **Usare SEMPRE:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+- ❌ **NON pushare su:** `magia-brench` (errore 403 - branch di riferimento read-only)
+- ❌ **NON pushare su:** `main` (produzione stabile)
+- ⚠️ **Pattern obbligatorio:** Branch deve iniziare con `claude/` e terminare con session ID `-01G4cTM33nQqZ3K3UtX3NGqm`
+
+**Motivo:** GitHub Actions è configurato per accettare push SOLO da branch `claude/**` che terminano con il session ID corretto. Qualsiasi push su altri branch fallirà con errore HTTP 403.
 
 ### Date Importanti
 - **Setup iniziale:** 14 Novembre 2025
-- **Ultimo aggiornamento:** 14 Novembre 2025
-- **Sessione corrente:** confirm-status-01NaRPJZBUHxak94aM2zKA1u
+- **Ultimo aggiornamento:** 16 Novembre 2025
+- **Sessione corrente:** review-technical-docs-01G4cTM33nQqZ3K3UtX3NGqm
+- **Branch corrente:** claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
 
 ---
 
@@ -1090,22 +1102,31 @@ php artisan key:generate
 
 ## 🔄 WORKFLOW SVILUPPO
 
+### ⚠️ REGOLA FONDAMENTALE
+
+**Usa SEMPRE e SOLO il branch ufficiale:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
+❌ NON creare nuovi branch!
+❌ NON pushare su `magia-brench` (errore 403)
+✅ Lavora SEMPRE su `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
 ### Per Nuove Funzionalità
 
-1. **Crea nuovo branch:**
+1. **Assicurati di essere sul branch corretto:**
    ```bash
-   git checkout -b claude/nome-feature-[session-id]
+   git checkout claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+   git pull origin claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
    ```
 
-2. **Sviluppa in locale:**
+2. **Sviluppa le modifiche:**
    - Modifica codice
    - Testa localmente (se possibile)
 
 3. **Commit e push:**
    ```bash
    git add .
-   git commit -m "Descrizione modifiche"
-   git push -u origin claude/nome-feature-[session-id]
+   git commit -m "Descrizione modifiche in italiano"
+   git push origin claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
    ```
 
 4. **Deploy automatico:**
@@ -1191,8 +1212,14 @@ php artisan key:generate
 ### Quando Riprendi il Progetto
 
 1. **Leggi questo file COMPLETO** prima di iniziare
-2. **Verifica branch corrente:** `git branch`
-3. **Pull ultime modifiche:** `git pull origin [branch-name]`
+2. **⚠️ VERIFICA BRANCH:** Assicurati di essere su `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+   ```bash
+   git checkout claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+   ```
+3. **Pull ultime modifiche:**
+   ```bash
+   git pull origin claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+   ```
 4. **Controlla GitHub Actions:** Vedi se deploy in corso
 5. **Testa sito produzione:** Verifica che funzioni
 6. **Usa diagnose.php:** Se ci sono problemi
@@ -1204,14 +1231,17 @@ php artisan key:generate
 3. Controlla GitHub Actions per deploy falliti
 4. Verifica secrets GitHub configurati
 5. Controlla che `.env` esista sul server
+6. **Se errore 403 su push:** Verifica di essere su `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
 
-### Convenzioni da Seguire
+### Convenzioni da Seguire - CRITICHE!
 
-- Branch: sempre `claude/[descrizione]-[session-id]`
-- Commit: messaggi descrittivi in italiano
-- Deploy: attendi sempre che sia verde prima di testare
-- .env: MAI modificare via git, solo FTP diretto
-- vendor/: È versionato, accettalo (necessità hosting)
+- **Branch:** SEMPRE e SOLO `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+- ❌ **NON creare nuovi branch!**
+- ❌ **NON pushare su `magia-brench`** (errore 403)
+- ✅ **Commit:** Messaggi descrittivi in italiano
+- ✅ **Deploy:** Attendi sempre GitHub Actions verde prima di testare
+- ✅ **.env:** MAI modificare via git, solo FTP diretto
+- ✅ **vendor/:** È versionato, accettalo (necessità hosting)
 
 ---
 
@@ -1230,9 +1260,9 @@ php artisan key:generate
 
 ---
 
-**📅 Ultimo aggiornamento:** 15 Novembre 2025
-**✍️ Creato da:** Claude Code - Sessione confirm-status-01NaRPJZBUHxak94aM2zKA1u
-**🔄 Versione:** 3.0 - Aggiunto sistema backup completo (codice + database) con Git tags
+**📅 Ultimo aggiornamento:** 16 Novembre 2025
+**✍️ Creato da:** Claude Code - Sessione review-technical-docs-01G4cTM33nQqZ3K3UtX3NGqm
+**🔄 Versione:** 4.0 - Aggiornato branch policy e workflow (BRANCH UNICO OBBLIGATORIO)
 
 ---
 
@@ -1243,17 +1273,26 @@ Ciao Claude del futuro! 👋
 Hai ereditato un progetto Laravel funzionante su hosting condiviso Aruba.
 Tutto è documentato in questo file. Leggilo con attenzione prima di fare qualsiasi modifica.
 
-Il deploy è automatico via GitHub Actions, ma ricorda che `.env` va modificato manualmente sul server.
+**⚠️ PRIMA COSA - BRANCH POLICY CRITICA:**
 
-`vendor/` è versionato (stranezza necessaria per hosting senza SSH - accettalo).
+**USA SEMPRE E SOLO QUESTO BRANCH:**
+```
+claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+```
 
-Se vedi errori, usa `diagnose.php` - è il tuo migliore amico.
+❌ **NON creare nuovi branch!**
+❌ **NON pushare su `magia-brench`** (errore 403)
+✅ **Lavora SEMPRE su `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`**
 
-**🆕 Sistema Backup (IMPORTANTE!):**
-- **OGNI ORA** crea un backup point con `create-backup-point.php`
-- Segui le istruzioni per creare il Git tag
-- In caso di problemi, puoi ripristinare codice + database
-- Vedi sezione "💾 SISTEMA BACKUP E RIPRISTINO" in questo file
+Se provi a pushare su altri branch, riceverai errore HTTP 403. GitHub Actions accetta SOLO branch `claude/**` che terminano con il session ID corretto.
+
+**Altre cose importanti:**
+
+- Il deploy è automatico via GitHub Actions (2-5 minuti)
+- `.env` va modificato manualmente sul server (NON via git)
+- `vendor/` è versionato (necessario per hosting senza SSH)
+- Usa `diagnose.php` per errori
+- Crea backup point ogni ora con `create-backup-point.php`
 
 **Backup Point = Salvavita!** 🛟
 

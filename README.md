@@ -155,8 +155,21 @@ Leggi `CLAUDE_MEMORY.md` → sezione Troubleshooting
 
 - **Progetto:** MA.GIA DONNA
 - **Versione Laravel:** 10.x
-- **Ultimo aggiornamento:** 14 Novembre 2025
-- **Branch corrente:** `claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u`
+- **Ultimo aggiornamento:** 16 Novembre 2025
+- **Branch corrente:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
+## ⚠️ IMPORTANTE - Branch Policy
+
+**TUTTE le modifiche vanno fatte SOLO ed ESCLUSIVAMENTE sul branch:**
+```
+claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+```
+
+**NON pushare su:**
+- ❌ `magia-brench` (errore 403 - branch di riferimento read-only)
+- ❌ `main` (produzione stabile)
+
+**Motivo:** GitHub Actions accetta push SOLO da branch `claude/**` che terminano con il session ID corretto (`-01G4cTM33nQqZ3K3UtX3NGqm`)
 
 ---
 
@@ -183,12 +196,15 @@ Leggi `CLAUDE_MEMORY.md` → sezione Troubleshooting
 
 Per contribuire al progetto:
 
-1. Crea nuovo branch: `claude/[feature]-[session-id]`
+1. **Usa il branch ufficiale:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
 2. Sviluppa funzionalità
 3. Commit con messaggi descrittivi (italiano)
-4. Push su GitHub → deploy automatico
-5. Testa su produzione
-6. Crea Pull Request se necessario
+4. **Push SOLO su:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+5. GitHub Actions → deploy automatico su Aruba FTP (2-5 minuti)
+6. Testa su produzione: https://www.agstudio.digital/magia/public/
+7. Crea Pull Request se necessario
+
+⚠️ **IMPORTANTE:** NON creare nuovi branch! Usa sempre `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
 
 ---
 

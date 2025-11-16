@@ -25,10 +25,18 @@ Se sei una nuova sessione di Claude Code:
 - **Repo:** https://github.com/alexgentilitn/magia
 - **Live:** https://www.agstudio.digital/magia/public/
 
-### Branch Attuale
+### ⚠️ Branch Attuale - IMPORTANTE!
+
+**Branch di lavoro UFFICIALE:**
 ```
-claude/confirm-status-01NaRPJZBUHxak94aM2zKA1u
+claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
 ```
+
+**TUTTE le modifiche vanno fatte SOLO su questo branch!**
+
+❌ NON pushare su `magia-brench` (errore 403)
+❌ NON pushare su `main`
+✅ Usa SEMPRE `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
 
 ### Database
 ```

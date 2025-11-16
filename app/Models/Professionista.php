@@ -213,7 +213,10 @@ class Professionista extends Model
         $anno = now()->year;
 
         // Trova l'ultimo numero utilizzato per l'anno corrente
-        $ultimoCodice = static::where('codice_professionista', 'like', "PROF-{$anno}-%")
+        // IMPORTANTE: usa withTrashed() per includere anche i professionisti cancellati
+        // perché il constraint UNIQUE del database non considera i soft deletes
+        $ultimoCodice = static::withTrashed()
+            ->where('codice_professionista', 'like', "PROF-{$anno}-%")
             ->orderByRaw('CAST(SUBSTRING(codice_professionista, -4) AS UNSIGNED) DESC')
             ->value('codice_professionista');
 
@@ -228,9 +231,10 @@ class Professionista extends Model
         }
 
         // Genera il codice e verifica che non esista già (sicurezza extra)
+        // Anche qui usa withTrashed() per controllare tutti i record
         do {
             $codice = sprintf('PROF-%d-%04d', $anno, $nuovoNumero);
-            $esiste = static::where('codice_professionista', $codice)->exists();
+            $esiste = static::withTrashed()->where('codice_professionista', $codice)->exists();
             if ($esiste) {
                 $nuovoNumero++;
             }

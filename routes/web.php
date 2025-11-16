@@ -33,6 +33,14 @@ Route::get('/', function () {
 
 
 // ============================================
+// LANDING PAGE - GIORNATA DI PROVA
+// ============================================
+
+Route::get('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'index'])->name('giornata-prova.index');
+Route::post('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'richiedi'])->name('giornata-prova.richiedi');
+
+
+// ============================================
 // AREA ADMIN - LOGIN
 // ============================================
 

@@ -25,8 +25,11 @@ class DashboardController extends Controller
     public function index()
     {
         try {
-            $professionista = Auth::user();
-            $professionistaId = $professionista->id;
+            $utente = Auth::user();
+            $professionistaId = $utente->id;
+
+            // Carica il profilo professionista con i dettagli estesi
+            $professionista = $utente->professionista;
 
             // ==========================================
             // STATISTICHE LEZIONI (solo proprie)
@@ -63,6 +66,7 @@ class DashboardController extends Controller
             // COMPENSI - CALCOLO BASATO SU TARIFFA
             // ==========================================
             // Nota: Il compenso si basa sulla tariffa_oraria del professionista
+            // Se non esiste un profilo professionista, usa 0 come default
             $tariffaOraria = $professionista->tariffa_oraria ?? 0;
 
             // Calcola compenso totale (lezioni completate)
@@ -205,6 +209,7 @@ class DashboardController extends Controller
 
             // Passa tutti i dati alla view
             return view('professionista.dashboard', compact(
+                'utente',
                 'professionista',
                 'totaleLezioni',
                 'lezioniOggi',
@@ -227,7 +232,8 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             // In caso di errore, mostra dashboard con valori di default
             return view('professionista.dashboard', [
-                'professionista' => Auth::user(),
+                'utente' => Auth::user(),
+                'professionista' => Auth::user()->professionista ?? null,
                 'totaleLezioni' => 0,
                 'lezioniOggi' => 0,
                 'lezioniSettimana' => 0,

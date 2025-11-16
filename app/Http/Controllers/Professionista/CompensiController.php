@@ -23,8 +23,9 @@ class CompensiController extends Controller
      */
     public function index()
     {
-        $professionista = Auth::user();
-        $professionistaId = $professionista->id;
+        $utente = Auth::user();
+        $professionistaId = $utente->id;
+        $professionista = $utente->professionista;
         $tariffaOraria = $professionista->tariffa_oraria ?? 0;
 
         // Calcola compenso totale
@@ -124,8 +125,9 @@ class CompensiController extends Controller
      */
     public function dettaglioPeriodo($anno, $mese)
     {
-        $professionista = Auth::user();
-        $professionistaId = $professionista->id;
+        $utente = Auth::user();
+        $professionistaId = $utente->id;
+        $professionista = $utente->professionista;
         $tariffaOraria = $professionista->tariffa_oraria ?? 0;
 
         // Ottieni tutte le lezioni completate nel periodo

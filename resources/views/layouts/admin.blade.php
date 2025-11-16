@@ -12,7 +12,10 @@
     
     <!-- SweetAlert2 per notifiche belle -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
+    <!-- Chart.js per grafici professionali -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -184,6 +187,15 @@
                                class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.calendario.*')) bg-white bg-opacity-20 @endif">
                                 <i class="fas fa-calendar-alt w-5"></i>
                                 <span class="ml-3 font-medium">Calendario</span>
+                            </a>
+                        </li>
+
+                        <!-- Report -->
+                        <li>
+                            <a href="{{ route('admin.report.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.report.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-chart-line w-5"></i>
+                                <span class="ml-3 font-medium">Report</span>
                             </a>
                         </li>
 
@@ -393,6 +405,14 @@
                         </a>
                     </li>
 
+                    <!-- Report -->
+                    <li>
+                        <a href="{{ route('admin.report.index') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span class="ml-3">Report</span>
+                        </a>
+                    </li>
+
                     <!-- Divider -->
                     <li class="px-4 py-2">
                         <div class="border-t border-white border-opacity-20"></div>
@@ -476,6 +496,86 @@
             </div>
         </div>
     </div>
+
+    <!-- Script Globali per Conferme SweetAlert -->
+    <script>
+        /**
+         * Conferma eliminazione con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere dopo conferma
+         * @param {string} titolo - Titolo personalizzato (opzionale)
+         * @param {string} testo - Testo personalizzato (opzionale)
+         */
+        function confermaEliminazione(formId, titolo = 'Sei sicuro?', testo = 'Questa azione non può essere annullata!') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E91E8C',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sì, elimina!',
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma azione generica con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere
+         * @param {string} titolo - Titolo della conferma
+         * @param {string} testo - Testo della conferma
+         * @param {string} bottoneConferma - Testo bottone conferma (opzionale)
+         */
+        function confermaAzione(formId, titolo, testo, bottoneConferma = 'Conferma') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: bottoneConferma,
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma con input personalizzato
+         * @param {string} formId - ID del form
+         * @param {string} titolo - Titolo
+         * @param {string} inputPlaceholder - Placeholder input
+         */
+        function confermaConInput(formId, titolo, inputPlaceholder) {
+            Swal.fire({
+                title: titolo,
+                input: 'text',
+                inputPlaceholder: inputPlaceholder,
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Conferma',
+                cancelButtonText: 'Annulla',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Devi inserire un valore!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
 
     @stack('scripts')
 

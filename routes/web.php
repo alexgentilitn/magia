@@ -273,6 +273,54 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
 
         // Dettagli lezione
         Route::get('/{id}', [CalendarioController::class, 'show'])->name('show');
+
+        // Sposta lezione (drag & drop)
+        Route::post('/{id}/move', [CalendarioController::class, 'move'])->name('move');
+
+        // Modifica durata lezione (resize)
+        Route::post('/{id}/resize', [CalendarioController::class, 'resize'])->name('resize');
+
+        // Elimina lezione
+        Route::delete('/{id}', [CalendarioController::class, 'destroy'])->name('destroy');
+
+        // Prenotazioni
+        Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
+        Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');
+        Route::post('/{id}/invia-reminder', [CalendarioController::class, 'inviaReminder'])->name('invia-reminder');
+
+        // Presenze (Check-in/Check-out)
+        Route::post('/{lezione}/check-in/{cliente}', [CalendarioController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezione}/check-out/{cliente}', [CalendarioController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezione}/segna-assente/{cliente}', [CalendarioController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezione}/annulla-assenza/{cliente}', [CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // REPORT E STATISTICHE
+    // ============================================
+    Route::prefix('report')->name('report.')->group(function () {
+        // Dashboard report principale
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+
+        // Debug report (senza JavaScript)
+        Route::get('/debug', [\App\Http\Controllers\Admin\ReportController::class, 'debug'])->name('debug');
+
+        // Report presenze dettagliato
+        Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
+
+        // Report performance professionisti
+        Route::get('/professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'professionisti'])->name('professionisti');
+
+        // Export CSV (legacy)
+        Route::get('/export-csv', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
+
+        // Export Excel
+        Route::get('/export-excel-presenze', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelPresenze'])->name('export-excel-presenze');
+        Route::get('/export-excel-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelCalendario'])->name('export-excel-calendario');
+
+        // Export PDF
+        Route::get('/export-pdf-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfCalendario'])->name('export-pdf-calendario');
+        Route::get('/export-pdf-professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfProfessionisti'])->name('export-pdf-professionisti');
     });
 
     // ============================================
@@ -311,6 +359,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
     });
+
 });
 
 

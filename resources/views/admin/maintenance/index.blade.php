@@ -74,10 +74,10 @@
                     </div>
                 </div>
 
-                <form action="{{ route('admin.maintenance.fix-visibilita') }}" method="POST"
-                      onsubmit="return confirm('Sei sicuro di voler aggiornare {{ $lezioniSenzaVisibilita }} lezioni?\n\nQuesta operazione imposterà visibile_calendario=true per tutte le lezioni.');">
+                <form action="{{ route('admin.maintenance.fix-visibilita') }}" method="POST" id="fix-visibilita-form">
                     @csrf
-                    <button type="submit"
+                    <button type="button"
+                            onclick="confermaAzione('fix-visibilita-form', 'Aggiornare {{ $lezioniSenzaVisibilita }} lezioni?', 'Questa operazione imposterà visibile_calendario=true per tutte le lezioni. L\'operazione potrebbe richiedere alcuni secondi.', 'Sì, correggi')"
                             class="w-full px-6 py-3 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition font-medium">
                         <i class="fas fa-magic mr-2"></i>
                         Correggi {{ $lezioniSenzaVisibilita }} lezioni

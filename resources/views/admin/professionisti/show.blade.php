@@ -152,17 +152,17 @@
                         <i class="fas fa-calendar-check mr-2"></i> Gestisci Disponibilità
                     </a>
 
-                    <form method="POST" action="{{ route('admin.professionisti.reset-password', $professionista->id) }}" class="block" onsubmit="return confirm('Resettare la password di {{ $professionista->nome }} {{ $professionista->cognome }}? Verrà generata una nuova password temporanea.')">
+                    <form method="POST" action="{{ route('admin.professionisti.reset-password', $professionista->id) }}" class="block" id="reset-password-form">
                         @csrf
-                        <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                        <button type="button" onclick="confermaAzione('reset-password-form', 'Resettare la password?', 'Verrà generata una nuova password temporanea per {{ $professionista->nome }} {{ $professionista->cognome }}.', 'Sì, reset password')" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
                             <i class="fas fa-key mr-2"></i> Reset Password
                         </button>
                     </form>
 
-                    <form method="POST" action="{{ route('admin.professionisti.destroy', $professionista->id) }}" class="block">
+                    <form method="POST" action="{{ route('admin.professionisti.destroy', $professionista->id) }}" class="block" id="delete-professionista-form">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" onclick="return confirm('Eliminare questo professionista?')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <button type="button" onclick="confermaEliminazione('delete-professionista-form', 'Eliminare il professionista?', 'Il professionista {{ $professionista->nome }} {{ $professionista->cognome }} sarà eliminato definitivamente. Le lezioni esistenti non saranno eliminate.')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                             <i class="fas fa-trash mr-2"></i> Elimina
                         </button>
                     </form>

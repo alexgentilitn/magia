@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'claude/**'  # Deploy automatico da branch claude
+      - 'claude/**'
   workflow_dispatch:
 
 jobs:

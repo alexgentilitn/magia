@@ -102,10 +102,10 @@
                                 <a href="{{ route('admin.professionisti.edit', $prof->id) }}" class="text-green-600 hover:text-green-800">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.professionisti.destroy', $prof->id) }}" class="inline" onsubmit="return confirm('Eliminare {{ $prof->nome }} {{ $prof->cognome }}?')">
+                                <form method="POST" action="{{ route('admin.professionisti.destroy', $prof->id) }}" class="inline" id="delete-form-{{ $prof->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <button type="button" onclick="confermaEliminazione('delete-form-{{ $prof->id }}', 'Eliminare il professionista?', 'Il professionista {{ $prof->nome }} {{ $prof->cognome }} sarà eliminato definitivamente. Le lezioni esistenti non saranno eliminate.')" class="text-red-600 hover:text-red-800">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

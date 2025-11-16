@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         height: 'auto',
         navLinks: true,
-        editable: false,
+        editable: true,
         selectable: true,
         selectMirror: true,
         dayMaxEvents: true,
@@ -233,6 +233,129 @@ document.addEventListener('DOMContentLoaded', function() {
         // Click su una data per creare nuova lezione
         dateClick: function(info) {
             apriModalCreaLezione(info.dateStr);
+        },
+
+        // Gestione drag & drop
+        eventDrop: function(info) {
+            const lezioneId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end;
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Spostamento in corso...',
+                text: 'Verifica conflitti di orario...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('admin/calendario') }}/${lezioneId}/move`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    start: newStart.toISOString(),
+                    end: newEnd.toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Lezione spostata!',
+                        html: `Nuova data: <strong>${data.lezione.data}</strong><br>Orario: <strong>${data.lezione.ora_inizio} - ${data.lezione.ora_fine}</strong>`,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Errore - ripristina posizione originale
+                    info.revert();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Impossibile spostare',
+                        text: data.message || 'Errore durante lo spostamento'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                info.revert();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: 'Si è verificato un errore durante lo spostamento'
+                });
+            });
+        },
+
+        // Gestione resize (modifica durata)
+        eventResize: function(info) {
+            const lezioneId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end;
+
+            // Calcola nuova durata
+            const durataMinuti = Math.round((newEnd - newStart) / 1000 / 60);
+
+            // Mostra loading
+            Swal.fire({
+                title: 'Modifica durata...',
+                text: `Nuova durata: ${durataMinuti} minuti`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`{{ url('admin/calendario') }}/${lezioneId}/resize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    start: newStart.toISOString(),
+                    end: newEnd.toISOString()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Durata modificata!',
+                        html: `Orario: <strong>${data.lezione.ora_inizio} - ${data.lezione.ora_fine}</strong><br>Durata: <strong>${data.lezione.durata_minuti} minuti</strong>`,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Errore - ripristina durata originale
+                    info.revert();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Impossibile modificare',
+                        text: data.message || 'Errore durante la modifica della durata'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                info.revert();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: 'Si è verificato un errore durante la modifica'
+                });
+            });
         },
 
         // Carica eventi dal server
@@ -256,6 +379,43 @@ document.addEventListener('DOMContentLoaded', function() {
         eventClick: function(info) {
             info.jsEvent.preventDefault();
             mostraDettagli(info.event.id);
+        },
+
+        // Renderizzazione custom eventi per mostrare più informazioni
+        eventContent: function(arg) {
+            const props = arg.event.extendedProps;
+            const title = arg.event.title;
+            const professionista = props.professionista || 'Non assegnato';
+            const posti = props.posti || '';
+
+            // Crea contenitore principale
+            const container = document.createElement('div');
+            container.className = 'fc-event-main-frame p-1';
+            container.style.fontSize = '0.75rem'; // text-xs
+            container.style.lineHeight = '1.1';
+
+            // Titolo lezione
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'font-semibold truncate';
+            titleDiv.textContent = title;
+            titleDiv.style.fontSize = '0.8rem';
+            container.appendChild(titleDiv);
+
+            // Nome istruttore (più piccolo)
+            const profDiv = document.createElement('div');
+            profDiv.className = 'text-white/90 truncate mt-0.5';
+            profDiv.innerHTML = `<i class="fas fa-user-tie mr-1" style="font-size: 0.65rem;"></i><span style="font-size: 0.7rem;">${professionista}</span>`;
+            container.appendChild(profDiv);
+
+            // Posti (solo per lezioni di gruppo)
+            if (posti && props.tipologia === 'gruppo') {
+                const postiDiv = document.createElement('div');
+                postiDiv.className = 'text-white/80 truncate mt-0.5';
+                postiDiv.innerHTML = `<i class="fas fa-users mr-1" style="font-size: 0.65rem;"></i><span style="font-size: 0.65rem;">${posti}</span>`;
+                container.appendChild(postiDiv);
+            }
+
+            return { domNodes: [container] };
         },
 
         // Tooltip al passaggio mouse
@@ -419,6 +579,549 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModalCrea();
         }
     });
+
+    // ===================================================================
+    // GESTIONE PRENOTAZIONI
+    // ===================================================================
+
+    // Toggle form aggiungi partecipante
+    window.toggleAggiungiPartecipante = function() {
+        const form = document.getElementById('formAggiungiPartecipante');
+        form.classList.toggle('hidden');
+
+        // Reset form quando si chiude
+        if (form.classList.contains('hidden')) {
+            document.getElementById('formPrenota').reset();
+        }
+    };
+
+    // Prenota cliente a lezione
+    window.prenotaCliente = function(event, lezioneId) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+        const clienteId = formData.get('cliente_id');
+
+        if (!clienteId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Attenzione',
+                text: 'Seleziona un cliente da prenotare'
+            });
+            return;
+        }
+
+        // Mostra loading
+        Swal.fire({
+            title: 'Prenotazione in corso...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch(`{{ url('admin/calendario') }}/${lezioneId}/prenota`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': formData.get('_token'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                cliente_id: clienteId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Successo
+                Swal.fire({
+                    icon: 'success',
+                    title: data.lista_attesa ? 'Aggiunto alla lista d\'attesa' : 'Prenotazione confermata!',
+                    text: data.message,
+                    timer: 2000
+                });
+
+                // Ricarica modal dettagli
+                mostraDettagli(lezioneId);
+
+                // Ricarica eventi calendario
+                calendar.refetchEvents();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: data.message || 'Errore durante la prenotazione'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Errore:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: 'Si è verificato un errore durante la prenotazione'
+            });
+        });
+    };
+
+    // Annulla prenotazione
+    window.annullaPrenotazione = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Conferma annullamento',
+            html: `Vuoi annullare la prenotazione di<br><strong>${nomeCliente}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e91e63',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, annulla',
+            cancelButtonText: 'No, mantieni'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostra loading
+                Swal.fire({
+                    title: 'Annullamento in corso...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/prenotazioni/${clienteId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let message = data.message;
+
+                        // Se c'è stato un promosso dalla lista d'attesa
+                        if (data.promosso) {
+                            message += `<br><br><i class="fas fa-info-circle text-blue-500"></i> <strong>${data.promosso.nome}</strong> è stato promosso dalla lista d'attesa.`;
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Prenotazione annullata',
+                            html: message,
+                            timer: 3000
+                        });
+
+                        // Ricarica modal dettagli
+                        mostraDettagli(lezioneId);
+
+                        // Ricarica eventi calendario
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message || 'Errore durante l\'annullamento'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore durante l\'annullamento'
+                    });
+                });
+            }
+        });
+    };
+
+    // ===================================================================
+    // ELIMINA LEZIONE
+    // ===================================================================
+
+    window.eliminaLezione = function(lezioneId, titoloLezione, isRicorrente = false) {
+        // Se la lezione è ricorrente, mostra opzioni aggiuntive
+        if (isRicorrente) {
+            Swal.fire({
+                title: 'Elimina lezione ricorrente',
+                html: `<strong>${titoloLezione}</strong> fa parte di una serie ricorrente.<br><br>Cosa vuoi eliminare?`,
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '<i class="fas fa-calendar-day mr-1"></i> Solo questa',
+                denyButtonText: '<i class="fas fa-calendar-week mr-1"></i> Tutta la serie',
+                cancelButtonText: 'Annulla',
+                confirmButtonColor: '#f59e0b',
+                denyButtonColor: '#e91e63',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Elimina solo questa occorrenza
+                    confermaEliminazione(lezioneId, titoloLezione, false);
+                } else if (result.isDenied) {
+                    // Elimina tutta la serie
+                    confermaEliminazione(lezioneId, titoloLezione, true);
+                }
+            });
+        } else {
+            // Lezione singola, conferma diretta
+            confermaEliminazione(lezioneId, titoloLezione, false);
+        }
+    };
+
+    function confermaEliminazione(lezioneId, titoloLezione, eliminaSerie) {
+        const messaggioWarning = eliminaSerie
+            ? '⚠️ Verranno eliminate TUTTE le occorrenze future di questa serie ricorrente!'
+            : '⚠️ Questa azione eliminerà anche tutte le prenotazioni associate!';
+
+        Swal.fire({
+            title: 'Conferma eliminazione',
+            html: `Vuoi davvero eliminare <strong>${titoloLezione}</strong>?<br><br>` +
+                  `<span class="text-red-600 text-sm">${messaggioWarning}</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e91e63',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, elimina',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostra loading
+                Swal.fire({
+                    title: 'Eliminazione in corso...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const body = eliminaSerie ? JSON.stringify({ elimina_serie: true }) : null;
+
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Lezione eliminata',
+                            text: data.message || 'La lezione è stata eliminata con successo.',
+                            timer: 2000
+                        });
+
+                        // Chiudi modal
+                        closeModal();
+
+                        // Ricarica eventi calendario
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message || 'Errore durante l\'eliminazione'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore durante l\'eliminazione'
+                    });
+                });
+            }
+        });
+    }
+
+    // Invia reminder email
+    window.inviaReminder = function(lezioneId) {
+        Swal.fire({
+            title: 'Invia promemoria',
+            text: 'Vuoi inviare l\'email di promemoria a tutti i clienti prenotati?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, invia',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostra loading
+                Swal.fire({
+                    title: 'Invio in corso...',
+                    text: 'Invio email ai partecipanti...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/invia-reminder`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Email inviate!',
+                            html: `<strong>${data.inviati}</strong> email inviate con successo` +
+                                  (data.errori > 0 ? `<br>${data.errori} errori` : ''),
+                            timer: 3000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message || 'Errore durante l\'invio delle email'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore durante l\'invio'
+                    });
+                });
+            }
+        });
+    };
+
+    // ===================================================================
+    // PRESENZE: CHECK-IN, CHECK-OUT, ASSENTI
+    // ===================================================================
+
+    // Check-in cliente
+    window.checkIn = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Conferma check-in',
+            html: `Confermi il check-in per<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, check-in',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/check-in/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Check-in effettuato',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Check-out cliente
+    window.checkOut = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Conferma check-out',
+            html: `Confermi il check-out per<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, check-out',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/check-out/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Check-out effettuato',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Segna assente
+    window.segnaAssente = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Segna come assente',
+            html: `Vuoi segnare come assente<br><strong>${nomeCliente}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, segna assente',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/segna-assente/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cliente segnato assente',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
+
+    // Annulla assenza
+    window.annullaAssenza = function(lezioneId, clienteId, nomeCliente) {
+        Swal.fire({
+            title: 'Annulla assenza',
+            html: `Vuoi annullare l'assenza di<br><strong>${nomeCliente}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sì, annulla assenza',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('admin/calendario') }}/${lezioneId}/annulla-assenza/${clienteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Assenza annullata',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        mostraDettagli(lezioneId);
+                        calendar.refetchEvents();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Errore',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Errore',
+                        text: 'Si è verificato un errore'
+                    });
+                });
+            }
+        });
+    };
 });
 </script>
 @endpush

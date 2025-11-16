@@ -96,11 +96,11 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @if(!$imp->di_sistema)
-                                <form action="{{ route('admin.impostazioni-sistema.destroy', $imp->id) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.impostazioni-sistema.destroy', $imp->id) }}" method="POST" class="inline" id="delete-form-{{ $imp->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900" 
-                                            onclick="return confirm('Sei sicuro di voler eliminare questa impostazione?')">
+                                    <button type="button" class="text-red-600 hover:text-red-900"
+                                            onclick="confermaEliminazione('delete-form-{{ $imp->id }}', 'Eliminare l\'impostazione?', 'L\'impostazione {{ $imp->chiave }} sarà eliminata definitivamente.')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

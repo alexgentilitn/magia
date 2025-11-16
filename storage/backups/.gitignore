@@ -1,0 +1,9 @@
+# Ignora tutti i dump SQL (troppo grandi per Git)
+*.sql
+
+# Ma mantieni questo file .gitignore
+!.gitignore
+
+# NOTA: I backup database NON devono essere versionati su Git
+# Usa invece un sistema di backup esterno (FTP, cloud storage, etc.)
+# Questi file sono solo per ripristino locale/emergenza

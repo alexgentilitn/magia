@@ -9,11 +9,11 @@ Per abilitare il deploy automatico su Aruba, devi configurare i secrets su GitHu
 Apri questo link (sostituendo con il tuo username se diverso):
 
 ```
-https://github.com/alexgentilitn/magia/settings/secrets/actions
+https://github.com/alexgentilitn/ea/settings/secrets/actions
 ```
 
 Oppure manualmente:
-1. Vai su GitHub al repository: `https://github.com/alexgentilitn/magia`
+1. Vai su GitHub al repository: `https://github.com/alexgentilitn/ea`
 2. Clicca su **"Settings"** (in alto a destra)
 3. Nel menu laterale sinistro, clicca su **"Secrets and variables"**
 4. Clicca su **"Actions"**
@@ -63,28 +63,28 @@ Da questo momento:
 1. **Claude Code crea file** qui
 2. **Push automatico su GitHub**
 3. **GitHub Actions fa il deploy** (30-60 secondi)
-4. **File online su** https://www.agstudio.digital/magia/public/admin/dashboard
+4. **File online su** https://www.agstudio.digital/magia/
 
 ---
 
 ## 🔍 Come verificare che funziona:
 
 ### Metodo 1: Guarda le Actions
-1. Vai su `https://github.com/alexgentilitn/magia/actions`
+1. Vai su `https://github.com/alexgentilitn/ea/actions`
 2. Vedrai una lista di "workflow runs"
 3. Ogni push creerà un nuovo workflow
 4. Clicca su uno per vedere i dettagli
 5. Se vedi ✅ verde = Deploy riuscito!
 
 ### Metodo 2: Forza un deploy manuale (test)
-1. Vai su `https://github.com/alexgentilitn/magia/actions`
+1. Vai su `https://github.com/alexgentilitn/ea/actions`
 2. Clicca su **"Deploy to Aruba FTP"** (sulla sinistra)
 3. Clicca sul pulsante **"Run workflow"** (a destra)
-4. Seleziona il branch corrente
+4. Seleziona il branch `claude/github-file-creation-011CUbkFR93UkHeGMfbo49s3`
 5. Clicca **"Run workflow"**
 6. Aspetta 30-60 secondi
-7. Vai su `https://www.agstudio.digital/magia/public/admin/dashboard`
-8. Dovresti vedere il dashboard aggiornato! 🎉
+7. Vai su `https://www.agstudio.digital/magia/index.php`
+8. Dovresti vedere **"Ciao"**! 🎉
 
 ---
 
@@ -93,7 +93,7 @@ Da questo momento:
 ### ❌ Workflow fallisce con "Login failed"
 - Verifica username e password nei secrets
 - Username deve essere: `magia@agstudio.digital`
-- Password: `$magia2025!`
+- Password: `$magia2025!` (con il simbolo $)
 
 ### ❌ Workflow fallisce con "Directory not found"
 - Verifica il path FTP: `/home/agstudiodiital/agstudio.digital/magia`
@@ -102,7 +102,7 @@ Da questo momento:
 ### ❌ File non appaiono online
 - Controlla che il deploy sia completato (✅ verde su Actions)
 - Verifica il path sia corretto
-- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/public/admin/dashboard`
+- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/index.php`
 
 ---
 
@@ -111,15 +111,15 @@ Da questo momento:
 Ogni volta che Claude Code crea/modifica file:
 
 ```
-Claude: "Creo una nuova feature nel progetto"
+Claude: "Creo una pagina contatti.php"
    ↓
 Claude: Crea file + Commit + Push
    ↓
 GitHub Actions: Deploy automatico (30-60 sec)
    ↓
-Tu: Apri browser → https://www.agstudio.digital/magia/public/admin/dashboard
+Tu: Apri browser → https://www.agstudio.digital/magia/contatti.php
    ↓
-✅ Modifiche online e funzionanti!
+✅ Pagina online e funzionante!
 ```
 
 **Zero comandi da eseguire!** 🚀

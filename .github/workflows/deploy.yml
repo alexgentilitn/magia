@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
-      - 'claude/**'
+      # IMPORTANTE: Deploy SOLO da main per evitare perdite di dati
+      # NON aggiungere altri branch qui!
   workflow_dispatch:
+    # Deploy manuale consentito solo da main
 
 jobs:
   deploy:

@@ -1,0 +1,36 @@
+name: Deploy to Aruba FTP
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'  # Deploy automatico da branch claude
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Files to Aruba
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_PATH }}/
+
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .env
+            .env.example
+            README.md
+            .github/**
+
+          dry-run: false

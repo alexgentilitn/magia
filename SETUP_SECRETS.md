@@ -31,17 +31,17 @@ Clicca sul pulsante verde **"New repository secret"** e aggiungi questi 4 secret
 
 #### Secret 2: FTP_USER
 - **Name:** `FTP_USER`
-- **Secret:** `magia@agstudio.digital`
+- **Secret:** `agstudiodiital`
 - Clicca **"Add secret"**
 
 #### Secret 3: FTP_PASSWORD
 - **Name:** `FTP_PASSWORD`
-- **Secret:** `$magia2025!`
+- **Secret:** `$Giulietta2019!`
 - Clicca **"Add secret"**
 
 #### Secret 4: FTP_PATH
 - **Name:** `FTP_PATH`
-- **Secret:** `/magia/website-agstudio`
+- **Secret:** `/public_html/magia`
 - Clicca **"Add secret"**
 
 ---
@@ -63,7 +63,7 @@ Da questo momento:
 1. **Claude Code crea file** qui
 2. **Push automatico su GitHub**
 3. **GitHub Actions fa il deploy** (30-60 secondi)
-4. **File online su** https://www.agstudio.digital/magia/website-agstudio/
+4. **File online su** https://www.agstudio.digital/magia/public/admin/dashboard
 
 ---
 
@@ -83,8 +83,8 @@ Da questo momento:
 4. Seleziona il branch corrente
 5. Clicca **"Run workflow"**
 6. Aspetta 30-60 secondi
-7. Vai su `https://www.agstudio.digital/magia/website-agstudio/`
-8. Dovresti vedere i file aggiornati! 🎉
+7. Vai su `https://www.agstudio.digital/magia/public/admin/dashboard`
+8. Dovresti vedere il dashboard aggiornato! 🎉
 
 ---
 
@@ -92,17 +92,17 @@ Da questo momento:
 
 ### ❌ Workflow fallisce con "Login failed"
 - Verifica username e password nei secrets
-- Username deve essere: `magia@agstudio.digital`
-- Password: `$magia2025!`
+- Username deve essere: `agstudiodiital`
+- Password: `$Giulietta2019!`
 
 ### ❌ Workflow fallisce con "Directory not found"
-- Verifica il path FTP: `/magia/website-agstudio`
+- Verifica il path FTP: `/public_html/magia`
 - Controlla nel cPanel che la cartella esista
 
 ### ❌ File non appaiono online
 - Controlla che il deploy sia completato (✅ verde su Actions)
 - Verifica il path sia corretto
-- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/website-agstudio/`
+- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/public/admin/dashboard`
 
 ---
 
@@ -111,15 +111,15 @@ Da questo momento:
 Ogni volta che Claude Code crea/modifica file:
 
 ```
-Claude: "Creo una pagina contatti.php"
+Claude: "Creo una nuova feature nel progetto"
    ↓
 Claude: Crea file + Commit + Push
    ↓
 GitHub Actions: Deploy automatico (30-60 sec)
    ↓
-Tu: Apri browser → https://www.agstudio.digital/magia/website-agstudio/contatti.php
+Tu: Apri browser → https://www.agstudio.digital/magia/public/admin/dashboard
    ↓
-✅ Pagina online e funzionante!
+✅ Modifiche online e funzionanti!
 ```
 
 **Zero comandi da eseguire!** 🚀

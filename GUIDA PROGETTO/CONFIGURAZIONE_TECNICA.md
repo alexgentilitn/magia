@@ -62,7 +62,7 @@ APP_NAME="AGstudio CRM"
 APP_ENV=production
 APP_KEY=base64:Jss+hm6Bdc2PuHAWtNffsQlLTLntHLxUDA/jccAD2QI=
 APP_DEBUG=false
-APP_URL=https://www.agstudio.digital/magia/website-agstudio
+APP_URL=https://www.agstudio.digital/magia
 
 LOG_CHANNEL=stack
 LOG_DEPRECATIONS_CHANNEL=null
@@ -192,7 +192,7 @@ main (produzione stabile)
 
 5. **Deploy su FTP** → File caricati su server Aruba
 
-6. **Sito live aggiornato** → https://www.agstudio.digital/magia/website-agstudio/
+6. **Sito live aggiornato** → https://www.agstudio.digital/magia/public/admin/dashboard
 
 ### Restrizioni Push
 
@@ -278,9 +278,9 @@ Il deploy si attiva automaticamente quando:
 | Secret | Descrizione | Esempio |
 |--------|-------------|---------|
 | `FTP_HOST` | Host FTP Aruba | `ftp.agstudio.digital` |
-| `FTP_USER` | Username FTP | `magia@agstudio.digital` |
-| `FTP_PASSWORD` | Password FTP | `$magia2025!` |
-| `FTP_PATH` | Percorso directory server | `/magia/website-agstudio` |
+| `FTP_USER` | Username FTP | `agstudiodiital` |
+| `FTP_PASSWORD` | Password FTP | `$Giulietta2019!` |
+| `FTP_PATH` | Percorso directory server | `/public_html/magia` |
 
 ⚠️ **IMPORTANTE:** Questi secrets sono configurati SOLO su GitHub, non nel codice.
 
@@ -351,7 +351,7 @@ DB_DATABASE=agstudiodiital_magia
 DB_USERNAME=agstudiodiital_agstudiomagia
 DB_PASSWORD=$Magia2015!
 
-APP_URL=https://www.agstudio.digital/magia/website-agstudio
+APP_URL=https://www.agstudio.digital/magia
 ```
 
 ### Step 5: Genera APP_KEY
@@ -401,8 +401,8 @@ php artisan migrate --force
 ### Step 9: Test Configurazione
 
 Visita questi URL per verificare:
-1. **Homepage:** https://www.agstudio.digital/magia/website-agstudio/
-2. **File test connessione:** https://www.agstudio.digital/magia/website-agstudio/index.php
+1. **Dashboard Admin:** https://www.agstudio.digital/magia/public/admin/dashboard
+2. **Homepage pubblica:** https://www.agstudio.digital/magia/public/
 
 ### Step 10: Configura GitHub Actions (se necessario)
 
@@ -548,9 +548,10 @@ chmod -R 755 storage/framework
 - **Actions:** https://github.com/alexgentilitn/magia/actions
 
 ### Server Produzione
-- **URL:** https://www.agstudio.digital/magia/website-agstudio/
+- **URL Dashboard:** https://www.agstudio.digital/magia/public/admin/dashboard
+- **URL Pubblico:** https://www.agstudio.digital/magia/public/
 - **Server:** Aruba Hosting
-- **Account FTP:** magia@agstudio.digital
+- **Account FTP:** agstudiodiital
 
 ### Documentazione Utile
 - **Laravel 10:** https://laravel.com/docs/10.x

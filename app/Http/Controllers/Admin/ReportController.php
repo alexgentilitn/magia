@@ -196,8 +196,11 @@ class ReportController extends Controller
                 'utenti.nome as professionista_nome',
                 'utenti.cognome as professionista_cognome',
                 DB::raw('count(*) as totale_lezioni'),
+                DB::raw('sum(lezioni.posti_totali) as posti_totali'),
+                DB::raw('sum(lezioni.posti_occupati) as posti_occupati'),
                 DB::raw('sum(lezioni.posti_occupati) as totale_partecipanti'),
-                DB::raw('avg(lezioni.posti_occupati) as media_partecipanti')
+                DB::raw('avg(lezioni.posti_occupati) as media_partecipanti'),
+                DB::raw('ROUND((sum(lezioni.posti_occupati) / NULLIF(sum(lezioni.posti_totali), 0)) * 100, 1) as tasso_occupazione')
             )
             ->groupBy('lezioni.professionista_id', 'utenti.nome', 'utenti.cognome')
             ->orderByDesc('totale_lezioni')

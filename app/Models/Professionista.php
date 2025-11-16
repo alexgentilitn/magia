@@ -211,8 +211,32 @@ class Professionista extends Model
     public static function generaCodiceProfessionista()
     {
         $anno = now()->year;
-        $ultimoNumero = static::whereYear('created_at', $anno)->count();
-        return sprintf('PROF-%d-%04d', $anno, $ultimoNumero + 1);
+
+        // Trova l'ultimo numero utilizzato per l'anno corrente
+        $ultimoCodice = static::where('codice_professionista', 'like', "PROF-{$anno}-%")
+            ->orderByRaw('CAST(SUBSTRING(codice_professionista, -4) AS UNSIGNED) DESC')
+            ->value('codice_professionista');
+
+        if ($ultimoCodice) {
+            // Estrai il numero dall'ultimo codice e incrementalo
+            preg_match('/PROF-\d{4}-(\d{4})/', $ultimoCodice, $matches);
+            $ultimoNumero = isset($matches[1]) ? (int)$matches[1] : 0;
+            $nuovoNumero = $ultimoNumero + 1;
+        } else {
+            // Primo professionista dell'anno
+            $nuovoNumero = 1;
+        }
+
+        // Genera il codice e verifica che non esista già (sicurezza extra)
+        do {
+            $codice = sprintf('PROF-%d-%04d', $anno, $nuovoNumero);
+            $esiste = static::where('codice_professionista', $codice)->exists();
+            if ($esiste) {
+                $nuovoNumero++;
+            }
+        } while ($esiste);
+
+        return $codice;
     }
 
     /**

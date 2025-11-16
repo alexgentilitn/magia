@@ -51,13 +51,13 @@ class EmailService
     /**
      * Invia email utilizzando un template
      *
-     * @param string $tipo_template  Tipo del template (es: 'benvenuto', 'programma')
+     * @param string|int $tipo_template_o_id  Tipo del template (es: 'benvenuto') o ID del template
      * @param string $destinatario_email  Email destinatario
      * @param array $variabili  Variabili da sostituire nel template
      * @param array $allegati  Array di path file da allegare (opzionale)
      * @return bool  True se inviata con successo
      */
-    public function inviaConTemplate($tipo_template, $destinatario_email, $variabili = [], $allegati = [])
+    public function inviaConTemplate($tipo_template_o_id, $destinatario_email, $variabili = [], $allegati = [])
     {
         try {
             // Carica configurazione SMTP
@@ -65,13 +65,17 @@ class EmailService
                 throw new \Exception('Configurazione SMTP non disponibile');
             }
 
-            // Trova template attivo
-            $template = TemplateEmail::attivi()
-                ->perTipo($tipo_template)
-                ->first();
+            // Trova template: se è numero è ID, altrimenti è tipo
+            if (is_numeric($tipo_template_o_id)) {
+                $template = TemplateEmail::find($tipo_template_o_id);
+            } else {
+                $template = TemplateEmail::attivi()
+                    ->perTipo($tipo_template_o_id)
+                    ->first();
+            }
 
             if (!$template) {
-                throw new \Exception("Template email '{$tipo_template}' non trovato");
+                throw new \Exception("Template email '{$tipo_template_o_id}' non trovato");
             }
 
             // Renderizza template con variabili

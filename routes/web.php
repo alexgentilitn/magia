@@ -13,6 +13,10 @@ use App\Http\Controllers\Admin\ProfessionistiController;
 use App\Http\Controllers\Admin\ProfiloController;
 use App\Http\Controllers\Admin\ImpostazioniController;
 use App\Http\Controllers\Admin\CalendarioController;
+use App\Http\Controllers\Admin\RicetteController;
+use App\Http\Controllers\Admin\ReferralController;
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\TemplateEmailController;
 
 /**
  * File: Routes Web
@@ -312,6 +316,116 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/{lezione}/check-out/{cliente}', [CalendarioController::class, 'checkOut'])->name('check-out');
         Route::post('/{lezione}/segna-assente/{cliente}', [CalendarioController::class, 'segnaAssente'])->name('segna-assente');
         Route::post('/{lezione}/annulla-assenza/{cliente}', [CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // GESTIONE RICETTE
+    // ============================================
+    Route::prefix('ricette')->name('ricette.')->group(function () {
+        // Lista
+        Route::get('/', [RicetteController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [RicetteController::class, 'create'])->name('create');
+        Route::post('/', [RicetteController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{id}', [RicetteController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{id}/modifica', [RicetteController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [RicetteController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{id}', [RicetteController::class, 'destroy'])->name('destroy');
+
+        // Pubblica/Schedula
+        Route::post('/{id}/pubblica', [RicetteController::class, 'pubblica'])->name('pubblica');
+        Route::post('/{id}/nascondi', [RicetteController::class, 'nascondi'])->name('nascondi');
+
+        // Upload immagine
+        Route::post('/upload-immagine', [RicetteController::class, 'uploadImmagine'])->name('upload-immagine');
+    });
+
+    // ============================================
+    // GESTIONE TEMPLATE EMAIL
+    // ============================================
+    Route::prefix('template-email')->name('template-email.')->group(function () {
+        // Lista
+        Route::get('/', [TemplateEmailController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [TemplateEmailController::class, 'create'])->name('create');
+        Route::post('/', [TemplateEmailController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{id}', [TemplateEmailController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{id}/modifica', [TemplateEmailController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [TemplateEmailController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{id}', [TemplateEmailController::class, 'destroy'])->name('destroy');
+
+        // Preview
+        Route::post('/{id}/preview', [TemplateEmailController::class, 'preview'])->name('preview');
+
+        // Invia email di test
+        Route::post('/{id}/test', [TemplateEmailController::class, 'inviaTest'])->name('test');
+
+        // Toggle attivo/inattivo
+        Route::patch('/{id}/toggle-attivo', [TemplateEmailController::class, 'toggleAttivo'])->name('toggle-attivo');
+    });
+
+    // ============================================
+    // PROGRAMMA REFERRAL "PORTA UN AMICO"
+    // ============================================
+    Route::prefix('referral')->name('referral.')->group(function () {
+        // Dashboard principale
+        Route::get('/', [ReferralController::class, 'index'])->name('index');
+
+        // Dettagli referral
+        Route::get('/{id}', [ReferralController::class, 'show'])->name('show');
+
+        // Cambia stato referral
+        Route::post('/{id}/cambia-stato', [ReferralController::class, 'cambiaStato'])->name('cambia-stato');
+
+        // Applica sconto
+        Route::post('/{id}/applica-sconto', [ReferralController::class, 'applicaSconto'])->name('applica-sconto');
+
+        // Configurazione programma
+        Route::get('/config/impostazioni', [ReferralController::class, 'configurazione'])->name('configurazione');
+        Route::post('/config/impostazioni', [ReferralController::class, 'salvaConfigurazione'])->name('salva-configurazione');
+
+        // Report
+        Route::get('/report/statistiche', [ReferralController::class, 'report'])->name('report');
+        Route::get('/report/export-csv', [ReferralController::class, 'exportCsv'])->name('export-csv');
+
+        // Crea referral manualmente
+        Route::get('/crea', [ReferralController::class, 'create'])->name('create');
+        Route::post('/', [ReferralController::class, 'store'])->name('store');
+    });
+
+    // ============================================
+    // ANALYTICS COMPORTAMENTALI
+    // ============================================
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Dashboard analytics
+        Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+
+        // Eventi dettagliati
+        Route::get('/eventi', [AnalyticsController::class, 'eventi'])->name('eventi');
+
+        // Analytics per singolo utente
+        Route::get('/utente/{utente_id}', [AnalyticsController::class, 'utente'])->name('utente');
+
+        // Export CSV
+        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
+
+        // API per grafici (AJAX)
+        Route::get('/api/grafico-visite', [AnalyticsController::class, 'graficoVisite'])->name('api.grafico-visite');
+        Route::get('/api/grafico-dispositivi', [AnalyticsController::class, 'graficoDispositivi'])->name('api.grafico-dispositivi');
     });
 
     // ============================================

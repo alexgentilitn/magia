@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_templates', function (Blueprint $table) {
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('email_templates')) {
+            Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
             $table->string('codice', 50)->unique()->comment('Codice identificativo template');
             $table->string('nome', 100)->comment('Nome descrittivo template');
@@ -22,7 +24,8 @@ return new class extends Migration
             $table->text('variabili_disponibili')->nullable()->comment('JSON array variabili usabili');
             $table->boolean('attivo')->default(true);
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

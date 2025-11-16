@@ -11,48 +11,53 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('documenti_caricati_cliente', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
+        // Crea prima tabella solo se non esiste
+        if (!Schema::hasTable('documenti_caricati_cliente')) {
+            Schema::create('documenti_caricati_cliente', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
 
-            // Tipo documento
-            $table->enum('tipo_documento', [
-                'certificato_medico',
-                'documento_identita',
-                'consenso_firmato',
-                'altro'
-            ]);
+                // Tipo documento
+                $table->enum('tipo_documento', [
+                    'certificato_medico',
+                    'documento_identita',
+                    'consenso_firmato',
+                    'altro'
+                ]);
 
-            // File
-            $table->string('file_path');
-            $table->string('file_name');
-            $table->string('mime_type')->nullable();
-            $table->integer('file_size')->nullable(); // bytes
+                // File
+                $table->string('file_path');
+                $table->string('file_name');
+                $table->string('mime_type')->nullable();
+                $table->integer('file_size')->nullable(); // bytes
 
-            // Metadata
-            $table->text('note')->nullable();
-            $table->boolean('verificato_admin')->default(false);
-            $table->timestamp('data_verifica')->nullable();
+                // Metadata
+                $table->text('note')->nullable();
+                $table->boolean('verificato_admin')->default(false);
+                $table->timestamp('data_verifica')->nullable();
 
-            $table->timestamps();
+                $table->timestamps();
 
-            // Index
-            $table->index(['cliente_id', 'tipo_documento']);
-        });
+                // Index
+                $table->index(['cliente_id', 'tipo_documento']);
+            });
+        }
 
-        // Tabella per documenti caricati dall'admin per i clienti
-        Schema::create('documenti_cliente', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('caricato_da')->nullable()->constrained('users')->onDelete('set null');
+        // Crea seconda tabella solo se non esiste
+        if (!Schema::hasTable('documenti_cliente')) {
+            Schema::create('documenti_cliente', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
+                $table->foreignId('caricato_da')->nullable()->constrained('users')->onDelete('set null');
 
-            $table->string('titolo');
-            $table->text('descrizione')->nullable();
-            $table->string('file_path');
-            $table->string('file_name');
+                $table->string('titolo');
+                $table->text('descrizione')->nullable();
+                $table->string('file_path');
+                $table->string('file_name');
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     /**

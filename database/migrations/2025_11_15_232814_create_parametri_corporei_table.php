@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parametri_corporei', function (Blueprint $table) {
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('parametri_corporei')) {
+            Schema::create('parametri_corporei', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cliente_id')->constrained('users')->onDelete('cascade');
             $table->date('data_rilevazione');
@@ -40,7 +42,8 @@ return new class extends Migration
 
             // Index per query veloci
             $table->index(['cliente_id', 'data_rilevazione']);
-        });
+            });
+        }
     }
 
     /**

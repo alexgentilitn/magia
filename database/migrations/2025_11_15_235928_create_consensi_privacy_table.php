@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('consensi_privacy', function (Blueprint $table) {
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('consensi_privacy')) {
+            Schema::create('consensi_privacy', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cliente_id')->constrained('clienti')->onDelete('cascade');
             $table->enum('tipo_consenso', [
@@ -39,7 +41,8 @@ return new class extends Migration
             $table->index('cliente_id');
             $table->index('tipo_consenso');
             $table->index(['cliente_id', 'tipo_consenso', 'stato']);
-        });
+            });
+        }
     }
 
     /**

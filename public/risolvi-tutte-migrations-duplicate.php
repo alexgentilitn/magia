@@ -39,12 +39,12 @@ try {
         '2025_11_13_164841_create_impostazioni_sistema_table' => ['impostazioni_sistema'],
         '2025_11_15_221308_create_schede_allenamento_table' => ['schede_allenamento'],
         '2025_11_15_221330_create_scheda_esercizi_table' => ['scheda_esercizi'],
-        '2025_11_15_232814_create_documenti_caricati_cliente_table' => ['documenti_caricati_cliente'],
+        '2025_11_15_232814_create_documenti_caricati_cliente_table' => ['documenti_caricati_cliente', 'documenti_cliente'],
         '2025_11_15_232814_create_parametri_corporei_table' => ['parametri_corporei'],
         '2025_11_15_232815_add_prenotazioni_fields_to_prenotazioni_table' => ['prenotazioni'],
         '2025_11_15_235928_create_consensi_privacy_table' => ['consensi_privacy'],
         '2025_11_16_000824_create_email_templates_table' => ['email_templates'],
-        '2025_11_16_000907_create_referral_system_table' => ['referral_codes', 'referral_registrations'],
+        '2025_11_16_000907_create_referral_system_table' => ['referrals'],
     ];
 
     echo "━━━ FASE 1: VERIFICA TABELLE E MIGRATIONS ━━━\n\n";

@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('referrals', function (Blueprint $table) {
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('referrals')) {
+            Schema::create('referrals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cliente_invitante_id')->constrained('clienti')->onDelete('cascade');
             $table->foreignId('cliente_invitato_id')->nullable()->constrained('clienti')->onDelete('set null');
@@ -29,7 +31,8 @@ return new class extends Migration
 
             $table->index('codice_invito');
             $table->index(['cliente_invitante_id', 'stato']);
-        });
+            });
+        }
     }
 
     /**

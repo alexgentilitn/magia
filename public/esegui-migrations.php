@@ -190,9 +190,7 @@ try {
                 throw new Exception("Migration non valida: non restituisce un oggetto");
             }
 
-            // Esegui UP
-            DB::beginTransaction();
-
+            // Esegui UP (SENZA transazione - le DDL operations in MySQL causano commit impliciti)
             $migration->up();
 
             // Registra migration eseguita
@@ -201,14 +199,10 @@ try {
                 'batch' => $nextBatch
             ]);
 
-            DB::commit();
-
             echo sprintf("        ✅ SUCCESSO\n");
             $successCount++;
 
         } catch (Exception $e) {
-            DB::rollBack();
-
             echo sprintf("        ❌ ERRORE: %s\n", $e->getMessage());
             $errorCount++;
             $errors[] = [

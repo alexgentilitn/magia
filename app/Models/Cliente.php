@@ -98,6 +98,46 @@ class Cliente extends Model
         'ultima_pesata',
         'ultima_misurazione',
         'note_professionista',
+
+        // Nuovi campi impedenziometria completa
+        'massa_grassa_percentuale',
+        'massa_muscolare_kg',
+        'massa_ossea_kg',
+        'grasso_viscerale',
+        'proteine_percentuale',
+        'acqua_totale_percentuale',
+        'acqua_extra_percentuale',
+        'acqua_intra_percentuale',
+
+        // Obiettivi
+        'obiettivi_primari',
+        'obiettivi_secondari',
+        'peso_obiettivo',
+        'data_obiettivo',
+
+        // Allergie
+        'allergie',
+        'intolleranze',
+
+        // Stile vita
+        'ore_sonno',
+        'qualita_sonno',
+        'fumatore',
+        'consumo_acqua_litri',
+
+        // Medici
+        'patologie_croniche',
+        'interventi_chirurgici',
+        'gravidanza_in_corso',
+        'ultima_gravidanza',
+        'ciclo_regolare',
+        'durata_ciclo_giorni',
+        'ultima_mestruazione',
+
+        // Tracking
+        'ultima_impedenziometria',
+        'storico_peso',
+        'storico_misure',
     ];
 
     protected $casts = [
@@ -145,6 +185,35 @@ class Cliente extends Model
         'circonferenza_coscia_sx' => 'decimal:2',
         'ultima_pesata' => 'datetime',
         'ultima_misurazione' => 'datetime',
+
+        // Casts impedenziometria
+        'massa_grassa_percentuale' => 'decimal:2',
+        'massa_muscolare_kg' => 'decimal:2',
+        'massa_ossea_kg' => 'decimal:2',
+        'grasso_viscerale' => 'decimal:2',
+        'proteine_percentuale' => 'decimal:2',
+        'acqua_totale_percentuale' => 'decimal:2',
+        'acqua_extra_percentuale' => 'decimal:2',
+        'acqua_intra_percentuale' => 'decimal:2',
+
+        // Casts obiettivi
+        'peso_obiettivo' => 'decimal:2',
+        'data_obiettivo' => 'date',
+
+        // Casts stile vita
+        'fumatore' => 'boolean',
+        'consumo_acqua_litri' => 'decimal:1',
+
+        // Casts medici
+        'gravidanza_in_corso' => 'boolean',
+        'ultima_gravidanza' => 'date',
+        'ciclo_regolare' => 'boolean',
+        'ultima_mestruazione' => 'date',
+
+        // Casts tracking
+        'ultima_impedenziometria' => 'datetime',
+        'storico_peso' => 'array',
+        'storico_misure' => 'array',
     ];
 
     /**

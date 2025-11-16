@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
+      - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # TEMPORANEO: per deploy immediato versione corretta
       # IMPORTANTE: Deploy SOLO da main per evitare perdite di dati
       # NON aggiungere altri branch qui!
   workflow_dispatch:
-    # Deploy manuale consentito solo da main
+    # Deploy manuale consentito
 
 jobs:
   deploy:

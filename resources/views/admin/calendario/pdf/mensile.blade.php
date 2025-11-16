@@ -198,7 +198,7 @@
                     {{-- Header lezione --}}
                     <div class="lezione-header">
                         <div class="lezione-orario">
-                            {{ $lezione->ora_inizio->format('H:i') }} - {{ $lezione->ora_fine->format('H:i') }}
+                            {{ \Carbon\Carbon::parse($lezione->ora_inizio)->format('H:i') }} - {{ \Carbon\Carbon::parse($lezione->ora_fine)->format('H:i') }}
                         </div>
                         <div>
                             @if($lezione->tipologia === 'gruppo')

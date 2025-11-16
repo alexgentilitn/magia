@@ -252,7 +252,7 @@
                                 @foreach($lezione->clienti as $cliente)
                                     @php
                                         $pivot = $cliente->pivot;
-                                        $stato = $pivot->stato_partecipazione ?? 'prenotato';
+                                        $stato = $pivot->stato ?? 'prenotato';
                                         $iconaStato = $stato === 'presente' ? '✓' : ($stato === 'assente' ? '✗' : '○');
                                     @endphp
                                     {{ $iconaStato }} {{ $cliente->nome }} {{ $cliente->cognome }}@if(!$loop->last), @endif

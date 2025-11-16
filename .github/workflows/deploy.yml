@@ -3,9 +3,9 @@ name: Deploy to Aruba FTP
 on:
   push:
     branches:
-      - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # Branch ufficiale del progetto
-      # IMPORTANTE: Deploy SOLO da questo branch per evitare perdite di dati
-      # NON aggiungere altri branch qui!
+      - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # Branch precedente
+      - claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm  # Branch corrente - Testing e Fix Export
+      # Deploy automatico da branch claude/** con session ID
   workflow_dispatch:
     # Deploy manuale consentito
 

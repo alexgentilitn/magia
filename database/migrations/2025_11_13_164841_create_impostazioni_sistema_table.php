@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('impostazioni_sistema', function (Blueprint $table) {
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('impostazioni_sistema')) {
+            Schema::create('impostazioni_sistema', function (Blueprint $table) {
             $table->id();
 
             // Categoria dell'impostazione
@@ -46,7 +48,8 @@ return new class extends Migration
             // Indici
             $table->index(['categoria', 'attivo']);
             $table->unique(['categoria', 'chiave']);
-        });
+            });
+        }
     }
 
     /**

@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('impostazioni', function (Blueprint $table) {
-            $table->id();
-            $table->string('chiave', 100)->unique();
-            $table->text('valore')->nullable();
-            $table->string('gruppo', 50)->default('generale')->index(); // es: smtp, sistema, email, ecc
-            $table->string('tipo', 20)->default('testo'); // testo, numero, booleano, password, email
-            $table->text('descrizione')->nullable();
-            $table->boolean('criptata')->default(false); // per password e dati sensibili
-            $table->timestamps();
-        });
+        // Crea tabella solo se non esiste
+        if (!Schema::hasTable('impostazioni')) {
+            Schema::create('impostazioni', function (Blueprint $table) {
+                $table->id();
+                $table->string('chiave', 100)->unique();
+                $table->text('valore')->nullable();
+                $table->string('gruppo', 50)->default('generale')->index(); // es: smtp, sistema, email, ecc
+                $table->string('tipo', 20)->default('testo'); // testo, numero, booleano, password, email
+                $table->text('descrizione')->nullable();
+                $table->boolean('criptata')->default(false); // per password e dati sensibili
+                $table->timestamps();
+            });
 
-        // Inserisci impostazioni SMTP di default
-        DB::table('impostazioni')->insert([
+            // Inserisci impostazioni SMTP di default solo se la tabella è stata appena creata
+            DB::table('impostazioni')->insert([
             [
                 'chiave' => 'smtp_host',
                 'valore' => 'smtp.gmail.com',
@@ -94,7 +96,8 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ]);
+            ]);
+        }
     }
 
     /**

@@ -41,6 +41,15 @@ Route::post('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController
 
 
 // ============================================
+// LE NOSTRE SEDI (mappa interattiva)
+// ============================================
+
+Route::get('/sedi', function() {
+    return view('sedi.index');
+})->name('sedi.index');
+
+
+// ============================================
 // AREA ADMIN - LOGIN
 // ============================================
 

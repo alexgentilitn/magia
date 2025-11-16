@@ -69,60 +69,89 @@ class ProfessionistiController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nome' => 'required|string|max:100',
-            'cognome' => 'required|string|max:100',
-            'email' => 'required|email|unique:utenti,email',
-            'telefono_mobile' => 'nullable|string|max:20',
-            'titolo_professionale' => 'nullable|string|max:100',
-            'bio' => 'nullable|string',
-            'anni_esperienza' => 'nullable|integer|min:0',
-            'tariffa_oraria' => 'nullable|numeric|min:0',
-            'stato' => 'required|in:attivo,sospeso,inattivo',
-        ]);
-
-        // Genera password temporanea
-        $passwordTemporanea = 'temp' . rand(1000, 9999);
-        $scadenza = now()->addHours(24);
-
-        // Crea utente base
-        $utente = Utente::create([
-            'nome' => $validated['nome'],
-            'cognome' => $validated['cognome'],
-            'email' => $validated['email'],
-            'password' => Hash::make($passwordTemporanea),
-            'password_temp_expires_at' => $scadenza,
-            'deve_cambiare_password' => true,
-            'tipo_utente' => 'professionista',
-            'telefono' => $validated['telefono_mobile'] ?? null,
-            'attivo' => true,
-        ]);
-
-        // Crea profilo professionista
-        $dataProfessionista = $validated;
-        unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
-        $dataProfessionista['utente_id'] = $utente->id;
-        $dataProfessionista['codice_professionista'] = Professionista::generaCodiceProfessionista();
-
-        $professionista = Professionista::create($dataProfessionista);
-
-        // Invia email con credenziali
         try {
-            // Applica configurazioni SMTP dal database
-            \App\Models\Impostazione::applySmtpConfig();
+            \Log::info('Inizio creazione professionista', $request->all());
 
-            Mail::to($utente->email)->send(new PasswordTemporaneaMail(
-                $professionista,
-                $passwordTemporanea,
-                $scadenza
-            ));
-            $emailMessage = ' Email inviata con successo a ' . $utente->email;
+            $validated = $request->validate([
+                'nome' => 'required|string|max:100',
+                'cognome' => 'required|string|max:100',
+                'email' => 'required|email|unique:utenti,email',
+                'telefono_mobile' => 'nullable|string|max:20',
+                'titolo_professionale' => 'nullable|string|max:100',
+                'bio' => 'nullable|string',
+                'anni_esperienza' => 'nullable|integer|min:0',
+                'tariffa_oraria' => 'nullable|numeric|min:0',
+                'stato' => 'required|in:attivo,sospeso,inattivo',
+            ]);
+
+            \Log::info('Validazione OK', $validated);
+
+            // Genera password temporanea
+            $passwordTemporanea = 'temp' . rand(1000, 9999);
+            $scadenza = now()->addHours(24);
+
+            // Crea utente base
+            $utente = Utente::create([
+                'nome' => $validated['nome'],
+                'cognome' => $validated['cognome'],
+                'email' => $validated['email'],
+                'password' => Hash::make($passwordTemporanea),
+                'password_temp_expires_at' => $scadenza,
+                'deve_cambiare_password' => true,
+                'tipo_utente' => 'professionista',
+                'telefono' => $validated['telefono_mobile'] ?? null,
+                'attivo' => true,
+            ]);
+
+            \Log::info('Utente creato', ['id' => $utente->id]);
+
+            // Crea profilo professionista
+            $dataProfessionista = $validated;
+            unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
+            $dataProfessionista['utente_id'] = $utente->id;
+            $dataProfessionista['codice_professionista'] = Professionista::generaCodiceProfessionista();
+
+            \Log::info('Dati professionista preparati', $dataProfessionista);
+
+            $professionista = Professionista::create($dataProfessionista);
+
+            \Log::info('Professionista creato', ['id' => $professionista->id]);
+
+            // Invia email con credenziali
+            try {
+                // Applica configurazioni SMTP dal database
+                \App\Models\Impostazione::applySmtpConfig();
+
+                Mail::to($utente->email)->send(new PasswordTemporaneaMail(
+                    $professionista,
+                    $passwordTemporanea,
+                    $scadenza
+                ));
+                $emailMessage = ' Email inviata con successo a ' . $utente->email;
+                \Log::info('Email inviata', ['email' => $utente->email]);
+            } catch (\Exception $e) {
+                $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea . ' - Errore: ' . $e->getMessage();
+                \Log::error('Errore invio email', ['error' => $e->getMessage()]);
+            }
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Professionista creato con successo! Password temporanea: ' . $passwordTemporanea . '. ' . $emailMessage);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Errori di validazione - Laravel li gestisce automaticamente
+            \Log::warning('Errore validazione', ['errors' => $e->errors()]);
+            throw $e;
         } catch (\Exception $e) {
-            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea . ' - Errore: ' . $e->getMessage();
-        }
+            // Errore generico
+            \Log::error('Errore creazione professionista', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-        return redirect()->route('admin.professionisti.show', $professionista->id)
-            ->with('success', 'Professionista creato con successo! Password temporanea: ' . $passwordTemporanea . $emailMessage);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Errore durante la creazione del professionista: ' . $e->getMessage());
+        }
     }
 
     /**

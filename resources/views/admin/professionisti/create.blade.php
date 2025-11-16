@@ -11,6 +11,23 @@
         <h1 class="text-3xl font-bold text-gray-800">Nuovo Professionista</h1>
     </div>
 
+    <!-- Mostra errori di validazione -->
+    @if ($errors->any())
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-3"></i>
+            <div>
+                <h3 class="text-red-800 font-semibold mb-2">Errori di validazione:</h3>
+                <ul class="list-disc list-inside text-red-700 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <form method="POST" action="{{ route('admin.professionisti.store') }}" class="bg-white rounded-lg shadow p-6">
         @csrf
 

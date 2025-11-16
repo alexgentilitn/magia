@@ -195,6 +195,30 @@ class Cliente extends Model
     }
 
     /**
+     * Relazione: Cliente ha molti Consensi Privacy
+     */
+    public function consensiPrivacy()
+    {
+        return $this->hasMany(ConsensoPrivacy::class, 'cliente_id')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Verifica se ha dato un consenso specifico
+     */
+    public function haConsenso(string $tipo): bool
+    {
+        return ConsensoPrivacy::haConsenso($this->id, $tipo);
+    }
+
+    /**
+     * Registra un nuovo consenso
+     */
+    public function registraConsenso(string $tipo, bool $consenso, ?string $versione = null)
+    {
+        return ConsensoPrivacy::registraConsenso($this->id, $tipo, $consenso, $versione);
+    }
+
+    /**
      * Scope: Solo clienti attivi
      */
     public function scopeAttivi($query)

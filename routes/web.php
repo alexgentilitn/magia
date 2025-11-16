@@ -135,11 +135,34 @@ Route::prefix('cliente')->middleware(['auth', 'tipo_utente:cliente'])->group(fun
     Route::get('/documenti', [ClienteAreaController::class, 'documenti'])->name('cliente.documenti');
     Route::post('/documenti', [ClienteAreaController::class, 'caricaDocumento'])->name('cliente.carica-documento');
 
+    // Privacy e Consensi GDPR
+    Route::get('/privacy', [\App\Http\Controllers\Cliente\PrivacyController::class, 'index'])->name('cliente.privacy');
+    Route::post('/privacy', [\App\Http\Controllers\Cliente\PrivacyController::class, 'update'])->name('cliente.privacy.update');
+    Route::post('/privacy/revoca-all', [\App\Http\Controllers\Cliente\PrivacyController::class, 'revocaAll'])->name('cliente.privacy.revoca-all');
+    Route::get('/privacy/export', [\App\Http\Controllers\Cliente\PrivacyController::class, 'exportDati'])->name('cliente.privacy.export');
+    Route::post('/privacy/cancellazione', [\App\Http\Controllers\Cliente\PrivacyController::class, 'richiestaCancellazione'])->name('cliente.privacy.cancellazione');
+
 });
 
 
 // ============================================
-// PAGINE LEGALI (Privacy, Termini, Cookie)
+// PAGINE LEGALI (Privacy, Termini, Cookie) - PUBBLICHE
+// ============================================
+Route::get('/privacy-policy', function () {
+    return view('legal.privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/cookie-policy', function () {
+    return view('legal.cookie-policy');
+})->name('cookie-policy');
+
+Route::get('/termini-servizio', function () {
+    return view('legal.termini-servizio');
+})->name('termini-servizio');
+
+
+// ============================================
+// PAGINE LEGALI (Privacy, Termini, Cookie) - OLD SECTION
 // ============================================
 
 Route::get('/privacy-policy', function () {
@@ -487,6 +510,18 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::get('/smtp', [ImpostazioniController::class, 'smtp'])->name('smtp');
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
+    });
+
+    // ============================================
+    // PRIVACY E CONSENSI GDPR (Admin)
+    // ============================================
+    Route::prefix('privacy')->name('privacy.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PrivacyController::class, 'index'])->name('index');
+        Route::get('/conformita', [\App\Http\Controllers\Admin\PrivacyController::class, 'conformita'])->name('conformita');
+        Route::get('/cliente/{id}', [\App\Http\Controllers\Admin\PrivacyController::class, 'showCliente'])->name('cliente');
+        Route::get('/report', [\App\Http\Controllers\Admin\PrivacyController::class, 'report'])->name('report');
+        Route::get('/export', [\App\Http\Controllers\Admin\PrivacyController::class, 'export'])->name('export');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\PrivacyController::class, 'destroy'])->name('destroy');
     });
 
 });

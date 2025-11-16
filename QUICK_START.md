@@ -47,7 +47,23 @@ Pass: $Magia2015!
 ```
 
 ### Deploy FTP Automatico
-✅ Push su `claude/**` → Deploy automatico in 2-5 min
+
+**⚠️ IMPORTANTE - BRANCH ABILITATI:**
+Solo questi branch attivano il deploy automatico:
+- `claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc` (precedente)
+- `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm` ⭐ **CORRENTE**
+
+**Push su altri branch = NESSUN deploy!**
+
+**Processo:**
+1. Push su branch abilitato
+2. GitHub Actions parte (30 sec)
+3. Deploy FTP (2-5 min)
+4. Verifica su https://github.com/alexgentilitn/magia/actions
+
+**Se deploy non parte:**
+→ Controlla di essere sul branch corretto
+→ Verifica `.github/workflows/deploy.yml`
 
 ---
 

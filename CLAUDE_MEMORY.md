@@ -59,6 +59,143 @@ Questo file contiene TUTTO il contesto necessario per continuare a lavorare su q
 - **Server Web:** Apache/LiteSpeed
 - **PHP Handler:** Probabilmente LSAPI o FastCGI
 
+### Deploy e CI/CD
+
+**Sistema:** GitHub Actions → Deploy automatico FTP
+**Workflow File:** `.github/workflows/deploy.yml`
+
+---
+
+## 🚀 DEPLOY AUTOMATICO - GITHUB ACTIONS
+
+### ⚠️ CONFIGURAZIONE CRITICA
+
+**Branch abilitati per deploy automatico:**
+```yaml
+branches:
+  - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # Branch precedente
+  - claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm        # Branch CORRENTE ⭐
+```
+
+**‼️ IMPORTANTE:**
+- Solo i branch sopra elencati triggherano il deploy FTP automatico
+- Push su altri branch NON verranno deployati su produzione
+- Per aggiungere un nuovo branch, modificare `.github/workflows/deploy.yml`
+
+### Come Funziona il Deploy
+
+**Trigger:** Push su branch abilitati
+**Tempo:** 2-5 minuti dall'ultimo push
+**Destinazione:** FTP Aruba → `/www.agstudio.digital/magia/`
+
+**Processo:**
+1. Push codice su branch `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+2. GitHub Actions rileva il push
+3. Workflow `.github/workflows/deploy.yml` parte
+4. Checkout del codice
+5. Upload FTP su Aruba (via `SamKirkland/FTP-Deploy-Action@v4.3.5`)
+6. File disponibili su produzione
+
+### File Esclusi dal Deploy
+
+Il workflow esclude automaticamente:
+```yaml
+exclude: |
+  **/.git*
+  **/.git*/**
+  **/node_modules/**
+  .env                # ⚠️ Mai deployato (già presente su server)
+  .env.example
+  README.md
+  .github/**
+```
+
+**⚠️ .env NON viene mai deployato:**
+- Il file `.env` è già presente sul server (deployato manualmente UNA VOLTA)
+- Modifiche al `.env` vanno fatte direttamente sul server via FTP
+- NON committare mai `.env` nel repository
+
+### Secrets GitHub Actions
+
+**Configurati in:** `Settings → Secrets and variables → Actions`
+
+Secrets necessari:
+```
+FTP_HOST      = ftp.agstudio.digital
+FTP_USER      = agstudiodiital@agstudio.digital
+FTP_PASSWORD  = (password FTP - vedi documentazione riservata)
+FTP_PATH      = /www.agstudio.digital/magia
+```
+
+### Verifica Deploy
+
+**Dopo ogni push, verifica che il deploy sia andato a buon fine:**
+
+1. **GitHub Actions Dashboard:**
+   ```
+   https://github.com/alexgentilitn/magia/actions
+   ```
+   - Verifica che il workflow sia ✅ verde (success)
+   - Se ❌ rosso (failed), leggi i log per vedere l'errore
+
+2. **Timing:**
+   - Deploy inizia entro 30 secondi dal push
+   - Upload FTP: 2-4 minuti
+   - File disponibili sul server: max 5 minuti
+
+3. **Verifica File Deployati:**
+   - Controlla che i file modificati siano presenti su produzione
+   - Esempio: se hai creato `public/nuovo-file.php`, verifica:
+     ```
+     https://www.agstudio.digital/magia/public/nuovo-file.php
+     ```
+
+### Troubleshooting Deploy
+
+**Problema: Workflow non parte dopo push**
+- Verifica che il branch sia nella lista dei branch abilitati in `.github/workflows/deploy.yml`
+- Controlla di aver fatto push sul branch corretto
+
+**Problema: Workflow fallisce (❌ rosso)**
+- Vai su https://github.com/alexgentilitn/magia/actions
+- Clicca sul workflow fallito
+- Leggi i log per identificare l'errore
+- Errori comuni:
+  - Credenziali FTP errate (controlla Secrets)
+  - Permessi FTP insufficienti
+  - Timeout connessione FTP
+
+**Problema: Deploy completato ma file non presente**
+- Verifica che il file non sia nell'exclude list del workflow
+- Controlla che il path FTP sia corretto (`FTP_PATH` secret)
+- Verifica permessi file/cartelle sul server
+
+### Deploy Manuale (Workflow Dispatch)
+
+È possibile triggerare un deploy manuale:
+
+1. Vai su: https://github.com/alexgentilitn/magia/actions
+2. Seleziona workflow "Deploy to Aruba FTP"
+3. Click "Run workflow"
+4. Seleziona branch
+5. Click "Run workflow"
+
+**Uso:** Per ri-deployare senza fare un nuovo commit.
+
+### Best Practices Deploy
+
+✅ **DO:**
+- Commit solo codice funzionante e testato
+- Verificare sempre che il deploy sia completato con successo
+- Testare modifiche su produzione dopo ogni deploy
+- Usare messaggi di commit descrittivi
+
+❌ **DON'T:**
+- Pushare codice con errori syntax
+- Committare `.env` o credenziali
+- Fare push su branch non configurati
+- Deployare senza verificare il risultato
+
 ---
 
 ## 🗄️ CONFIGURAZIONE DATABASE

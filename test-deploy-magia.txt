@@ -1,8 +1,0 @@
-Test Deploy - Branch claude/Magia_Brench
-==========================================
-
-Timestamp: 2025-11-16
-Branch: claude/Magia_Brench
-Scopo: Verificare deploy automatico GitHub Actions → Aruba FTP
-
-Questo file verrà eliminato dopo il test.

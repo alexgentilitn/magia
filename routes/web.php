@@ -86,10 +86,10 @@ Route::post('/logout', [AuthController::class, 'effettuaLogout'])->name('logout'
 
 
 // ============================================
-// AREA ADMIN (Protetta)
+// AREA ADMIN (Protetta - Solo Amministratori)
 // ============================================
 
-Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -510,6 +510,87 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
     });
 
+});
+
+
+// ============================================
+// AREA PROFESSIONISTI (Protetta - Solo Collaboratori)
+// ============================================
+
+Route::middleware(['auth', 'tipo_utente:professionista'])->prefix('professionista')->name('professionista.')->group(function () {
+
+    // Dashboard Professionista
+    Route::get('/dashboard', [\App\Http\Controllers\Professionista\DashboardController::class, 'index'])->name('dashboard');
+
+    // ============================================
+    // PROFILO
+    // ============================================
+    Route::prefix('profilo')->name('profilo.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Professionista\ProfiloController::class, 'index'])->name('index');
+        Route::post('/aggiorna', [\App\Http\Controllers\Professionista\ProfiloController::class, 'aggiornaProfilo'])->name('aggiorna');
+        Route::get('/cambia-password', [\App\Http\Controllers\Professionista\ProfiloController::class, 'cambiaPassword'])->name('cambia-password');
+        Route::post('/cambia-password', [\App\Http\Controllers\Professionista\ProfiloController::class, 'salvaNuovaPassword'])->name('salva-password');
+    });
+
+    // ============================================
+    // AGENDA PERSONALE (Lezioni filtrate)
+    // ============================================
+    Route::prefix('lezioni')->name('lezioni.')->group(function () {
+        // Lista lezioni (solo proprie)
+        Route::get('/', [\App\Http\Controllers\Professionista\LezioniController::class, 'index'])->name('index');
+
+        // Visualizza lezione
+        Route::get('/{id}', [\App\Http\Controllers\Professionista\LezioniController::class, 'show'])->name('show');
+
+        // Gestione prenotazioni e presenze
+        Route::get('/{id}/presenze', [\App\Http\Controllers\Professionista\LezioniController::class, 'gestionePresenze'])->name('presenze');
+        Route::post('/{lezioneId}/check-in/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezioneId}/check-out/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezioneId}/segna-assente/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezioneId}/annulla-assenza/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // CALENDARIO PERSONALE (solo propri corsi)
+    // ============================================
+    Route::prefix('calendario')->name('calendario.')->group(function () {
+        // Vista calendario
+        Route::get('/', [\App\Http\Controllers\Professionista\CalendarioController::class, 'index'])->name('index');
+
+        // API per eventi calendario (filtrati)
+        Route::get('/events', [\App\Http\Controllers\Professionista\CalendarioController::class, 'getEvents'])->name('events');
+
+        // Dettagli lezione
+        Route::get('/{id}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'show'])->name('show');
+
+        // Presenze rapide dal calendario
+        Route::post('/{lezione}/check-in/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezione}/check-out/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezione}/segna-assente/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezione}/annulla-assenza/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // COMPENSI E PAGAMENTI
+    // ============================================
+    Route::prefix('compensi')->name('compensi.')->group(function () {
+        // Dashboard compensi
+        Route::get('/', [\App\Http\Controllers\Professionista\CompensiController::class, 'index'])->name('index');
+
+        // Storico pagamenti
+        Route::get('/storico', [\App\Http\Controllers\Professionista\CompensiController::class, 'storico'])->name('storico');
+
+        // Dettaglio periodo
+        Route::get('/periodo/{anno}/{mese}', [\App\Http\Controllers\Professionista\CompensiController::class, 'dettaglioPeriodo'])->name('periodo');
+    });
+
+    // ============================================
+    // DISPONIBILITÀ
+    // ============================================
+    Route::prefix('disponibilita')->name('disponibilita.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Professionista\DisponibilitaController::class, 'index'])->name('index');
+        Route::post('/salva', [\App\Http\Controllers\Professionista\DisponibilitaController::class, 'salva'])->name('salva');
+    });
 });
 
 

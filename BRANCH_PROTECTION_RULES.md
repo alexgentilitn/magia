@@ -1,6 +1,6 @@
 # 🛡️ REGOLE PROTEZIONE BRANCH - LEGGERE ATTENTAMENTE
 
-## ⚠️ REGOLA ASSOLUTA: LAVORA SEMPRE SU MAIN
+## ⚠️ REGOLA ASSOLUTA: LAVORA SEMPRE SUL BRANCH UFFICIALE
 
 **IMPORTANTE:** Questo progetto ha subito una grave perdita di dati dovuta a branch divergenti.
 Per evitare che questo riaccada, seguire SEMPRE queste regole:
@@ -9,25 +9,25 @@ Per evitare che questo riaccada, seguire SEMPRE queste regole:
 
 ## ✅ REGOLE OBBLIGATORIE
 
-### 1. **Branch Unico: MAIN**
-- ✅ **SEMPRE** lavorare sul branch `main`
+### 1. **Branch Unico Ufficiale**
+- ✅ **SEMPRE** lavorare sul branch `claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc`
 - ❌ **MAI** creare branch diversi
-- ❌ **MAI** fare commit su branch `claude/*` o altri
+- ❌ **MAI** usare il branch `main` (è vecchio e non aggiornato)
 
 ### 2. **Deploy Automatico**
-- ✅ Deploy automatico **SOLO da `main`**
-- ✅ Ogni push su `main` → deploy automatico su FTP
+- ✅ Deploy automatico **SOLO da `claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc`**
+- ✅ Ogni push su questo branch → deploy automatico su FTP
 - ⏱️ Tempo deploy: 5-10 minuti
 
 ### 3. **Workflow di Lavoro**
 
 #### Da Computer/Smartphone:
 ```bash
-# 1. SEMPRE verificare di essere su main
-git checkout main
+# 1. SEMPRE verificare di essere sul branch corretto
+git checkout claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
 
 # 2. Pull per ottenere ultime modifiche
-git pull origin main
+git pull origin claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
 
 # 3. Fare modifiche
 
@@ -35,15 +35,15 @@ git pull origin main
 git add .
 git commit -m "Descrizione modifiche"
 
-# 5. Push su main
-git push origin main
+# 5. Push
+git push origin claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
 ```
 
 #### Da Claude Code:
 ```
-1. Claude lavora SEMPRE su branch main
-2. Claude fa commit su main
-3. Claude fa push su main
+1. Claude lavora SEMPRE su claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+2. Claude fa commit su questo branch
+3. Claude fa push su questo branch
 4. Deploy automatico parte
 ```
 
@@ -79,17 +79,17 @@ Prima di ogni commit, verifica:
 ## 🔄 STATO CORRENTE DEL PROGETTO
 
 ### Branch Attivo
-- **Branch Principale:** `main`
+- **Branch Principale:** `claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc`
 - **URL Repository:** https://github.com/alexgentilitn/magia
 - **URL Produzione:** https://www.agstudio.digital/magia/public/admin/dashboard
 
 ### Configurazione Deploy
 ```yaml
-# Deploy SOLO da main
+# Deploy SOLO dal branch ufficiale
 on:
   push:
     branches:
-      - main  # ← UNICO branch consentito
+      - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # ← UNICO branch consentito
 ```
 
 ### Secrets GitHub Configurati

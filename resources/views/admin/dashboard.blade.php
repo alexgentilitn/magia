@@ -195,7 +195,9 @@
                 <i class="fas fa-euro-sign text-green-500 mr-2"></i>
                 Incassi Ultimi 6 Mesi
             </h2>
-            <canvas id="chartIncassi" height="120"></canvas>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chartIncassi"></canvas>
+            </div>
         </div>
 
         <!-- Grafico Nuovi Clienti -->
@@ -204,7 +206,9 @@
                 <i class="fas fa-user-plus text-blue-500 mr-2"></i>
                 Nuovi Clienti Ultimi 6 Mesi
             </h2>
-            <canvas id="chartClienti" height="120"></canvas>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chartClienti"></canvas>
+            </div>
         </div>
     </div>
 
@@ -216,7 +220,9 @@
                 <i class="fas fa-user-check text-purple-500 mr-2"></i>
                 Presenze Ultimi 6 Mesi
             </h2>
-            <canvas id="chartPresenze" height="120"></canvas>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chartPresenze"></canvas>
+            </div>
         </div>
 
         <!-- Calendario Mini Prossimi Eventi -->

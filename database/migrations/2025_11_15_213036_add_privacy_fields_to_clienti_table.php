@@ -13,21 +13,38 @@ return new class extends Migration
     {
         Schema::table('clienti', function (Blueprint $table) {
             // Consensi Privacy GDPR
-            $table->boolean('privacy_accettata')->default(false);
-            $table->timestamp('privacy_accettata_at')->nullable();
-
-            $table->boolean('termini_accettati')->default(false);
-            $table->timestamp('termini_accettati_at')->nullable();
-
-            $table->boolean('marketing_accettato')->default(false)->nullable();
-            $table->timestamp('marketing_accettato_at')->nullable();
-
-            $table->boolean('consenso_dati_sensibili')->default(false);
-            $table->timestamp('consenso_dati_sensibili_at')->nullable();
+            if (!Schema::hasColumn('clienti', 'privacy_accettata')) {
+                $table->boolean('privacy_accettata')->default(false);
+            }
+            if (!Schema::hasColumn('clienti', 'privacy_accettata_at')) {
+                $table->timestamp('privacy_accettata_at')->nullable();
+            }
+            if (!Schema::hasColumn('clienti', 'termini_accettati')) {
+                $table->boolean('termini_accettati')->default(false);
+            }
+            if (!Schema::hasColumn('clienti', 'termini_accettati_at')) {
+                $table->timestamp('termini_accettati_at')->nullable();
+            }
+            if (!Schema::hasColumn('clienti', 'marketing_accettato')) {
+                $table->boolean('marketing_accettato')->default(false)->nullable();
+            }
+            if (!Schema::hasColumn('clienti', 'marketing_accettato_at')) {
+                $table->timestamp('marketing_accettato_at')->nullable();
+            }
+            if (!Schema::hasColumn('clienti', 'consenso_dati_sensibili')) {
+                $table->boolean('consenso_dati_sensibili')->default(false);
+            }
+            if (!Schema::hasColumn('clienti', 'consenso_dati_sensibili_at')) {
+                $table->timestamp('consenso_dati_sensibili_at')->nullable();
+            }
 
             // Tracciabilità
-            $table->string('ip_registrazione', 45)->nullable();
-            $table->text('note_consensi')->nullable();
+            if (!Schema::hasColumn('clienti', 'ip_registrazione')) {
+                $table->string('ip_registrazione', 45)->nullable();
+            }
+            if (!Schema::hasColumn('clienti', 'note_consensi')) {
+                $table->text('note_consensi')->nullable();
+            }
         });
     }
 

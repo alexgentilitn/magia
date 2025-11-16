@@ -9,8 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('utenti', function (Blueprint $table) {
-            $table->timestamp('password_temp_expires_at')->nullable()->after('password');
-            $table->boolean('deve_cambiare_password')->default(false)->after('password_temp_expires_at');
+            // Aggiungi solo se non esistono già
+            if (!Schema::hasColumn('utenti', 'password_temp_expires_at')) {
+                $table->timestamp('password_temp_expires_at')->nullable()->after('password');
+            }
+            if (!Schema::hasColumn('utenti', 'deve_cambiare_password')) {
+                $table->boolean('deve_cambiare_password')->default(false)->after('password_temp_expires_at');
+            }
         });
     }
 

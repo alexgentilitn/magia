@@ -278,9 +278,9 @@ Il deploy si attiva automaticamente quando:
 | Secret | Descrizione | Esempio |
 |--------|-------------|---------|
 | `FTP_HOST` | Host FTP Aruba | `ftp.agstudio.digital` |
-| `FTP_USER` | Username FTP | `agstudiodiital` |
-| `FTP_PASSWORD` | Password FTP | `$Giulietta2019!` |
-| `FTP_PATH` | Percorso directory server | `/public_html/magia` |
+| `FTP_USER` | Username FTP | `magia@agstudio.digital` |
+| `FTP_PASSWORD` | Password FTP | `$magia2025!` |
+| `FTP_PATH` | Percorso directory server | `/home/agstudiodiital/agstudio.digital/magia` |
 
 ⚠️ **IMPORTANTE:** Questi secrets sono configurati SOLO su GitHub, non nel codice.
 
@@ -551,7 +551,8 @@ chmod -R 755 storage/framework
 - **URL Dashboard:** https://www.agstudio.digital/magia/public/admin/dashboard
 - **URL Pubblico:** https://www.agstudio.digital/magia/public/
 - **Server:** Aruba Hosting
-- **Account FTP:** agstudiodiital
+- **Account FTP:** magia@agstudio.digital
+- **Path FTP:** /home/agstudiodiital/agstudio.digital/magia
 
 ### Documentazione Utile
 - **Laravel 10:** https://laravel.com/docs/10.x

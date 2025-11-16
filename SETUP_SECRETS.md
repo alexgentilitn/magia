@@ -31,17 +31,17 @@ Clicca sul pulsante verde **"New repository secret"** e aggiungi questi 4 secret
 
 #### Secret 2: FTP_USER
 - **Name:** `FTP_USER`
-- **Secret:** `agstudiodiital`
+- **Secret:** `magia@agstudio.digital`
 - Clicca **"Add secret"**
 
 #### Secret 3: FTP_PASSWORD
 - **Name:** `FTP_PASSWORD`
-- **Secret:** `$Giulietta2019!`
+- **Secret:** `$magia2025!`
 - Clicca **"Add secret"**
 
 #### Secret 4: FTP_PATH
 - **Name:** `FTP_PATH`
-- **Secret:** `/public_html/magia`
+- **Secret:** `/home/agstudiodiital/agstudio.digital/magia`
 - Clicca **"Add secret"**
 
 ---
@@ -92,11 +92,11 @@ Da questo momento:
 
 ### ❌ Workflow fallisce con "Login failed"
 - Verifica username e password nei secrets
-- Username deve essere: `agstudiodiital`
-- Password: `$Giulietta2019!`
+- Username deve essere: `magia@agstudio.digital`
+- Password: `$magia2025!`
 
 ### ❌ Workflow fallisce con "Directory not found"
-- Verifica il path FTP: `/public_html/magia`
+- Verifica il path FTP: `/home/agstudiodiital/agstudio.digital/magia`
 - Controlla nel cPanel che la cartella esista
 
 ### ❌ File non appaiono online

@@ -524,6 +524,33 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::delete('/{id}', [\App\Http\Controllers\Admin\PrivacyController::class, 'destroy'])->name('destroy');
     });
 
+    // ============================================
+    // EMAIL TEMPLATES
+    // ============================================
+    Route::middleware('tipo_utente:amministratore')->prefix('email-templates')->name('email-templates.')->group(function () {
+        // Lista
+        Route::get('/', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{id}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{id}/modifica', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'destroy'])->name('destroy');
+
+        // Azioni speciali
+        Route::patch('/{id}/toggle-attivo', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'toggleAttivo'])->name('toggle-attivo');
+        Route::post('/{id}/duplica', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'duplica'])->name('duplica');
+        Route::post('/{id}/test', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'inviaTest'])->name('test');
+    });
+
 });
 
 

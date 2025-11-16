@@ -328,6 +328,15 @@
                             </a>
                         </li>
 
+                        <!-- Email Templates (solo amministratori) -->
+                        <li>
+                            <a href="{{ route('admin.email-templates.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.email-templates.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-envelope-open-text w-5"></i>
+                                <span class="ml-3 font-medium">Email Templates</span>
+                            </a>
+                        </li>
+
                         <!-- Impostazioni (solo amministratori) -->
                         <li>
                             <a href="{{ route('admin.impostazioni.smtp') }}"
@@ -517,8 +526,16 @@
                         </a>
                     </li>
 
-                    <!-- Impostazioni (solo amministratori) -->
+                    <!-- Email Templates (solo amministratori) -->
                     @if(Auth::user()->tipo_utente === 'amministratore')
+                    <li>
+                        <a href="{{ route('admin.email-templates.index') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
+                            <i class="fas fa-envelope-open-text w-5"></i>
+                            <span class="ml-3">Email Templates</span>
+                        </a>
+                    </li>
+
+                    <!-- Impostazioni -->
                     <li>
                         <a href="{{ route('admin.impostazioni.smtp') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
                             <i class="fas fa-cog w-5"></i>

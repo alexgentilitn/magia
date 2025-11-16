@@ -145,11 +145,13 @@ class Cliente extends Model
 
     /**
      * Relazione: Lezioni prenotate
+     * NOTA: cliente_lezione.cliente_id riferisce utenti.id, non clienti.id
+     * Questa relazione funziona solo se clienti.id == utenti.id (1:1)
      */
     public function lezioni()
     {
         return $this->belongsToMany(Lezione::class, 'cliente_lezione')
-                    ->withPivot('stato_prenotazione', 'check_in', 'check_out', 'presente')
+                    ->withPivot('stato', 'data_prenotazione', 'check_in', 'check_out', 'valutazione', 'feedback')
                     ->withTimestamps();
     }
 

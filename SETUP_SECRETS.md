@@ -9,11 +9,11 @@ Per abilitare il deploy automatico su Aruba, devi configurare i secrets su GitHu
 Apri questo link (sostituendo con il tuo username se diverso):
 
 ```
-https://github.com/alexgentilitn/progetti_ai/settings/secrets/actions
+https://github.com/alexgentilitn/magia/settings/secrets/actions
 ```
 
 Oppure manualmente:
-1. Vai su GitHub al repository: `https://github.com/alexgentilitn/progetti_ai`
+1. Vai su GitHub al repository: `https://github.com/alexgentilitn/magia`
 2. Clicca su **"Settings"** (in alto a destra)
 3. Nel menu laterale sinistro, clicca su **"Secrets and variables"**
 4. Clicca su **"Actions"**
@@ -31,17 +31,17 @@ Clicca sul pulsante verde **"New repository secret"** e aggiungi questi 4 secret
 
 #### Secret 2: FTP_USER
 - **Name:** `FTP_USER`
-- **Secret:** `agstudiodiital` (oppure `magia@agstudio.digital` se usi un account FTP dedicato)
+- **Secret:** `magia@agstudio.digital`
 - Clicca **"Add secret"**
 
 #### Secret 3: FTP_PASSWORD
 - **Name:** `FTP_PASSWORD`
-- **Secret:** La password del tuo account FTP (verifica nel cPanel)
+- **Secret:** `$magia2025!`
 - Clicca **"Add secret"**
 
 #### Secret 4: FTP_PATH
 - **Name:** `FTP_PATH`
-- **Secret:** `/public_html/progetti_ai`
+- **Secret:** `/magia/website-agstudio`
 - Clicca **"Add secret"**
 
 ---
@@ -63,27 +63,27 @@ Da questo momento:
 1. **Claude Code crea file** qui
 2. **Push automatico su GitHub**
 3. **GitHub Actions fa il deploy** (30-60 secondi)
-4. **File online su** https://www.agstudio.digital/magia/
+4. **File online su** https://www.agstudio.digital/magia/website-agstudio/
 
 ---
 
 ## 🔍 Come verificare che funziona:
 
 ### Metodo 1: Guarda le Actions
-1. Vai su `https://github.com/alexgentilitn/progetti_ai/actions`
+1. Vai su `https://github.com/alexgentilitn/magia/actions`
 2. Vedrai una lista di "workflow runs"
 3. Ogni push creerà un nuovo workflow
 4. Clicca su uno per vedere i dettagli
 5. Se vedi ✅ verde = Deploy riuscito!
 
 ### Metodo 2: Forza un deploy manuale (test)
-1. Vai su `https://github.com/alexgentilitn/progetti_ai/actions`
+1. Vai su `https://github.com/alexgentilitn/magia/actions`
 2. Clicca su **"Deploy to Aruba FTP"** (sulla sinistra)
 3. Clicca sul pulsante **"Run workflow"** (a destra)
 4. Seleziona il branch corrente
 5. Clicca **"Run workflow"**
 6. Aspetta 30-60 secondi
-7. Vai su `https://www.agstudio.digital/progetti_ai/`
+7. Vai su `https://www.agstudio.digital/magia/website-agstudio/`
 8. Dovresti vedere i file aggiornati! 🎉
 
 ---
@@ -92,17 +92,17 @@ Da questo momento:
 
 ### ❌ Workflow fallisce con "Login failed"
 - Verifica username e password nei secrets
-- Username può essere: `agstudiodiital` oppure `magia@agstudio.digital`
-- Verifica la password nel cPanel
+- Username deve essere: `magia@agstudio.digital`
+- Password: `$magia2025!`
 
 ### ❌ Workflow fallisce con "Directory not found"
-- Verifica il path FTP: `/public_html/progetti_ai`
+- Verifica il path FTP: `/magia/website-agstudio`
 - Controlla nel cPanel che la cartella esista
 
 ### ❌ File non appaiono online
 - Controlla che il deploy sia completato (✅ verde su Actions)
 - Verifica il path sia corretto
-- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/index.php`
+- Prova ad aprire direttamente: `https://www.agstudio.digital/magia/website-agstudio/`
 
 ---
 
@@ -117,7 +117,7 @@ Claude: Crea file + Commit + Push
    ↓
 GitHub Actions: Deploy automatico (30-60 sec)
    ↓
-Tu: Apri browser → https://www.agstudio.digital/progetti_ai/contatti.php
+Tu: Apri browser → https://www.agstudio.digital/magia/website-agstudio/contatti.php
    ↓
 ✅ Pagina online e funzionante!
 ```

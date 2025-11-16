@@ -1,4 +1,4 @@
-# 🔧 CONFIGURAZIONE TECNICA - progetti_ai
+# 🔧 CONFIGURAZIONE TECNICA - magia
 
 **Documento di riferimento completo per riconfigurare il progetto da zero**
 
@@ -62,7 +62,7 @@ APP_NAME="AGstudio CRM"
 APP_ENV=production
 APP_KEY=base64:Jss+hm6Bdc2PuHAWtNffsQlLTLntHLxUDA/jccAD2QI=
 APP_DEBUG=false
-APP_URL=https://www.agstudio.digital/progetti_ai
+APP_URL=https://www.agstudio.digital/magia/website-agstudio
 
 LOG_CHANNEL=stack
 LOG_DEPRECATIONS_CHANNEL=null
@@ -145,7 +145,7 @@ php artisan key:generate
 ## 🌳 GIT E BRANCH STRATEGY
 
 ### Repository GitHub
-- **URL:** https://github.com/alexgentilitn/progetti_ai
+- **URL:** https://github.com/alexgentilitn/magia
 - **Owner:** alexgentilitn
 - **Visibilità:** Privato
 
@@ -192,7 +192,7 @@ main (produzione stabile)
 
 5. **Deploy su FTP** → File caricati su server Aruba
 
-6. **Sito live aggiornato** → https://www.agstudio.digital/progetti_ai/
+6. **Sito live aggiornato** → https://www.agstudio.digital/magia/website-agstudio/
 
 ### Restrizioni Push
 
@@ -278,15 +278,15 @@ Il deploy si attiva automaticamente quando:
 | Secret | Descrizione | Esempio |
 |--------|-------------|---------|
 | `FTP_HOST` | Host FTP Aruba | `ftp.agstudio.digital` |
-| `FTP_USER` | Username FTP | `agstudiodiital` |
-| `FTP_PASSWORD` | Password FTP | `********` (nascosta) |
-| `FTP_PATH` | Percorso directory server | `/public_html/progetti_ai` |
+| `FTP_USER` | Username FTP | `magia@agstudio.digital` |
+| `FTP_PASSWORD` | Password FTP | `$magia2025!` |
+| `FTP_PATH` | Percorso directory server | `/magia/website-agstudio` |
 
 ⚠️ **IMPORTANTE:** Questi secrets sono configurati SOLO su GitHub, non nel codice.
 
 ### Monitorare il Deploy
 
-1. Vai su: https://github.com/alexgentilitn/progetti_ai/actions
+1. Vai su: https://github.com/alexgentilitn/magia/actions
 2. Vedrai l'ultimo workflow "Deploy to Aruba FTP"
 3. Clicca per vedere i dettagli:
    - ✅ Verde = Deploy riuscito
@@ -307,8 +307,8 @@ Il deploy si attiva automaticamente quando:
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/alexgentilitn/progetti_ai.git
-cd progetti_ai
+git clone https://github.com/alexgentilitn/magia.git
+cd magia
 ```
 
 ### Step 2: Checkout Branch Corretto
@@ -351,7 +351,7 @@ DB_DATABASE=agstudiodiital_magia
 DB_USERNAME=agstudiodiital_agstudiomagia
 DB_PASSWORD=$Magia2015!
 
-APP_URL=https://www.agstudio.digital/progetti_ai
+APP_URL=https://www.agstudio.digital/magia/website-agstudio
 ```
 
 ### Step 5: Genera APP_KEY
@@ -401,8 +401,8 @@ php artisan migrate --force
 ### Step 9: Test Configurazione
 
 Visita questi URL per verificare:
-1. **Homepage:** https://www.agstudio.digital/progetti_ai/public/
-2. **File test connessione:** https://www.agstudio.digital/progetti_ai/test_db_connection.php
+1. **Homepage:** https://www.agstudio.digital/magia/website-agstudio/
+2. **File test connessione:** https://www.agstudio.digital/magia/website-agstudio/index.php
 
 ### Step 10: Configura GitHub Actions (se necessario)
 
@@ -544,13 +544,13 @@ chmod -R 755 storage/framework
 ## 📞 CONTATTI E RISORSE
 
 ### Repository
-- **GitHub:** https://github.com/alexgentilitn/progetti_ai
-- **Actions:** https://github.com/alexgentilitn/progetti_ai/actions
+- **GitHub:** https://github.com/alexgentilitn/magia
+- **Actions:** https://github.com/alexgentilitn/magia/actions
 
 ### Server Produzione
-- **URL:** https://www.agstudio.digital/progetti_ai/
-- **URL Pubblico:** https://www.agstudio.digital/progetti_ai/public/
+- **URL:** https://www.agstudio.digital/magia/website-agstudio/
 - **Server:** Aruba Hosting
+- **Account FTP:** magia@agstudio.digital
 
 ### Documentazione Utile
 - **Laravel 10:** https://laravel.com/docs/10.x

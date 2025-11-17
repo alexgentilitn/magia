@@ -783,10 +783,42 @@ async function runSingleMigration(migrationName) {
             });
             loadMigrationsList();
         } else {
+            // Crea messaggio dettagliato con risultati
+            let htmlMessage = '<div class="text-left">';
+            htmlMessage += '<p class="mb-2">' + data.message + '</p>';
+
+            if (data.results) {
+                htmlMessage += '<div class="mt-4 max-h-64 overflow-y-auto text-sm">';
+                for (const [migration, result] of Object.entries(data.results)) {
+                    if (!result.success) {
+                        htmlMessage += '<div class="bg-red-50 border-l-2 border-red-400 p-2 mb-2">';
+                        htmlMessage += '<strong>' + migration + '</strong><br>';
+                        htmlMessage += '<span class="text-red-700">' + (result.error || 'Errore sconosciuto') + '</span>';
+                        if (result.output) {
+                            htmlMessage += '<pre class="mt-1 text-xs bg-gray-100 p-1 rounded overflow-x-auto">' + result.output + '</pre>';
+                        }
+                        htmlMessage += '</div>';
+                    }
+                }
+                htmlMessage += '</div>';
+            }
+
+            if (data.debug) {
+                htmlMessage += '<div class="mt-4 text-xs bg-yellow-50 p-2 rounded">';
+                htmlMessage += '<strong>Debug Info:</strong><br>';
+                htmlMessage += 'Host: ' + data.debug.host + '<br>';
+                htmlMessage += 'Database: ' + data.debug.database + '<br>';
+                htmlMessage += 'Error: ' + data.debug.error_type;
+                htmlMessage += '</div>';
+            }
+
+            htmlMessage += '</div>';
+
             Swal.fire({
                 icon: 'error',
-                title: 'Errore',
-                text: data.message,
+                title: 'Errore Esecuzione',
+                html: htmlMessage,
+                width: '600px',
                 confirmButtonColor: '#ef4444'
             });
         }
@@ -855,10 +887,42 @@ async function runSelectedMigrations() {
             });
             loadMigrationsList();
         } else {
+            // Crea messaggio dettagliato con risultati
+            let htmlMessage = '<div class="text-left">';
+            htmlMessage += '<p class="mb-2">' + data.message + '</p>';
+
+            if (data.results) {
+                htmlMessage += '<div class="mt-4 max-h-64 overflow-y-auto text-sm">';
+                for (const [migration, result] of Object.entries(data.results)) {
+                    if (!result.success) {
+                        htmlMessage += '<div class="bg-red-50 border-l-2 border-red-400 p-2 mb-2">';
+                        htmlMessage += '<strong>' + migration + '</strong><br>';
+                        htmlMessage += '<span class="text-red-700">' + (result.error || 'Errore sconosciuto') + '</span>';
+                        if (result.output) {
+                            htmlMessage += '<pre class="mt-1 text-xs bg-gray-100 p-1 rounded overflow-x-auto">' + result.output + '</pre>';
+                        }
+                        htmlMessage += '</div>';
+                    }
+                }
+                htmlMessage += '</div>';
+            }
+
+            if (data.debug) {
+                htmlMessage += '<div class="mt-4 text-xs bg-yellow-50 p-2 rounded">';
+                htmlMessage += '<strong>Debug Info:</strong><br>';
+                htmlMessage += 'Host: ' + data.debug.host + '<br>';
+                htmlMessage += 'Database: ' + data.debug.database + '<br>';
+                htmlMessage += 'Error: ' + data.debug.error_type;
+                htmlMessage += '</div>';
+            }
+
+            htmlMessage += '</div>';
+
             Swal.fire({
                 icon: 'error',
-                title: 'Errore',
-                text: data.message,
+                title: 'Errore Esecuzione',
+                html: htmlMessage,
+                width: '600px',
                 confirmButtonColor: '#ef4444'
             });
         }

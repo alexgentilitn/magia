@@ -473,17 +473,35 @@ class SuperAdminController extends Controller
     public function runMigrations(Request $request)
     {
         try {
+            // Verifica connessione database prima di eseguire
+            try {
+                DB::connection()->getPdo();
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errore connessione database: ' . $e->getMessage(),
+                    'debug' => [
+                        'host' => config('database.connections.mysql.host'),
+                        'database' => config('database.connections.mysql.database'),
+                        'error_type' => get_class($e)
+                    ]
+                ], 500);
+            }
+
             $migrations = $request->input('migrations', []); // Array di migration names
 
             if (empty($migrations)) {
                 // Esegui tutte le migrations pending
-                Artisan::call('migrate', ['--force' => true]);
+                $exitCode = Artisan::call('migrate', ['--force' => true]);
                 $output = Artisan::output();
 
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Tutte le migrations sono state eseguite',
-                    'output' => $output
+                    'success' => $exitCode === 0,
+                    'message' => $exitCode === 0
+                        ? 'Tutte le migrations sono state eseguite'
+                        : 'Alcune migrations sono fallite',
+                    'output' => $output,
+                    'exit_code' => $exitCode
                 ]);
             }
 
@@ -491,20 +509,40 @@ class SuperAdminController extends Controller
             $results = [];
             foreach ($migrations as $migration) {
                 try {
+                    // Verifica che il file esista
+                    $migrationPath = database_path('migrations/' . $migration . '.php');
+                    if (!file_exists($migrationPath)) {
+                        $results[$migration] = [
+                            'success' => false,
+                            'error' => 'File migration non trovato: ' . $migrationPath
+                        ];
+                        continue;
+                    }
+
                     // Esegui migration specifica usando path
-                    Artisan::call('migrate', [
+                    $exitCode = Artisan::call('migrate', [
                         '--path' => 'database/migrations/' . $migration . '.php',
                         '--force' => true
                     ]);
 
+                    $output = Artisan::output();
+
                     $results[$migration] = [
-                        'success' => true,
-                        'output' => Artisan::output()
+                        'success' => $exitCode === 0,
+                        'output' => $output,
+                        'exit_code' => $exitCode
                     ];
+
+                    if ($exitCode !== 0) {
+                        $results[$migration]['error'] = 'Migration fallita (exit code: ' . $exitCode . ')';
+                    }
+
                 } catch (\Exception $e) {
                     $results[$migration] = [
                         'success' => false,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
+                        'error_type' => get_class($e),
+                        'trace' => config('app.debug') ? $e->getTraceAsString() : 'Enable debug mode per vedere trace'
                     ];
                 }
             }
@@ -512,17 +550,38 @@ class SuperAdminController extends Controller
             $successCount = count(array_filter($results, fn($r) => $r['success']));
             $failCount = count($results) - $successCount;
 
+            // Crea messaggio dettagliato
+            $message = "{$successCount} migration(s) eseguita/e con successo";
+            if ($failCount > 0) {
+                $message .= ", {$failCount} fallita/e";
+
+                // Aggiungi dettagli errori
+                $errors = [];
+                foreach ($results as $name => $result) {
+                    if (!$result['success']) {
+                        $errors[] = $name . ': ' . ($result['error'] ?? 'Errore sconosciuto');
+                    }
+                }
+                $message .= "\n\nDettagli:\n" . implode("\n", $errors);
+            }
+
             return response()->json([
                 'success' => $failCount === 0,
-                'message' => "{$successCount} migration(s) eseguita/e con successo" .
-                            ($failCount > 0 ? ", {$failCount} fallita/e" : ""),
-                'results' => $results
+                'message' => $message,
+                'results' => $results,
+                'summary' => [
+                    'total' => count($migrations),
+                    'success' => $successCount,
+                    'failed' => $failCount
+                ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Errore: ' . $e->getMessage()
+                'message' => 'Errore esecuzione migrations: ' . $e->getMessage(),
+                'error_type' => get_class($e),
+                'trace' => config('app.debug') ? $e->getTraceAsString() : 'Enable debug mode per vedere trace completo'
             ], 500);
         }
     }

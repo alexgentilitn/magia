@@ -99,6 +99,33 @@ Route::prefix('pagamento')->name('pagamento.')->group(function () {
 
 
 // ============================================
+// MESSAGING E NOTIFICHE (Tutti gli utenti autenticati)
+// ============================================
+
+Route::middleware(['auth'])->group(function () {
+    // Messaging
+    Route::prefix('messaging')->name('messaging.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MessagingController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\MessagingController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\MessagingController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\MessagingController::class, 'show'])->name('show');
+        Route::post('/{id}/send', [\App\Http\Controllers\MessagingController::class, 'sendMessage'])->name('send');
+        Route::get('/{id}/messages', [\App\Http\Controllers\MessagingController::class, 'getNewMessages'])->name('messages');
+        Route::post('/{id}/read', [\App\Http\Controllers\MessagingController::class, 'markAsRead'])->name('read');
+    });
+
+    // Notifiche
+    Route::prefix('notifiche')->name('notifiche.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificheController::class, 'index'])->name('index');
+        Route::get('/recenti', [\App\Http\Controllers\NotificheController::class, 'getRecenti'])->name('recenti');
+        Route::post('/{id}/read', [\App\Http\Controllers\NotificheController::class, 'markAsRead'])->name('read');
+        Route::post('/read-all', [\App\Http\Controllers\NotificheController::class, 'markAllAsRead'])->name('read-all');
+        Route::delete('/{id}', [\App\Http\Controllers\NotificheController::class, 'destroy'])->name('destroy');
+    });
+});
+
+
+// ============================================
 // LOGOUT GLOBALE
 // ============================================
 

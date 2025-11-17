@@ -80,6 +80,25 @@ Route::post('/verifica-codice-invito', [RegistrazioneController::class, 'verific
 
 
 // ============================================
+// PAGAMENTO REGISTRAZIONE
+// ============================================
+
+Route::prefix('pagamento')->name('pagamento.')->group(function () {
+    // Scelta metodo pagamento
+    Route::get('/{utente_id}/scelta', [\App\Http\Controllers\PagamentoClienteController::class, 'sceltaMetodo'])->name('scelta');
+
+    // PayPal
+    Route::post('/paypal/inizia', [\App\Http\Controllers\PagamentoClienteController::class, 'iniziaPayPal'])->name('paypal.inizia');
+    Route::get('/paypal/success', [\App\Http\Controllers\PagamentoClienteController::class, 'paypalSuccess'])->name('paypal.success');
+    Route::get('/paypal/cancel', [\App\Http\Controllers\PagamentoClienteController::class, 'paypalCancel'])->name('paypal.cancel');
+
+    // Bonifico
+    Route::get('/{utente_id}/bonifico', [\App\Http\Controllers\PagamentoClienteController::class, 'formBonifico'])->name('bonifico.form');
+    Route::post('/bonifico/salva', [\App\Http\Controllers\PagamentoClienteController::class, 'salvaBonifico'])->name('bonifico.salva');
+});
+
+
+// ============================================
 // LOGOUT GLOBALE
 // ============================================
 
@@ -234,6 +253,12 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::post('/{id}/pagamento-parziale', [PagamentiController::class, 'registraPagamentoParziale'])->name('pagamento-parziale');
         Route::post('/{id}/marca-completato', [PagamentiController::class, 'marcaCompletato'])->name('marca-completato');
         Route::post('/{id}/rimborsa', [PagamentiController::class, 'rimborsa'])->name('rimborsa');
+
+        // Verifica bonifici registrazione
+        Route::get('/bonifici', [\App\Http\Controllers\PagamentoClienteController::class, 'listaVerifiche'])->name('bonifici');
+        Route::post('/bonifici/{utente_id}/approva', [\App\Http\Controllers\PagamentoClienteController::class, 'approvaBonifico'])->name('bonifici.approva');
+        Route::post('/bonifici/{utente_id}/rifiuta', [\App\Http\Controllers\PagamentoClienteController::class, 'rifiutaBonifico'])->name('bonifici.rifiuta');
+        Route::get('/bonifici/{utente_id}/ricevuta', [\App\Http\Controllers\PagamentoClienteController::class, 'visualizzaRicevuta'])->name('bonifici.ricevuta');
     });
 
     // ============================================

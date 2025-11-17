@@ -76,51 +76,79 @@ class SuperAdminController extends Controller
     public function clearAllCache(Request $request)
     {
         $results = [];
+        $totalDeleted = 0;
 
-        // 1. Cache configurazione
+        // 1. Cache configurazione bootstrap
         try {
-            Artisan::call('config:clear');
-            $results['config'] = 'OK';
+            $files = [
+                base_path('bootstrap/cache/config.php'),
+                base_path('bootstrap/cache/routes-v7.php'),
+                base_path('bootstrap/cache/services.php'),
+                base_path('bootstrap/cache/events.php'),
+            ];
+
+            $deleted = 0;
+            foreach ($files as $file) {
+                if (File::exists($file)) {
+                    File::delete($file);
+                    $deleted++;
+                }
+            }
+
+            $results['bootstrap'] = "OK ($deleted files)";
+            $totalDeleted += $deleted;
         } catch (\Exception $e) {
-            $results['config'] = 'ERRORE: ' . $e->getMessage();
+            $results['bootstrap'] = 'ERRORE: ' . $e->getMessage();
         }
 
-        // 2. Cache route
+        // 2. Cache view
         try {
-            Artisan::call('route:clear');
-            $results['route'] = 'OK';
+            $viewsPath = storage_path('framework/views');
+            $deleted = 0;
+
+            if (File::exists($viewsPath)) {
+                $files = File::files($viewsPath);
+                foreach ($files as $file) {
+                    if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                        File::delete($file);
+                        $deleted++;
+                    }
+                }
+            }
+
+            $results['views'] = "OK ($deleted files)";
+            $totalDeleted += $deleted;
         } catch (\Exception $e) {
-            $results['route'] = 'ERRORE: ' . $e->getMessage();
+            $results['views'] = 'ERRORE: ' . $e->getMessage();
         }
 
-        // 3. Cache view
+        // 3. Cache framework
         try {
-            Artisan::call('view:clear');
-            $results['view'] = 'OK';
-        } catch (\Exception $e) {
-            $results['view'] = 'ERRORE: ' . $e->getMessage();
-        }
+            $cachePath = storage_path('framework/cache/data');
+            $deleted = 0;
 
-        // 4. Cache applicazione
-        try {
-            Artisan::call('cache:clear');
-            $results['cache'] = 'OK';
-        } catch (\Exception $e) {
-            $results['cache'] = 'ERRORE: ' . $e->getMessage();
-        }
+            if (File::exists($cachePath)) {
+                $dirs = File::directories($cachePath);
+                foreach ($dirs as $dir) {
+                    $files = File::files($dir);
+                    foreach ($files as $file) {
+                        File::delete($file);
+                        $deleted++;
+                    }
+                }
+            }
 
-        // 5. Ottimizza autoload
-        try {
-            Artisan::call('optimize:clear');
-            $results['optimize'] = 'OK';
+            $results['framework'] = "OK ($deleted files)";
+            $totalDeleted += $deleted;
         } catch (\Exception $e) {
-            $results['optimize'] = 'ERRORE: ' . $e->getMessage();
+            $results['framework'] = 'ERRORE: ' . $e->getMessage();
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Cache pulita con successo',
-            'results' => $results
+            'message' => "Cache pulita con successo! $totalDeleted file eliminati",
+            'results' => $results,
+            'total_deleted' => $totalDeleted
         ]);
     }
 
@@ -130,11 +158,17 @@ class SuperAdminController extends Controller
     public function clearConfigCache()
     {
         try {
-            Artisan::call('config:clear');
-            
+            $configCache = base_path('bootstrap/cache/config.php');
+            $deleted = false;
+
+            if (File::exists($configCache)) {
+                File::delete($configCache);
+                $deleted = true;
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Cache configurazione pulita'
+                'message' => $deleted ? 'Cache configurazione pulita' : 'Nessuna cache da pulire'
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -149,21 +183,28 @@ class SuperAdminController extends Controller
      */
     public function clearLogs(Request $request)
     {
-        $logPath = storage_path('logs/laravel.log');
-        
-        if (File::exists($logPath)) {
+        try {
+            $logPath = storage_path('logs/laravel.log');
+
+            // Crea directory se non esiste
+            $logDir = dirname($logPath);
+            if (!File::exists($logDir)) {
+                File::makeDirectory($logDir, 0755, true);
+            }
+
+            // Pulisci o crea il file vuoto
             File::put($logPath, '');
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Log pulito con successo'
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore pulizia log: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'File di log non trovato'
-        ], 404);
     }
 
     /**
@@ -172,25 +213,44 @@ class SuperAdminController extends Controller
     public function viewLogs(Request $request)
     {
         $logPath = storage_path('logs/laravel.log');
-        
+
         if (!File::exists($logPath)) {
             return response()->json([
-                'success' => false,
-                'message' => 'File di log non trovato'
-            ], 404);
+                'success' => true,
+                'content' => 'Nessun file di log presente',
+                'size' => 0,
+                'modified' => null
+            ]);
         }
 
-        // Prendi le ultime 100 righe
-        $lines = $request->input('lines', 100);
-        $content = File::get($logPath);
-        $logLines = array_slice(explode("\n", $content), -$lines);
-        
-        return response()->json([
-            'success' => true,
-            'content' => implode("\n", $logLines),
-            'size' => File::size($logPath),
-            'modified' => File::lastModified($logPath)
-        ]);
+        try {
+            // Prendi le ultime 100 righe
+            $lines = $request->input('lines', 100);
+            $content = File::get($logPath);
+
+            if (empty($content)) {
+                return response()->json([
+                    'success' => true,
+                    'content' => 'Log vuoto',
+                    'size' => 0,
+                    'modified' => File::lastModified($logPath)
+                ]);
+            }
+
+            $logLines = array_slice(explode("\n", $content), -$lines);
+
+            return response()->json([
+                'success' => true,
+                'content' => implode("\n", $logLines),
+                'size' => File::size($logPath),
+                'modified' => File::lastModified($logPath)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore lettura log: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

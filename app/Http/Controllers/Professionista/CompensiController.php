@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Professionista;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lezione;
+use App\Models\PagamentoProfessionista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,26 @@ class CompensiController extends Controller
         $lezioniMeseCorrente = $lezioniMeseCorrente->count();
         $totaleOreInsegnate = $lezioniCompletate->sum('durata_minuti') / 60;
 
-        // Compensi per mese (ultimi 12 mesi)
+        // Pagamenti effettivi ricevuti
+        $pagamentiRicevuti = PagamentoProfessionista::where('utente_id', $professionistaId)
+            ->completati()
+            ->get();
+
+        $totalePagato = $pagamentiRicevuti->sum('importo_netto');
+        $totaleRitenute = $pagamentiRicevuti->sum('ritenuta_fiscale');
+        $numeroPagamenti = $pagamentiRicevuti->count();
+
+        // Differenza tra compenso maturato e pagato
+        $compensoDaPagare = $compensoTotale - $pagamentiRicevuti->sum('importo_maturato');
+
+        // Pagamento mese corrente
+        $pagamentoMeseCorrente = PagamentoProfessionista::where('utente_id', $professionistaId)
+            ->completati()
+            ->whereMonth('data_pagamento', now()->month)
+            ->whereYear('data_pagamento', now()->year)
+            ->sum('importo_netto');
+
+        // Compensi per mese (ultimi 12 mesi) - CON PAGAMENTI
         $compensiPerMese = collect();
         for ($i = 11; $i >= 0; $i--) {
             $data = now()->subMonths($i);
@@ -92,14 +112,29 @@ class CompensiController extends Controller
                 return $ore * $tariffaOraria;
             });
 
+            // Pagamenti ricevuti nel mese
+            $pagatoMese = PagamentoProfessionista::where('utente_id', $professionistaId)
+                ->completati()
+                ->whereMonth('data_pagamento', $data->month)
+                ->whereYear('data_pagamento', $data->year)
+                ->sum('importo_netto');
+
             $compensiPerMese->push([
                 'mese' => $data->format('M Y'),
                 'anno' => $data->year,
                 'mese_num' => $data->month,
                 'totale' => $totale,
+                'pagato' => $pagatoMese,
                 'lezioni' => $lezioniMese->count(),
             ]);
         }
+
+        // Ultimi pagamenti ricevuti (per sidebar)
+        $ultimiPagamenti = PagamentoProfessionista::where('utente_id', $professionistaId)
+            ->completati()
+            ->orderBy('data_pagamento', 'desc')
+            ->limit(5)
+            ->get();
 
         return view('professionista.compensi.index', compact(
             'professionista',
@@ -110,21 +145,49 @@ class CompensiController extends Controller
             'lezioniMeseCorrente',
             'totaleOreInsegnate',
             'tariffaOraria',
-            'compensiPerMese'
+            'compensiPerMese',
+            'totalePagato',
+            'totaleRitenute',
+            'numeroPagamenti',
+            'compensoDaPagare',
+            'pagamentoMeseCorrente',
+            'ultimiPagamenti'
         ));
     }
 
     /**
-     * Storico pagamenti (placeholder per future implementazioni)
+     * Storico pagamenti ricevuti
      */
     public function storico()
     {
-        $professionista = Auth::user();
+        $utente = Auth::user();
+        $professionistaId = $utente->id;
 
-        // Nota: Questa funzionalità richiede una tabella pagamenti_professionisti
-        // Per ora mostriamo i compensi calcolati per mese
+        // Ottieni tutti i pagamenti ricevuti
+        $pagamenti = PagamentoProfessionista::where('utente_id', $professionistaId)
+            ->orderBy('data_pagamento', 'desc')
+            ->get();
 
-        return view('professionista.compensi.storico', compact('professionista'));
+        // Statistiche totali
+        $totaleVersato = $pagamenti->where('stato', 'completato')->sum('importo_netto');
+        $totaleRitenute = $pagamenti->where('stato', 'completato')->sum('ritenuta_fiscale');
+        $numeroCompletati = $pagamenti->where('stato', 'completato')->count();
+        $numeroInAttesa = $pagamenti->where('stato', 'in_attesa')->count();
+
+        // Pagamenti per anno
+        $pagamentiPerAnno = $pagamenti->groupBy(function($pagamento) {
+            return $pagamento->data_pagamento->format('Y');
+        });
+
+        return view('professionista.compensi.storico', compact(
+            'utente',
+            'pagamenti',
+            'totaleVersato',
+            'totaleRitenute',
+            'numeroCompletati',
+            'numeroInAttesa',
+            'pagamentiPerAnno'
+        ));
     }
 
     /**

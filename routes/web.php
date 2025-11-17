@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\RicetteController;
 use App\Http\Controllers\Admin\ReferralController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\TemplateEmailController;
+use App\Http\Controllers\Admin\SuperAdminController;
 
 /**
  * File: Routes Web

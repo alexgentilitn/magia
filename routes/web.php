@@ -296,6 +296,12 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::get('/{id}/certificazioni', [ProfessionistiController::class, 'certificazioni'])->name('certificazioni');
         Route::post('/{id}/certificazioni', [ProfessionistiController::class, 'salvaCertificazioni'])->name('salva-certificazioni');
 
+        // Gestione permessi individuali collaboratore
+        Route::get('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'edit'])->name('permessi.edit');
+        Route::put('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'update'])->name('permessi.update');
+        Route::delete('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'reset'])->name('permessi.reset');
+        Route::get('/{id}/permessi/api', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'getPermessi'])->name('permessi.api');
+
         // Gestione disponibilità
         Route::get('/{id}/disponibilita', [ProfessionistiController::class, 'disponibilita'])->name('disponibilita');
         Route::post('/{id}/disponibilita', [ProfessionistiController::class, 'salvaDisponibilita'])->name('salva-disponibilita');

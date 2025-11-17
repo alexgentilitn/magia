@@ -74,6 +74,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Stato *</label>
                 <select name="stato" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+                    <option value="pending" {{ old('stato', $professionista->stato) == 'pending' ? 'selected' : '' }}>In Attesa di Approvazione</option>
                     <option value="attivo" {{ old('stato', $professionista->stato) == 'attivo' ? 'selected' : '' }}>Attivo</option>
                     <option value="sospeso" {{ old('stato', $professionista->stato) == 'sospeso' ? 'selected' : '' }}>Sospeso</option>
                     <option value="inattivo" {{ old('stato', $professionista->stato) == 'inattivo' ? 'selected' : '' }}>Inattivo</option>
@@ -84,6 +85,54 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Biografia Professionale</label>
                 <textarea name="bio" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent" placeholder="Descrizione delle competenze e dell'esperienza...">{{ old('bio', $professionista->bio) }}</textarea>
+            </div>
+
+            <!-- Specializzazioni -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Specializzazioni</label>
+                <div id="specializzazioni-container" class="flex flex-wrap gap-2 mb-2">
+                    @if($professionista->specializzazioni)
+                        @foreach($professionista->specializzazioni as $index => $spec)
+                        <span class="px-3 py-1 bg-fucsia-magia text-white rounded-full text-sm flex items-center gap-2">
+                            {{ $spec }}
+                            <button type="button" onclick="rimuoviTag('specializzazioni', {{ $index }})" class="text-white hover:text-red-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <input type="hidden" name="specializzazioni[]" value="{{ $spec }}">
+                        </span>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="nuova-specializzazione" placeholder="Es: Fitness, Yoga, Pilates..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+                    <button type="button" onclick="aggiungiTag('specializzazioni', 'nuova-specializzazione')" class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia">
+                        <i class="fas fa-plus mr-1"></i> Aggiungi
+                    </button>
+                </div>
+            </div>
+
+            <!-- Qualifiche -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Qualifiche e Titoli di Studio</label>
+                <div id="qualifiche-container" class="flex flex-wrap gap-2 mb-2">
+                    @if($professionista->qualifiche)
+                        @foreach($professionista->qualifiche as $index => $qual)
+                        <span class="px-3 py-1 bg-viola-magia text-white rounded-full text-sm flex items-center gap-2">
+                            {{ $qual }}
+                            <button type="button" onclick="rimuoviTag('qualifiche', {{ $index }})" class="text-white hover:text-red-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <input type="hidden" name="qualifiche[]" value="{{ $qual }}">
+                        </span>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="nuova-qualifica" placeholder="Es: Laurea in Scienze Motorie, Diploma CONI..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+                    <button type="button" onclick="aggiungiTag('qualifiche', 'nuova-qualifica')" class="px-4 py-2 bg-viola-magia text-white rounded-lg hover:bg-viola-magia">
+                        <i class="fas fa-plus mr-1"></i> Aggiungi
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -105,4 +154,54 @@
         </div>
     </form>
 </div>
+
+<script>
+// Gestione tag dinamici per specializzazioni e qualifiche
+function aggiungiTag(tipo, inputId) {
+    const input = document.getElementById(inputId);
+    const valore = input.value.trim();
+
+    if (!valore) return;
+
+    const container = document.getElementById(`${tipo}-container`);
+    const index = container.children.length;
+
+    const tagHtml = `
+        <span class="px-3 py-1 ${tipo === 'specializzazioni' ? 'bg-fucsia-magia' : 'bg-viola-magia'} text-white rounded-full text-sm flex items-center gap-2">
+            ${valore}
+            <button type="button" onclick="rimuoviTag('${tipo}', ${index})" class="text-white hover:text-red-200">
+                <i class="fas fa-times"></i>
+            </button>
+            <input type="hidden" name="${tipo}[]" value="${valore}">
+        </span>
+    `;
+
+    container.insertAdjacentHTML('beforeend', tagHtml);
+    input.value = '';
+}
+
+function rimuoviTag(tipo, index) {
+    const container = document.getElementById(`${tipo}-container`);
+    const tags = container.querySelectorAll('span');
+    if (tags[index]) {
+        tags[index].remove();
+    }
+}
+
+// Permetti di aggiungere tag con Enter
+document.getElementById('nuova-specializzazione')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        aggiungiTag('specializzazioni', 'nuova-specializzazione');
+    }
+});
+
+document.getElementById('nuova-qualifica')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        aggiungiTag('qualifiche', 'nuova-qualifica');
+    }
+});
+</script>
+
 @endsection

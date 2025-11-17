@@ -137,9 +137,60 @@
 
         <!-- Azioni Rapide -->
         <div class="space-y-4">
+            <!-- Foto Profilo -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Foto Profilo</h2>
+                <div class="text-center mb-4">
+                    @if($professionista->foto_profilo)
+                    <img src="{{ asset('storage/' . $professionista->foto_profilo) }}" alt="Foto Profilo" class="w-32 h-32 rounded-full mx-auto object-cover mb-3">
+                    <form method="POST" action="{{ route('admin.professionisti.elimina-foto', $professionista->id) }}" class="inline" id="elimina-foto-form">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" onclick="confermaEliminazione('elimina-foto-form', 'Eliminare la foto profilo?', 'L\'immagine sarà rimossa definitivamente.')" class="text-sm text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash mr-1"></i> Rimuovi foto
+                        </button>
+                    </form>
+                    @else
+                    <div class="w-32 h-32 rounded-full mx-auto bg-gradient-to-br from-fucsia-magia to-viola-magia flex items-center justify-center text-white text-4xl font-bold mb-3">
+                        {{ substr($professionista->nome, 0, 1) }}{{ substr($professionista->cognome, 0, 1) }}
+                    </div>
+                    <p class="text-sm text-gray-500">Nessuna foto profilo</p>
+                    @endif
+                </div>
+                <form method="POST" action="{{ route('admin.professionisti.upload-foto', $professionista->id) }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <input type="file" name="foto_profilo" accept="image/jpeg,image/png,image/jpg" required class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-fucsia-magia file:text-white hover:file:bg-viola-magia">
+                        <p class="text-xs text-gray-500 mt-1">Formati: JPG, PNG (max 2MB)</p>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia">
+                        <i class="fas fa-upload mr-2"></i> Carica Foto
+                    </button>
+                </form>
+            </div>
+
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-xl font-bold mb-4">Azioni</h2>
                 <div class="space-y-2">
+                    @if($professionista->stato === 'pending')
+                    <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm font-semibold text-yellow-800 mb-2">
+                            <i class="fas fa-clock mr-2"></i> Professionista in attesa di approvazione
+                        </p>
+                        <div class="flex gap-2">
+                            <form method="POST" action="{{ route('admin.professionisti.approva', $professionista->id) }}" class="flex-1" id="approva-form">
+                                @csrf
+                                <button type="button" onclick="confermaAzione('approva-form', 'Approvare questo professionista?', 'Il professionista riceverà una email di conferma e potrà accedere al sistema.', 'Sì, approva')" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-check mr-2"></i> Approva
+                                </button>
+                            </form>
+                            <button type="button" onclick="mostraModalRifiuto()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <i class="fas fa-times mr-2"></i> Rifiuta
+                            </button>
+                        </div>
+                    </div>
+                    @endif
+
                     <a href="{{ route('admin.professionisti.edit', $professionista->id) }}" class="block w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center">
                         <i class="fas fa-edit mr-2"></i> Modifica
                     </a>
@@ -171,4 +222,52 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Rifiuto -->
+<div id="modal-rifiuto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Rifiuta Professionista</h3>
+            <form method="POST" action="{{ route('admin.professionisti.rifiuta', $professionista->id) }}" id="rifiuta-form">
+                @csrf
+                <div class="mb-4">
+                    <label for="motivo_rifiuto" class="block text-sm font-medium text-gray-700 mb-2">
+                        Motivo del rifiuto (opzionale)
+                    </label>
+                    <textarea name="motivo_rifiuto" id="motivo_rifiuto" rows="4"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-fucsia-magia focus:border-fucsia-magia"
+                        placeholder="Es: Mancanza di certificazioni richieste..."></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="chiudiModalRifiuto()" class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Annulla
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        Conferma Rifiuto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function mostraModalRifiuto() {
+    document.getElementById('modal-rifiuto').classList.remove('hidden');
+    document.getElementById('modal-rifiuto').classList.add('flex');
+}
+
+function chiudiModalRifiuto() {
+    document.getElementById('modal-rifiuto').classList.add('hidden');
+    document.getElementById('modal-rifiuto').classList.remove('flex');
+}
+
+// Chiudi modal cliccando fuori
+document.getElementById('modal-rifiuto')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        chiudiModalRifiuto();
+    }
+});
+</script>
+
 @endsection

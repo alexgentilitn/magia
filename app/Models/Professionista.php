@@ -148,6 +148,7 @@ class Professionista extends Model
     public function getBadgeStatoAttribute()
     {
         return match($this->stato) {
+            'pending' => 'bg-orange-100 text-orange-800',
             'attivo' => 'bg-green-100 text-green-800',
             'sospeso' => 'bg-yellow-100 text-yellow-800',
             'inattivo' => 'bg-gray-100 text-gray-800',

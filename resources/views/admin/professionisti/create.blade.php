@@ -74,10 +74,23 @@
                 <input type="number" name="tariffa_oraria" min="0" step="0.01" value="{{ old('tariffa_oraria') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
             </div>
 
+            <!-- Tariffa Lezione Gruppo -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tariffa Lezione Gruppo (€)</label>
+                <input type="number" name="tariffa_lezione_gruppo" min="0" step="0.01" value="{{ old('tariffa_lezione_gruppo') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+            </div>
+
+            <!-- Tariffa Lezione Privata -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tariffa Lezione Privata (€)</label>
+                <input type="number" name="tariffa_lezione_privata" min="0" step="0.01" value="{{ old('tariffa_lezione_privata') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+            </div>
+
             <!-- Stato -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Stato *</label>
                 <select name="stato" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+                    <option value="pending" {{ old('stato') == 'pending' ? 'selected' : '' }}>In Attesa di Approvazione</option>
                     <option value="attivo" {{ old('stato') == 'attivo' ? 'selected' : '' }}>Attivo</option>
                     <option value="sospeso" {{ old('stato') == 'sospeso' ? 'selected' : '' }}>Sospeso</option>
                     <option value="inattivo" {{ old('stato') == 'inattivo' ? 'selected' : '' }}>Inattivo</option>

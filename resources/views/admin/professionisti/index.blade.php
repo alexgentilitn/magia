@@ -12,11 +12,17 @@
     </div>
 
     <!-- Statistiche -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-sm text-gray-600">Totale Professionisti</p>
             <p class="text-2xl font-bold text-gray-800">{{ $statistiche['totale'] }}</p>
         </div>
+        @if($statistiche['pending'] > 0)
+        <div class="bg-orange-50 rounded-lg shadow p-4 border-2 border-orange-200">
+            <p class="text-sm text-orange-600 font-semibold">Da Approvare</p>
+            <p class="text-2xl font-bold text-orange-600">{{ $statistiche['pending'] }}</p>
+        </div>
+        @endif
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-sm text-gray-600">Attivi</p>
             <p class="text-2xl font-bold text-green-600">{{ $statistiche['attivi'] }}</p>

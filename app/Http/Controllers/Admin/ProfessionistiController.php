@@ -48,6 +48,7 @@ class ProfessionistiController extends Controller
         // Statistiche
         $statistiche = [
             'totale' => Professionista::count(),
+            'pending' => Professionista::where('stato', 'pending')->count(),
             'attivi' => Professionista::where('stato', 'attivo')->count(),
             'visibili' => Professionista::where('visibile_pubblico', true)->count(),
             'con_certificazioni' => Professionista::whereNotNull('certificazioni')->count(),
@@ -81,7 +82,9 @@ class ProfessionistiController extends Controller
                 'bio' => 'nullable|string',
                 'anni_esperienza' => 'nullable|integer|min:0',
                 'tariffa_oraria' => 'nullable|numeric|min:0',
-                'stato' => 'required|in:attivo,sospeso,inattivo',
+                'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
+                'tariffa_lezione_privata' => 'nullable|numeric|min:0',
+                'stato' => 'required|in:pending,attivo,sospeso,inattivo',
             ]);
 
             \Log::info('Validazione OK', $validated);
@@ -212,8 +215,12 @@ class ProfessionistiController extends Controller
             'tariffa_oraria' => 'nullable|numeric|min:0',
             'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
             'tariffa_lezione_privata' => 'nullable|numeric|min:0',
-            'stato' => 'required|in:attivo,sospeso,inattivo',
+            'stato' => 'required|in:pending,attivo,sospeso,inattivo',
             'visibile_pubblico' => 'boolean',
+            'specializzazioni' => 'nullable|array',
+            'specializzazioni.*' => 'string|max:100',
+            'qualifiche' => 'nullable|array',
+            'qualifiche.*' => 'string|max:200',
         ]);
 
         // Aggiorna utente base
@@ -265,13 +272,74 @@ class ProfessionistiController extends Controller
         $professionista = Professionista::findOrFail($id);
 
         $validated = $request->validate([
-            'stato' => 'required|in:attivo,sospeso,inattivo',
+            'stato' => 'required|in:pending,attivo,sospeso,inattivo',
         ]);
 
         $professionista->update(['stato' => $validated['stato']]);
 
         return redirect()->route('admin.professionisti.show', $professionista->id)
             ->with('success', 'Stato professionista aggiornato!');
+    }
+
+    /**
+     * Approva un professionista in stato pending
+     */
+    public function approva($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        if ($professionista->stato !== 'pending') {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Solo i professionisti in stato pending possono essere approvati.');
+        }
+
+        $professionista->update(['stato' => 'attivo']);
+
+        // Invia email di approvazione
+        try {
+            \App\Models\Impostazione::applySmtpConfig();
+            Mail::to($professionista->utente->email)->send(new \App\Mail\ProfessionistaApprovatoMail($professionista));
+            $emailMessage = 'Email di notifica inviata.';
+        } catch (\Exception $e) {
+            $emailMessage = 'Email non inviata: ' . $e->getMessage();
+        }
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', "Professionista approvato con successo! {$emailMessage}");
+    }
+
+    /**
+     * Rifiuta un professionista in stato pending
+     */
+    public function rifiuta(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        if ($professionista->stato !== 'pending') {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Solo i professionisti in stato pending possono essere rifiutati.');
+        }
+
+        $validated = $request->validate([
+            'motivo_rifiuto' => 'nullable|string|max:500',
+        ]);
+
+        // Cambia stato a inattivo
+        $professionista->update(['stato' => 'inattivo']);
+
+        // Invia email di rifiuto con motivo
+        try {
+            \App\Models\Impostazione::applySmtpConfig();
+            Mail::to($professionista->utente->email)->send(
+                new \App\Mail\ProfessionistaRifiutatoMail($professionista, $validated['motivo_rifiuto'] ?? null)
+            );
+            $emailMessage = 'Email di notifica inviata.';
+        } catch (\Exception $e) {
+            $emailMessage = 'Email non inviata: ' . $e->getMessage();
+        }
+
+        return redirect()->route('admin.professionisti.index')
+            ->with('success', "Professionista rifiutato. {$emailMessage}");
     }
 
     /**
@@ -356,6 +424,59 @@ class ProfessionistiController extends Controller
 
         return redirect()->route('admin.professionisti.show', $professionista->id)
             ->with('success', 'Disponibilità aggiornata!');
+    }
+
+    /**
+     * Upload foto profilo
+     */
+    public function uploadFoto(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $request->validate([
+            'foto_profilo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        try {
+            // Elimina foto vecchia se esiste
+            if ($professionista->foto_profilo && \Storage::disk('public')->exists($professionista->foto_profilo)) {
+                \Storage::disk('public')->delete($professionista->foto_profilo);
+            }
+
+            // Salva nuova foto
+            $fileName = 'professionisti/' . time() . '_' . $professionista->id . '.' . $request->foto_profilo->extension();
+            $path = $request->foto_profilo->storeAs('professionisti', basename($fileName), 'public');
+
+            $professionista->update(['foto_profilo' => $path]);
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Foto profilo caricata con successo!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Errore durante il caricamento della foto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Elimina foto profilo
+     */
+    public function eliminaFoto($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        try {
+            if ($professionista->foto_profilo && \Storage::disk('public')->exists($professionista->foto_profilo)) {
+                \Storage::disk('public')->delete($professionista->foto_profilo);
+            }
+
+            $professionista->update(['foto_profilo' => null]);
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Foto profilo eliminata con successo!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Errore durante l\'eliminazione della foto: ' . $e->getMessage());
+        }
     }
 
     /**

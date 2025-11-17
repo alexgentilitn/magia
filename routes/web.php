@@ -288,6 +288,8 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
 
         // Azioni speciali
         Route::patch('/{id}/cambia-stato', [ProfessionistiController::class, 'cambiaStato'])->name('cambia-stato');
+        Route::post('/{id}/approva', [ProfessionistiController::class, 'approva'])->name('approva');
+        Route::post('/{id}/rifiuta', [ProfessionistiController::class, 'rifiuta'])->name('rifiuta');
 
         // Gestione certificazioni
         Route::get('/{id}/certificazioni', [ProfessionistiController::class, 'certificazioni'])->name('certificazioni');
@@ -299,6 +301,10 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
 
         // Reset password
         Route::post('/{id}/reset-password', [ProfessionistiController::class, 'resetPassword'])->name('reset-password');
+
+        // Gestione foto profilo
+        Route::post('/{id}/upload-foto', [ProfessionistiController::class, 'uploadFoto'])->name('upload-foto');
+        Route::delete('/{id}/elimina-foto', [ProfessionistiController::class, 'eliminaFoto'])->name('elimina-foto');
     });
 
     // ============================================

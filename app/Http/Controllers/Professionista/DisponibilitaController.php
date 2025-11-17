@@ -48,13 +48,25 @@ class DisponibilitaController extends Controller
                 ->with('error', 'Profilo professionista non trovato. Contatta l\'amministratore per completare la configurazione.');
         }
 
-        $validated = $request->validate([
-            'disponibilita' => 'nullable|array',
-        ]);
+        // Costruisci array disponibilità
+        $disponibilita = [];
+        $giorni = ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'];
+
+        foreach ($giorni as $giorno) {
+            if ($request->has("disponibile_{$giorno}")) {
+                $disponibilita[$giorno] = [
+                    'disponibile' => true,
+                    'dalle' => $request->input("dalle_{$giorno}"),
+                    'alle' => $request->input("alle_{$giorno}"),
+                ];
+            } else {
+                $disponibilita[$giorno] = ['disponibile' => false];
+            }
+        }
 
         // Salva le disponibilità nel campo JSON
         $professionista->update([
-            'disponibilita_settimanale' => $validated['disponibilita'] ?? []
+            'disponibilita_settimanale' => $disponibilita
         ]);
 
         return redirect()->route('professionista.disponibilita.index')

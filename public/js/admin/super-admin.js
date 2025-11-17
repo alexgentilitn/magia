@@ -423,7 +423,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ description })
                 });
 
+                console.log('Backup response status:', response.status);
+                console.log('Backup response URL:', response.url);
+
+                if (!response.ok) {
+                    console.error('Response not OK:', response.status, response.statusText);
+                }
+
                 const data = await response.json();
+                console.log('Backup response data:', data);
 
                 if (data.success) {
                     await Swal.fire({
@@ -436,8 +444,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Errore',
-                        text: data.message || 'Errore durante creazione backup',
+                        title: 'Errore Backup',
+                        html: `<p>${data.message || 'Errore durante creazione backup'}</p>`,
                         confirmButtonColor: '#ef4444'
                     });
                 }
@@ -445,11 +453,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             } catch (error) {
-                console.error('Errore:', error);
+                console.error('Errore completo:', error);
+                console.error('Error stack:', error.stack);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Errore',
-                    text: 'Errore durante creazione backup',
+                    title: 'Errore Connessione',
+                    html: `<p>Errore durante creazione backup</p><small>${error.message}</small>`,
                     confirmButtonColor: '#ef4444'
                 });
                 btn.disabled = false;

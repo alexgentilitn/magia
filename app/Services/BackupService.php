@@ -28,6 +28,15 @@ class BackupService
     public function createBackup(?string $description = null): array
     {
         try {
+            // Verifica disponibilità mysqldump
+            if (!$this->isMysqldumpAvailable()) {
+                return [
+                    'success' => false,
+                    'message' => 'mysqldump non è disponibile su questo server. Contatta l\'amministratore di sistema.',
+                    'filename' => null
+                ];
+            }
+
             $timestamp = Carbon::now()->format('Y-m-d_H-i-s');
             $filename = "backup_{$timestamp}.sql";
             $filepath = storage_path('app/' . self::BACKUP_DIR . '/' . $filename);

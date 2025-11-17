@@ -36,7 +36,13 @@ if (!isset($_GET['token']) || $_GET['token'] !== MIGRATION_TOKEN) {
 // Carica Laravel
 require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
+
+// Bootstrap dell'applicazione
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+// Imposta l'applicazione Laravel come istanza globale
+Illuminate\Support\Facades\Facade::setFacadeApplication($app);
 
 ?>
 <!DOCTYPE html>

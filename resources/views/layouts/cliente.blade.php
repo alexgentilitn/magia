@@ -5,33 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#7B2869">
     <title>@yield('titolo', 'Area Cliente') - MA.GIA DONNA</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                        'arancio-magia': '#FF6B35',
-                    },
-                    fontFamily: {
-                        'sans': ['Poppins', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
+
     <style>
         * {
             font-family: 'Poppins', sans-serif;

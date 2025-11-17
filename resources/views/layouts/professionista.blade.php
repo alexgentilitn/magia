@@ -6,7 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titolo', 'Area Professionista') - MA.GIA DONNA</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -15,31 +17,6 @@
 
     <!-- Chart.js per grafici professionali -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        [x-cloak] { display: none !important; }
-
-        /* Personalizza SweetAlert con i colori del brand */
-        .swal2-popup {
-            font-family: inherit;
-        }
-        .swal2-confirm {
-            background: linear-gradient(to right, #7B2869, #E91E8C) !important;
-        }
-    </style>
 
     @stack('styles')
 </head>

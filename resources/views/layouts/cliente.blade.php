@@ -148,7 +148,39 @@
                 <i class="far fa-calendar"></i>
                 <span>Calendario</span>
             </a>
-            
+
+            <a href="{{ route('messaging.index') }}" class="nav-item {{ request()->routeIs('messaging.*') ? 'active' : '' }}">
+                <div class="relative">
+                    <i class="fas fa-comments"></i>
+                    @php
+                        $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                            return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                        });
+                    @endphp
+                    @if($messaggiNonLetti > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">
+                            {{ $messaggiNonLetti > 9 ? '9+' : $messaggiNonLetti }}
+                        </span>
+                    @endif
+                </div>
+                <span>Chat</span>
+            </a>
+
+            <a href="{{ route('notifiche.index') }}" class="nav-item {{ request()->routeIs('notifiche.*') ? 'active' : '' }}">
+                <div class="relative">
+                    <i class="fas fa-bell"></i>
+                    @php
+                        $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                    @endphp
+                    @if($notificheNonLette > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">
+                            {{ $notificheNonLette > 9 ? '9+' : $notificheNonLette }}
+                        </span>
+                    @endif
+                </div>
+                <span>Notifiche</span>
+            </a>
+
             <a href="{{ route('cliente.profilo') }}" class="nav-item {{ request()->routeIs('cliente.profilo') ? 'active' : '' }}">
                 <i class="far fa-user"></i>
                 <span>Profilo</span>

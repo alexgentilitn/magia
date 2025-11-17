@@ -118,6 +118,42 @@
                             </a>
                         </li>
 
+                        <!-- Chat -->
+                        <li>
+                            <a href="{{ route('messaging.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('messaging.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-comments w-5"></i>
+                                <span class="ml-3 font-medium">Chat</span>
+                                @php
+                                    $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                                        return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                                    });
+                                @endphp
+                                @if($messaggiNonLetti > 0)
+                                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        {{ $messaggiNonLetti > 9 ? '9+' : $messaggiNonLetti }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+
+                        <!-- Notifiche -->
+                        <li>
+                            <a href="{{ route('notifiche.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('notifiche.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-bell w-5"></i>
+                                <span class="ml-3 font-medium">Notifiche</span>
+                                @php
+                                    $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                                @endphp
+                                @if($notificheNonLette > 0)
+                                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        {{ $notificheNonLette > 9 ? '9+' : $notificheNonLette }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+
                         <!-- Divider -->
                         <li class="px-4 py-2">
                             <div class="border-t border-white border-opacity-20"></div>

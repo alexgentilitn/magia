@@ -112,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/send', [\App\Http\Controllers\MessagingController::class, 'sendMessage'])->name('send');
         Route::get('/{id}/messages', [\App\Http\Controllers\MessagingController::class, 'getNewMessages'])->name('messages');
         Route::post('/{id}/read', [\App\Http\Controllers\MessagingController::class, 'markAsRead'])->name('read');
+        Route::get('/allegato/{messaggioId}', [\App\Http\Controllers\MessagingController::class, 'downloadAllegato'])->name('download');
     });
 
     // Notifiche

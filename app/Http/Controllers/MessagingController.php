@@ -216,6 +216,34 @@ class MessagingController extends Controller
     }
 
     /**
+     * Download allegato messaggio
+     */
+    public function downloadAllegato($messaggioId)
+    {
+        $messaggio = Messaggio::findOrFail($messaggioId);
+
+        // Verifica che l'utente faccia parte della conversazione
+        $conversazione = $messaggio->conversazione;
+        if (!$conversazione->utenti->contains(Auth::id())) {
+            abort(403, 'Non autorizzato');
+        }
+
+        // Verifica che esista un allegato
+        if (!$messaggio->allegato_path) {
+            abort(404, 'Allegato non trovato');
+        }
+
+        // Download file
+        $path = storage_path('app/private/' . $messaggio->allegato_path);
+
+        if (!file_exists($path)) {
+            abort(404, 'File non trovato');
+        }
+
+        return response()->download($path, $messaggio->allegato_nome);
+    }
+
+    /**
      * Elimina conversazione (soft)
      */
     public function destroy($id)

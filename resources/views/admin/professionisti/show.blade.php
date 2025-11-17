@@ -203,7 +203,7 @@
                         <i class="fas fa-calendar-check mr-2"></i> Gestisci Disponibilità
                     </a>
 
-                    <a href="{{ route('admin.professionisti.permessi.edit', $professionista->id) }}" class="block w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-center">
+                    <a href="{{ route('admin.professionisti.permessi.edit', $professionista->utente_id) }}" class="block w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-center">
                         <i class="fas fa-shield-alt mr-2"></i> Gestisci Permessi
                     </a>
 

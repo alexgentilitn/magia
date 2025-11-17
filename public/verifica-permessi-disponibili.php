@@ -64,7 +64,7 @@ try {
         // Raggruppa per categoria
         $permessiPerCategoria = Permesso::where('attivo', true)
             ->orderBy('categoria')
-            ->orderBy('ordine')
+            ->orderBy('nome')
             ->get()
             ->groupBy('categoria');
 
@@ -83,7 +83,7 @@ try {
         echo "<details><summary>Dettaglio tutti i permessi</summary>";
         echo "<table>";
         echo "<tr><th>ID</th><th>Nome</th><th>Slug</th><th>Categoria</th><th>Attivo</th></tr>";
-        foreach (Permesso::orderBy('categoria')->orderBy('ordine')->get() as $p) {
+        foreach (Permesso::orderBy('categoria')->orderBy('nome')->get() as $p) {
             $attivo = $p->attivo ? '✅ Sì' : '❌ No';
             echo "<tr><td>{$p->id}</td><td>{$p->nome}</td><td>{$p->slug}</td><td>{$p->categoria}</td><td>{$attivo}</td></tr>";
         }

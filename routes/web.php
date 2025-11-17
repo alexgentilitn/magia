@@ -564,6 +564,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::post('/run-migrations', [\App\Http\Controllers\Admin\SuperAdminController::class, 'runMigrations'])->name('run-migrations');
         Route::post('/migrations/rollback', [\App\Http\Controllers\Admin\SuperAdminController::class, 'rollbackMigration'])->name('migrations.rollback');
         Route::delete('/migrations/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteMigrationFile'])->name('migrations.delete');
+        Route::post('/migrations/sync', [\App\Http\Controllers\Admin\SuperAdminController::class, 'syncMigration'])->name('migrations.sync');
 
         // Backup Database
         Route::post('/backup/create', [\App\Http\Controllers\Admin\SuperAdminController::class, 'createBackup'])->name('backup.create');

@@ -640,6 +640,56 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Sincronizza migration già eseguita
+     */
+    public function syncMigration(Request $request)
+    {
+        try {
+            $migration = $request->input('migration');
+
+            if (!$migration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration non specificata'
+                ], 400);
+            }
+
+            // Verifica che la migration non sia già registrata
+            $exists = DB::table('migrations')
+                ->where('migration', $migration)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration già registrata nella tabella migrations'
+                ], 400);
+            }
+
+            // Ottieni l'ultimo batch
+            $lastBatch = DB::table('migrations')->max('batch') ?? 0;
+            $newBatch = $lastBatch + 1;
+
+            // Registra la migration
+            DB::table('migrations')->insert([
+                'migration' => $migration,
+                'batch' => $newBatch
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Migration '{$migration}' registrata con successo (batch {$newBatch})"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Elimina file migration
      */
     public function deleteMigrationFile(Request $request)

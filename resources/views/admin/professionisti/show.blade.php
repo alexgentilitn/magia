@@ -203,6 +203,14 @@
                         <i class="fas fa-calendar-check mr-2"></i> Gestisci Disponibilità
                     </a>
 
+                    <a href="{{ route('admin.professionisti.documenti.index', $professionista->id) }}" class="block w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-center">
+                        <i class="fas fa-folder-open mr-2"></i> Gestisci Documenti
+                    </a>
+
+                    <a href="{{ route('admin.professionisti.galleria.index', $professionista->id) }}" class="block w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 text-center">
+                        <i class="fas fa-images mr-2"></i> Galleria Foto
+                    </a>
+
                     <form method="POST" action="{{ route('admin.professionisti.reset-password', $professionista->id) }}" class="block" id="reset-password-form">
                         @csrf
                         <button type="button" onclick="confermaAzione('reset-password-form', 'Resettare la password?', 'Verrà generata una nuova password temporanea per {{ $professionista->nome }} {{ $professionista->cognome }}.', 'Sì, reset password')" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">

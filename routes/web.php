@@ -305,6 +305,26 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         // Gestione foto profilo
         Route::post('/{id}/upload-foto', [ProfessionistiController::class, 'uploadFoto'])->name('upload-foto');
         Route::delete('/{id}/elimina-foto', [ProfessionistiController::class, 'eliminaFoto'])->name('elimina-foto');
+
+        // Gestione Documenti
+        Route::prefix('/{id}/documenti')->name('documenti.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'index'])->name('index');
+            Route::post('/upload', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'upload'])->name('upload');
+            Route::get('/{documento_id}/download', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'download'])->name('download');
+            Route::delete('/{documento_id}', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'destroy'])->name('destroy');
+            Route::post('/{documento_id}/verifica', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'verifica'])->name('verifica');
+            Route::post('/{documento_id}/revoca-verifica', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'revocaVerifica'])->name('revoca-verifica');
+            Route::put('/{documento_id}', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'update'])->name('update');
+        });
+
+        // Gestione Galleria Foto
+        Route::prefix('/{id}/galleria')->name('galleria.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'index'])->name('index');
+            Route::post('/upload', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'upload'])->name('upload');
+            Route::delete('/{index}', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'destroy'])->name('destroy');
+            Route::post('/{index}/imposta-copertina', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'impostaCopertina'])->name('imposta-copertina');
+            Route::get('/download-all', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'downloadAll'])->name('download-all');
+        });
     });
 
     // ============================================

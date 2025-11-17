@@ -110,6 +110,14 @@ class Professionista extends Model
     }
 
     /**
+     * Relazione: Professionista ha molti Documenti
+     */
+    public function documenti()
+    {
+        return $this->hasMany(ProfessionistaDocumento::class, 'professionista_id');
+    }
+
+    /**
      * Accessor: Email dal relazione utente
      * Permette di usare $professionista->email invece di $professionista->utente->email
      */

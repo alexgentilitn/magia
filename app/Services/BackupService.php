@@ -63,14 +63,19 @@ class BackupService
             exec($command, $output, $returnCode);
 
             if ($returnCode !== 0) {
+                $errorMessage = implode("\n", $output);
                 Log::error('Errore backup database', [
                     'output' => $output,
-                    'return_code' => $returnCode
+                    'return_code' => $returnCode,
+                    'command' => 'mysqldump [credentials hidden]',
+                    'filepath' => $filepath
                 ]);
                 return [
                     'success' => false,
-                    'message' => 'Errore durante il backup: ' . implode("\n", $output),
-                    'filename' => null
+                    'message' => 'Errore durante il backup. Codice errore: ' . $returnCode . '. Dettagli: ' . ($errorMessage ?: 'Nessun output'),
+                    'filename' => null,
+                    'error_code' => $returnCode,
+                    'error_output' => $output
                 ];
             }
 

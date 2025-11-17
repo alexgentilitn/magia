@@ -368,6 +368,65 @@
     </div>
 </div>
 
+<!-- Modal Migrations Manager -->
+<div id="migrationsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-7xl shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">
+                <i class="fas fa-code-branch mr-2"></i> Gestione Migrations Database
+            </h3>
+            <button onclick="document.getElementById('migrationsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Stats e Azioni -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600" id="migrationsTotalCount">-</div>
+                <div class="text-sm text-gray-600">Totale Migrations</div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-green-600" id="migrationsRanCount">-</div>
+                <div class="text-sm text-gray-600">Eseguite</div>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-yellow-600" id="migrationsPendingCount">-</div>
+                <div class="text-sm text-gray-600">In Attesa</div>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg flex items-center justify-center">
+                <button id="refreshMigrationsBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-sync-alt mr-2"></i> Aggiorna
+                </button>
+            </div>
+        </div>
+
+        <!-- Azioni di Massa -->
+        <div class="mb-4 flex gap-2 flex-wrap">
+            <button id="runSelectedMigrationsBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-play mr-2"></i> Esegui Selezionate
+            </button>
+            <button id="runAllPendingBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-forward mr-2"></i> Esegui Tutte in Attesa
+            </button>
+            <button id="selectAllPendingBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-check-double mr-2"></i> Seleziona Tutte in Attesa
+            </button>
+            <button id="deselectAllBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i> Deseleziona Tutto
+            </button>
+        </div>
+
+        <!-- Lista Migrations -->
+        <div id="migrationsListContent" class="max-h-96 overflow-y-auto">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+                <p class="mt-2 text-gray-600">Caricamento migrations...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Definizione rotte per JavaScript -->
 <script>
     window.SuperAdminRoutes = {
@@ -378,7 +437,10 @@
         clearLogs: "{{ route('admin.super-admin.clear-logs') }}",
         databaseInfo: "{{ route('admin.super-admin.database-info') }}",
         optimizeDatabase: "{{ route('admin.super-admin.optimize-database') }}",
+        migrationsStatus: "{{ route('admin.super-admin.migrations.status') }}",
         runMigrations: "{{ route('admin.super-admin.run-migrations') }}",
+        migrationsRollback: "{{ route('admin.super-admin.migrations.rollback') }}",
+        migrationsDelete: "{{ route('admin.super-admin.migrations.delete') }}",
         backupCreate: "{{ route('admin.super-admin.backup.create') }}",
         backupList: "{{ route('admin.super-admin.backup.list') }}",
         backupDownload: "{{ route('admin.super-admin.backup.download') }}",

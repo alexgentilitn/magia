@@ -334,55 +334,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Run Migrations
+    // Open Migrations Manager
     const runMigrationsBtn = document.getElementById('runMigrationsBtn');
     if (runMigrationsBtn) {
-        runMigrationsBtn.addEventListener('click', async function() {
-            const result = await Swal.fire({
-                title: 'Conferma',
-                text: 'Eseguire le migrations? Questa operazione modificherà lo schema del database.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Si, esegui',
-                cancelButtonText: 'Annulla'
-            });
-
-            if (!result.isConfirmed) return;
-
-            const btn = this;
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Esecuzione...';
-
-            try {
-                const response = await fetch(window.SuperAdminRoutes.runMigrations, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    if (data.output) {
-                        console.log('Output migrations:', data.output);
-                    }
-                } else {
-                    showToast(data.message || 'Errore esecuzione migrations', 'error');
-                }
-
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            } catch (error) {
-                console.error('Errore:', error);
-                showToast('Errore esecuzione migrations', 'error');
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
+        runMigrationsBtn.addEventListener('click', function() {
+            openMigrationsManager();
         });
     }
 
@@ -633,3 +589,458 @@ window.deleteBackup = async function(filename) {
         });
     }
 };
+
+// ============================================
+// GESTIONE MIGRATIONS
+// ============================================
+
+/**
+ * Apre il modal di gestione migrations
+ */
+function openMigrationsManager() {
+    document.getElementById('migrationsModal').classList.remove('hidden');
+    loadMigrationsList();
+}
+
+/**
+ * Carica la lista di tutte le migrations con il loro stato
+ */
+async function loadMigrationsList() {
+    const container = document.getElementById('migrationsListContent');
+    container.innerHTML = `
+        <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+            <p class="mt-2 text-gray-600">Caricamento migrations...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.migrationsStatus, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayMigrations(data.migrations, data);
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-8 text-red-600">
+                    <i class="fas fa-exclamation-circle text-4xl"></i>
+                    <p class="mt-2">${data.message || 'Errore caricamento migrations'}</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        container.innerHTML = `
+            <div class="text-center py-8 text-red-600">
+                <i class="fas fa-exclamation-circle text-4xl"></i>
+                <p class="mt-2">Errore caricamento migrations</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Visualizza la lista delle migrations
+ */
+function displayMigrations(migrations, stats) {
+    // Aggiorna statistiche
+    document.getElementById('migrationsTotalCount').textContent = stats.total;
+    document.getElementById('migrationsRanCount').textContent = stats.ran;
+    document.getElementById('migrationsPendingCount').textContent = stats.pending;
+
+    const container = document.getElementById('migrationsListContent');
+
+    if (migrations.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-4xl"></i>
+                <p class="mt-2">Nessuna migration trovata</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '<div class="space-y-2">';
+
+    migrations.forEach(migration => {
+        const isPending = migration.status === 'pending';
+        const statusColor = isPending ? 'yellow' : 'green';
+        const statusIcon = isPending ? 'clock' : 'check-circle';
+        const statusText = isPending ? 'In Attesa' : 'Eseguita';
+
+        html += `
+            <div class="border rounded-lg p-4 hover:bg-gray-50 transition ${isPending ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 flex-1">
+                        ${isPending ? `
+                            <input type="checkbox" class="migration-checkbox w-5 h-5 text-blue-600"
+                                   data-migration="${migration.name}" data-status="${migration.status}">
+                        ` : ''}
+                        <div class="flex-1">
+                            <div class="font-mono text-sm text-gray-900">${migration.name}</div>
+                            ${migration.batch ? `<div class="text-xs text-gray-500 mt-1">Batch: ${migration.batch}</div>` : ''}
+                            ${migration.executed_at ? `<div class="text-xs text-gray-500">Eseguita: ${migration.executed_at}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-${statusColor}-100 text-${statusColor}-800">
+                            <i class="fas fa-${statusIcon} mr-1"></i> ${statusText}
+                        </span>
+                        ${isPending ? `
+                            <button onclick="runSingleMigration('${migration.name}')"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition">
+                                <i class="fas fa-play mr-1"></i> Esegui
+                            </button>
+                            <button onclick="deleteMigration('${migration.name}')"
+                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition">
+                                <i class="fas fa-trash mr-1"></i> Elimina
+                            </button>
+                        ` : `
+                            <button onclick="rollbackMigration('${migration.name}')"
+                                    class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-xs transition">
+                                <i class="fas fa-undo mr-1"></i> Rollback
+                            </button>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Setup event listeners per i pulsanti di massa
+    setupMigrationsButtons();
+}
+
+/**
+ * Setup event listeners per i pulsanti
+ */
+function setupMigrationsButtons() {
+    // Refresh
+    document.getElementById('refreshMigrationsBtn').addEventListener('click', loadMigrationsList);
+
+    // Run Selected
+    document.getElementById('runSelectedMigrationsBtn').addEventListener('click', runSelectedMigrations);
+
+    // Run All Pending
+    document.getElementById('runAllPendingBtn').addEventListener('click', runAllPendingMigrations);
+
+    // Select All Pending
+    document.getElementById('selectAllPendingBtn').addEventListener('click', function() {
+        document.querySelectorAll('.migration-checkbox[data-status="pending"]').forEach(cb => cb.checked = true);
+    });
+
+    // Deselect All
+    document.getElementById('deselectAllBtn').addEventListener('click', function() {
+        document.querySelectorAll('.migration-checkbox').forEach(cb => cb.checked = false);
+    });
+}
+
+/**
+ * Esegue una singola migration
+ */
+async function runSingleMigration(migrationName) {
+    const result = await Swal.fire({
+        title: 'Conferma Esecuzione',
+        html: `Eseguire la migration:<br><code class="text-sm">${migrationName}</code>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, esegui',
+        cancelButtonText: 'Annulla',
+        confirmButtonColor: '#10b981'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.runMigrations, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                migrations: [migrationName]
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eseguita!',
+                text: data.message,
+                confirmButtonColor: '#10b981'
+            });
+            loadMigrationsList();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: data.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore',
+            text: 'Errore durante esecuzione migration',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}
+
+/**
+ * Esegue le migrations selezionate
+ */
+async function runSelectedMigrations() {
+    const selectedCheckboxes = document.querySelectorAll('.migration-checkbox:checked');
+
+    if (selectedCheckboxes.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Attenzione',
+            text: 'Seleziona almeno una migration',
+            confirmButtonColor: '#f59e0b'
+        });
+        return;
+    }
+
+    const migrations = Array.from(selectedCheckboxes).map(cb => cb.dataset.migration);
+
+    const result = await Swal.fire({
+        title: 'Conferma Esecuzione',
+        html: `Eseguire <strong>${migrations.length}</strong> migration(s) selezionate?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, esegui',
+        cancelButtonText: 'Annulla',
+        confirmButtonColor: '#10b981'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.runMigrations, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                migrations: migrations
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eseguite!',
+                text: data.message,
+                confirmButtonColor: '#10b981'
+            });
+            loadMigrationsList();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: data.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore',
+            text: 'Errore durante esecuzione migrations',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}
+
+/**
+ * Esegue tutte le migrations in attesa
+ */
+async function runAllPendingMigrations() {
+    const result = await Swal.fire({
+        title: 'Conferma Esecuzione',
+        text: 'Eseguire TUTTE le migrations in attesa?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, esegui tutte',
+        cancelButtonText: 'Annulla',
+        confirmButtonColor: '#10b981'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.runMigrations, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({}) // Empty per eseguire tutte
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eseguite!',
+                text: data.message,
+                confirmButtonColor: '#10b981'
+            });
+            loadMigrationsList();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: data.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore',
+            text: 'Errore durante esecuzione migrations',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}
+
+/**
+ * Rollback di una migration
+ */
+async function rollbackMigration(migrationName) {
+    const result = await Swal.fire({
+        title: 'Conferma Rollback',
+        html: `<p class="mb-2">Eseguire il rollback della migration:</p><code class="text-sm">${migrationName}</code><br><br><strong class="text-red-600">ATTENZIONE: Questa operazione eliminerà le modifiche al database!</strong>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, rollback',
+        cancelButtonText: 'Annulla',
+        confirmButtonColor: '#f97316'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.migrationsRollback, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                migration: migrationName
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Rollback Eseguito!',
+                text: data.message,
+                confirmButtonColor: '#10b981'
+            });
+            loadMigrationsList();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: data.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore',
+            text: 'Errore durante rollback migration',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}
+
+/**
+ * Elimina file migration
+ */
+async function deleteMigration(migrationName) {
+    const result = await Swal.fire({
+        title: 'Conferma Eliminazione',
+        html: `<p class="mb-2">Eliminare il file migration:</p><code class="text-sm">${migrationName}.php</code><br><br><strong class="text-red-600">ATTENZIONE: Questa operazione è irreversibile!</strong>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sì, elimina',
+        cancelButtonText: 'Annulla',
+        confirmButtonColor: '#ef4444'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(window.SuperAdminRoutes.migrationsDelete, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                migration: migrationName
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eliminata!',
+                text: data.message,
+                confirmButtonColor: '#10b981'
+            });
+            loadMigrationsList();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Errore',
+                text: data.message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Errore',
+            text: 'Errore durante eliminazione migration',
+            confirmButtonColor: '#ef4444'
+        });
+    }
+}

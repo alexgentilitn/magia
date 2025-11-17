@@ -407,19 +407,222 @@ class SuperAdminController extends Controller
     }
 
     /**
-     * Esegui migrations
+     * Ottieni status di tutte le migrations
+     */
+    public function getMigrationsStatus(Request $request)
+    {
+        try {
+            $migrationsPath = database_path('migrations');
+            $migrationFiles = File::glob($migrationsPath . '/*.php');
+
+            // Ottieni migrations eseguite dal database
+            $ranMigrations = DB::table('migrations')
+                ->orderBy('batch', 'desc')
+                ->orderBy('migration', 'asc')
+                ->get()
+                ->keyBy('migration');
+
+            $migrations = [];
+
+            foreach ($migrationFiles as $file) {
+                $filename = basename($file);
+                $migrationName = pathinfo($filename, PATHINFO_FILENAME);
+
+                $isRan = isset($ranMigrations[$migrationName]);
+
+                $migrations[] = [
+                    'name' => $migrationName,
+                    'filename' => $filename,
+                    'status' => $isRan ? 'ran' : 'pending',
+                    'batch' => $isRan ? $ranMigrations[$migrationName]->batch : null,
+                    'executed_at' => $isRan ? $ranMigrations[$migrationName]->created_at ?? null : null,
+                    'file_path' => $file,
+                ];
+            }
+
+            // Ordina: pending prima, poi ran (più recenti prima)
+            usort($migrations, function($a, $b) {
+                if ($a['status'] !== $b['status']) {
+                    return $a['status'] === 'pending' ? -1 : 1;
+                }
+                if ($a['status'] === 'ran') {
+                    return ($b['batch'] ?? 0) - ($a['batch'] ?? 0);
+                }
+                return strcmp($a['name'], $b['name']);
+            });
+
+            return response()->json([
+                'success' => true,
+                'migrations' => $migrations,
+                'total' => count($migrations),
+                'pending' => count(array_filter($migrations, fn($m) => $m['status'] === 'pending')),
+                'ran' => count(array_filter($migrations, fn($m) => $m['status'] === 'ran')),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Esegui migrations (tutte o selettive)
      */
     public function runMigrations(Request $request)
     {
         try {
-            Artisan::call('migrate', ['--force' => true]);
+            $migrations = $request->input('migrations', []); // Array di migration names
+
+            if (empty($migrations)) {
+                // Esegui tutte le migrations pending
+                Artisan::call('migrate', ['--force' => true]);
+                $output = Artisan::output();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tutte le migrations sono state eseguite',
+                    'output' => $output
+                ]);
+            }
+
+            // Esegui migrations specifiche
+            $results = [];
+            foreach ($migrations as $migration) {
+                try {
+                    // Esegui migration specifica usando path
+                    Artisan::call('migrate', [
+                        '--path' => 'database/migrations/' . $migration . '.php',
+                        '--force' => true
+                    ]);
+
+                    $results[$migration] = [
+                        'success' => true,
+                        'output' => Artisan::output()
+                    ];
+                } catch (\Exception $e) {
+                    $results[$migration] = [
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            $successCount = count(array_filter($results, fn($r) => $r['success']));
+            $failCount = count($results) - $successCount;
+
+            return response()->json([
+                'success' => $failCount === 0,
+                'message' => "{$successCount} migration(s) eseguita/e con successo" .
+                            ($failCount > 0 ? ", {$failCount} fallita/e" : ""),
+                'results' => $results
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Rollback migrations specifiche
+     */
+    public function rollbackMigration(Request $request)
+    {
+        try {
+            $migration = $request->input('migration');
+
+            if (!$migration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration non specificata'
+                ], 400);
+            }
+
+            // Verifica che la migration sia stata eseguita
+            $exists = DB::table('migrations')
+                ->where('migration', $migration)
+                ->exists();
+
+            if (!$exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration non trovata nel database'
+                ], 404);
+            }
+
+            // Esegui rollback per batch specifico
+            $batch = DB::table('migrations')
+                ->where('migration', $migration)
+                ->value('batch');
+
+            Artisan::call('migrate:rollback', [
+                '--step' => 1,
+                '--force' => true
+            ]);
+
             $output = Artisan::output();
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Migrations eseguite con successo',
+                'message' => 'Rollback eseguito con successo',
                 'output' => $output
             ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Elimina file migration
+     */
+    public function deleteMigrationFile(Request $request)
+    {
+        try {
+            $migration = $request->input('migration');
+
+            if (!$migration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Migration non specificata'
+                ], 400);
+            }
+
+            // Verifica che la migration NON sia stata eseguita
+            $isRan = DB::table('migrations')
+                ->where('migration', $migration)
+                ->exists();
+
+            if ($isRan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impossibile eliminare: migration già eseguita. Esegui prima il rollback.'
+                ], 400);
+            }
+
+            $filePath = database_path('migrations/' . $migration . '.php');
+
+            if (!File::exists($filePath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File migration non trovato'
+                ], 404);
+            }
+
+            File::delete($filePath);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File migration eliminato con successo'
+            ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

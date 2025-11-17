@@ -550,7 +550,11 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::get('/view-logs', [\App\Http\Controllers\Admin\SuperAdminController::class, 'viewLogs'])->name('view-logs');
         Route::get('/database-info', [\App\Http\Controllers\Admin\SuperAdminController::class, 'databaseInfo'])->name('database-info');
         Route::post('/optimize-database', [\App\Http\Controllers\Admin\SuperAdminController::class, 'optimizeDatabase'])->name('optimize-database');
+        // Migrations
+        Route::get('/migrations/status', [\App\Http\Controllers\Admin\SuperAdminController::class, 'getMigrationsStatus'])->name('migrations.status');
         Route::post('/run-migrations', [\App\Http\Controllers\Admin\SuperAdminController::class, 'runMigrations'])->name('run-migrations');
+        Route::post('/migrations/rollback', [\App\Http\Controllers\Admin\SuperAdminController::class, 'rollbackMigration'])->name('migrations.rollback');
+        Route::delete('/migrations/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteMigrationFile'])->name('migrations.delete');
 
         // Backup Database
         Route::post('/backup/create', [\App\Http\Controllers\Admin\SuperAdminController::class, 'createBackup'])->name('backup.create');

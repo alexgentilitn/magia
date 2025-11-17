@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Professionista;
+use App\Models\Ruolo;
 use App\Models\Utente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -125,6 +126,9 @@ class ProfessionistiController extends Controller
             $passwordTemporanea = 'temp' . rand(1000, 9999);
             $scadenza = now()->addHours(24);
 
+            // Ottieni il ruolo Collaboratore per i nuovi professionisti
+            $ruoloCollaboratore = Ruolo::where('slug', 'collaboratore')->first();
+
             // Crea utente base
             $utente = Utente::create([
                 'nome' => $validated['nome'],
@@ -134,6 +138,7 @@ class ProfessionistiController extends Controller
                 'password_temp_expires_at' => $scadenza,
                 'deve_cambiare_password' => true,
                 'tipo_utente' => 'professionista',
+                'ruolo_id' => $ruoloCollaboratore ? $ruoloCollaboratore->id : null,
                 'telefono' => $validated['telefono_mobile'] ?? null,
                 'attivo' => true,
             ]);

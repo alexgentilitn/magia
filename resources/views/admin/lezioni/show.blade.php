@@ -44,11 +44,11 @@
            class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
             <i class="fas fa-users mr-2"></i> Gestisci Prenotazioni
         </a>
-        <form method="POST" action="{{ route('admin.lezioni.destroy', $lezione->id) }}" class="inline">
+        <form method="POST" action="{{ route('admin.lezioni.destroy', $lezione->id) }}" class="inline" id="delete-lezione-form">
             @csrf
             @method('DELETE')
-            <button type="submit"
-                    onclick="return confirm('Sei sicuro di voler eliminare questa lezione? Questa azione non può essere annullata.')"
+            <button type="button"
+                    onclick="confermaEliminazione('delete-lezione-form', 'Eliminare la lezione?', 'La lezione {{ $lezione->titolo }} del {{ \Carbon\Carbon::parse($lezione->data)->format('d/m/Y') }} sarà eliminata definitivamente, incluse tutte le prenotazioni.')"
                     class="inline-flex items-center px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
                 <i class="fas fa-trash mr-2"></i> Elimina Lezione
             </button>

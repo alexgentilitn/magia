@@ -1,66 +1,224 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MA.GIA DONNA - Web Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Applicazione Laravel per Gestione Centro Wellness/Fitness**
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Per Claude Code e Sviluppatori
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 📖 Documentazione Essenziale
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Se sei una nuova sessione di Claude Code o un nuovo sviluppatore:**
 
-## Learning Laravel
+1. **Inizia qui:** [`QUICK_START.md`](./QUICK_START.md) ⚡ (2 minuti)
+2. **Leggi la memoria completa:** [`CLAUDE_MEMORY.md`](./CLAUDE_MEMORY.md) 🧠 (10 minuti) - **OBBLIGATORIO**
+3. **Documentazione tecnica:** [`GUIDA PROGETTO/`](./GUIDA%20PROGETTO/) 📚
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🎯 Quick Links
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Repository:** https://github.com/alexgentilitn/magia
+- **Produzione:** https://www.agstudio.digital/magia/public/
+- **GitHub Actions:** https://github.com/alexgentilitn/magia/actions
+- **Diagnostica:** https://www.agstudio.digital/magia/public/diagnose.php
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📌 Informazioni Progetto
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Stack Tecnologico
+- **Framework:** Laravel 10.x
+- **PHP:** 8.4.14
+- **Database:** MariaDB/MySQL 5.7.44
+- **Frontend:** Tailwind CSS, Alpine.js, SweetAlert2
+- **Hosting:** Aruba Shared Hosting (senza SSH)
 
-### Premium Partners
+### Deploy
+- **Sistema:** GitHub Actions → FTP automatico
+- **Trigger:** Push su branch `main` o `claude/**`
+- **Tempo:** 2-5 minuti
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Funzionalità Implementate
+✅ Dashboard amministratore
+✅ Gestione clienti (CRUD completo)
+✅ Sistema autenticazione e ruoli
+✅ Gestione lezioni, programmi, pagamenti
+✅ Deploy automatico FTP
+✅ Script diagnostica e troubleshooting
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🔧 Setup Locale (se possibile)
 
-## Code of Conduct
+### Prerequisiti
+- PHP >= 8.1
+- Composer
+- MySQL/MariaDB
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Installazione
 
-## Security Vulnerabilities
+```bash
+# Clone repository
+git clone https://github.com/alexgentilitn/magia.git
+cd magia
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Installa dipendenze
+composer install
 
-## License
+# Copia .env
+cp .env.example .env
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Genera APP_KEY
+php artisan key:generate
+
+# Configura database nel .env
+# Vedi CLAUDE_MEMORY.md per credenziali produzione
+
+# Migrazioni (ATTENZIONE: solo su DB locale)
+php artisan migrate
+
+# Avvia server locale
+php artisan serve
+```
+
+**⚠️ IMPORTANTE:**
+- Non eseguire migrazioni su database di produzione senza backup
+- Le credenziali produzione sono in `CLAUDE_MEMORY.md`
+- Il server di produzione NON ha accesso SSH
+
+---
+
+## 📚 Documentazione
+
+| File/Cartella | Descrizione |
+|---------------|-------------|
+| **CLAUDE_MEMORY.md** | 🧠 Memoria completa progetto - LEGGI SEMPRE |
+| **QUICK_START.md** | ⚡ Quick reference per sessioni rapide |
+| **GUIDA PROGETTO/** | 📖 Documentazione tecnica dettagliata |
+| **.claude/** | 🤖 Configurazione Claude Code |
+| **ENV_TEMPLATE_PRODUCTION.txt** | 📝 Template .env produzione |
+
+---
+
+## 🚨 Troubleshooting
+
+### Errore 500?
+1. Vai su https://www.agstudio.digital/magia/public/diagnose.php
+2. Verifica `.env` esista sul server
+3. Controlla permessi `storage/` e `bootstrap/cache/` (755)
+4. Pulisci cache: https://www.agstudio.digital/magia/public/clear-cache.php
+
+### Deploy fallito?
+1. Controlla GitHub Actions: https://github.com/alexgentilitn/magia/actions
+2. Verifica secrets GitHub configurati (FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_PATH)
+3. Vedi logs del workflow per errori specifici
+
+### Altre domande?
+Leggi `CLAUDE_MEMORY.md` → sezione Troubleshooting
+
+---
+
+## 🔐 Sicurezza
+
+**NON committare mai:**
+- File `.env` completo
+- Credenziali database
+- Password FTP
+- Secrets GitHub Actions
+
+**File protetti:**
+- `.env` → nel `.gitignore`
+- `.env` → escluso da deploy FTP
+
+---
+
+## 📞 Links Utili
+
+### Produzione
+- **Sito:** https://www.agstudio.digital/magia/public/
+- **Login Admin:** https://www.agstudio.digital/magia/public/admin/login
+- **Diagnostica:** https://www.agstudio.digital/magia/public/diagnose.php
+- **Clear Cache:** https://www.agstudio.digital/magia/public/clear-cache.php
+
+### Sviluppo
+- **GitHub Repo:** https://github.com/alexgentilitn/magia
+- **GitHub Actions:** https://github.com/alexgentilitn/magia/actions
+- **Secrets:** https://github.com/alexgentilitn/magia/settings/secrets/actions
+
+### Documentazione
+- **Laravel 10:** https://laravel.com/docs/10.x
+- **Tailwind CSS:** https://tailwindcss.com/docs
+- **Alpine.js:** https://alpinejs.dev/
+
+---
+
+## 📅 Info Versione
+
+- **Progetto:** MA.GIA DONNA
+- **Versione Laravel:** 10.x
+- **Ultimo aggiornamento:** 16 Novembre 2025
+- **Branch corrente:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
+## ⚠️ IMPORTANTE - Branch Policy
+
+**TUTTE le modifiche vanno fatte SOLO ed ESCLUSIVAMENTE sul branch:**
+```
+claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm
+```
+
+**NON pushare su:**
+- ❌ `magia-brench` (errore 403 - branch di riferimento read-only)
+- ❌ `main` (produzione stabile)
+
+**Motivo:** GitHub Actions accetta push SOLO da branch `claude/**` che terminano con il session ID corretto (`-01G4cTM33nQqZ3K3UtX3NGqm`)
+
+---
+
+## 📝 Note Speciali
+
+### Vendor Versionato
+⚠️ La cartella `vendor/` è versionata nel repository (insolito ma necessario).
+
+**Motivo:** Hosting Aruba condiviso senza accesso SSH → impossibile eseguire `composer install` sul server.
+
+**Soluzione:** `vendor/` è committato e deployato via FTP.
+
+### File .env
+⚠️ Il file `.env` è nel repository ma ESCLUSO dal deploy FTP.
+
+**Deploy .env:**
+- È stato deployato UNA VOLTA manualmente
+- Modifiche future: solo via FTP direttamente sul server
+- NON modificare `.env` via git
+
+---
+
+## 🤝 Contributi
+
+Per contribuire al progetto:
+
+1. **Usa il branch ufficiale:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+2. Sviluppa funzionalità
+3. Commit con messaggi descrittivi (italiano)
+4. **Push SOLO su:** `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+5. GitHub Actions → deploy automatico su Aruba FTP (2-5 minuti)
+6. Testa su produzione: https://www.agstudio.digital/magia/public/
+7. Crea Pull Request se necessario
+
+⚠️ **IMPORTANTE:** NON creare nuovi branch! Usa sempre `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+
+---
+
+## 📄 Licenza
+
+Progetto proprietario - AGstudio Digital
+
+---
+
+**💬 Per sessioni Claude Code:**
+
+Prima di iniziare a lavorare, **leggi `CLAUDE_MEMORY.md`** - contiene TUTTO il contesto del progetto! 🧠
+
+---
+
+*Creato con ❤️ da AGstudio Digital*
+*Powered by Laravel 10.x*

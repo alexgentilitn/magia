@@ -205,10 +205,10 @@
                             <div class="flex items-center justify-center space-x-2">
                                 <!-- Segna Assente -->
                                 @if($cliente->pivot->stato !== 'assente')
-                                <form action="{{ route('admin.lezioni.segna-assente', [$lezione->id, $cliente->id]) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.lezioni.segna-assente', [$lezione->id, $cliente->id]) }}" method="POST" class="inline" id="assente-form-{{ $cliente->id }}">
                                     @csrf
-                                    <button type="submit"
-                                            onclick="return confirm('Sei sicuro di voler segnare {{ $cliente->nome }} {{ $cliente->cognome }} come assente?')"
+                                    <button type="button"
+                                            onclick="confermaAzione('assente-form-{{ $cliente->id }}', 'Segnare come assente?', '{{ $cliente->nome }} {{ $cliente->cognome }} sarà segnato come assente a questa lezione.', 'Sì, segna assente')"
                                             class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition"
                                             title="Segna come assente">
                                         <i class="fas fa-user-times"></i>
@@ -216,10 +216,10 @@
                                 </form>
                                 @else
                                 <!-- Annulla Assenza -->
-                                <form action="{{ route('admin.lezioni.annulla-assenza', [$lezione->id, $cliente->id]) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.lezioni.annulla-assenza', [$lezione->id, $cliente->id]) }}" method="POST" class="inline" id="annulla-assenza-form-{{ $cliente->id }}">
                                     @csrf
-                                    <button type="submit"
-                                            onclick="return confirm('Vuoi riportare {{ $cliente->nome }} {{ $cliente->cognome }} allo stato prenotato?')"
+                                    <button type="button"
+                                            onclick="confermaAzione('annulla-assenza-form-{{ $cliente->id }}', 'Annullare l\'assenza?', '{{ $cliente->nome }} {{ $cliente->cognome }} sarà riportato allo stato prenotato.', 'Sì, annulla assenza')"
                                             class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition"
                                             title="Annulla assenza">
                                         <i class="fas fa-user-check"></i>
@@ -228,11 +228,11 @@
                                 @endif
 
                                 <!-- Rimuovi Prenotazione -->
-                                <form action="{{ route('admin.lezioni.rimuovi-prenotazione', [$lezione->id, $cliente->id]) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.lezioni.rimuovi-prenotazione', [$lezione->id, $cliente->id]) }}" method="POST" class="inline" id="rimuovi-pren-form-{{ $cliente->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                            onclick="return confirm('Sei sicuro di voler rimuovere la prenotazione di {{ $cliente->nome }} {{ $cliente->cognome }}?')"
+                                    <button type="button"
+                                            onclick="confermaEliminazione('rimuovi-pren-form-{{ $cliente->id }}', 'Rimuovere la prenotazione?', 'La prenotazione di {{ $cliente->nome }} {{ $cliente->cognome }} sarà rimossa definitivamente.')"
                                             class="px-2 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition"
                                             title="Rimuovi prenotazione">
                                         <i class="fas fa-trash"></i>

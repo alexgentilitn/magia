@@ -12,11 +12,17 @@
     </div>
 
     <!-- Statistiche -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-sm text-gray-600">Totale Professionisti</p>
             <p class="text-2xl font-bold text-gray-800">{{ $statistiche['totale'] }}</p>
         </div>
+        @if($statistiche['pending'] > 0)
+        <div class="bg-orange-50 rounded-lg shadow p-4 border-2 border-orange-200">
+            <p class="text-sm text-orange-600 font-semibold">Da Approvare</p>
+            <p class="text-2xl font-bold text-orange-600">{{ $statistiche['pending'] }}</p>
+        </div>
+        @endif
         <div class="bg-white rounded-lg shadow p-4">
             <p class="text-sm text-gray-600">Attivi</p>
             <p class="text-2xl font-bold text-green-600">{{ $statistiche['attivi'] }}</p>
@@ -102,10 +108,10 @@
                                 <a href="{{ route('admin.professionisti.edit', $prof->id) }}" class="text-green-600 hover:text-green-800">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.professionisti.destroy', $prof->id) }}" class="inline" onsubmit="return confirm('Eliminare {{ $prof->nome }} {{ $prof->cognome }}?')">
+                                <form method="POST" action="{{ route('admin.professionisti.destroy', $prof->id) }}" class="inline" id="delete-form-{{ $prof->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800">
+                                    <button type="button" onclick="confermaEliminazione('delete-form-{{ $prof->id }}', 'Eliminare il professionista?', 'Il professionista {{ $prof->nome }} {{ $prof->cognome }} sarà eliminato definitivamente. Le lezioni esistenti non saranno eliminate.')" class="text-red-600 hover:text-red-800">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

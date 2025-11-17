@@ -52,7 +52,7 @@
         </div>
 
         <!-- Form Modifica Multipla -->
-        <form method="POST" action="{{ route('admin.lezioni.update-multiple') }}" class="bg-white rounded-lg shadow p-6">
+        <form method="POST" action="{{ route('admin.lezioni.update-multiple') }}" class="bg-white rounded-lg shadow p-6" id="edit-multiple-form">
             @csrf
 
             <!-- ID delle lezioni -->
@@ -241,8 +241,8 @@
                     <i class="fas fa-times mr-2"></i>
                     Annulla
                 </a>
-                <button type="submit"
-                        onclick="return confirm('Sei sicuro di voler modificare {{ count($lezioni) }} lezioni?\n\nQuesta operazione è irreversibile!')"
+                <button type="button"
+                        onclick="confermaAzione('edit-multiple-form', 'Modificare {{ count($lezioni) }} lezioni?', 'Le modifiche saranno applicate a tutte le lezioni selezionate. Questa operazione è irreversibile.', 'Sì, salva modifiche')"
                         class="px-6 py-3 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition font-medium">
                     <i class="fas fa-save mr-2"></i>
                     Salva Modifiche su {{ count($lezioni) }} Lezioni

@@ -114,38 +114,50 @@ try {
     // 3. Lista tutte le rotte
     echo "<h3>3️⃣ Rotte Registrate</h3>";
 
-    $routes = \Route::getRoutes();
-    $superAdminRoutes = [];
+    try {
+        // Forza il caricamento delle rotte
+        require_once base_path('routes/web.php');
 
-    foreach ($routes as $route) {
-        $uri = $route->uri();
-        if (strpos($uri, 'admin/super-admin') !== false) {
-            $superAdminRoutes[] = [
-                'method' => implode('|', $route->methods()),
-                'uri' => $uri,
-                'name' => $route->getName(),
-                'action' => $route->getActionName(),
-                'middleware' => implode(', ', $route->middleware())
-            ];
-        }
-    }
+        $routes = \Route::getRoutes();
+        $superAdminRoutes = [];
+        $totalRoutes = 0;
 
-    if (count($superAdminRoutes) > 0) {
-        echo "<div class='result success'>✅ Trovate <strong>" . count($superAdminRoutes) . "</strong> rotte Super Admin</div>";
-        echo "<table>";
-        echo "<tr><th>Method</th><th>URI</th><th>Name</th><th>Middleware</th></tr>";
-        foreach ($superAdminRoutes as $r) {
-            echo "<tr class='highlight'>";
-            echo "<td><code>{$r['method']}</code></td>";
-            echo "<td><code>{$r['uri']}</code></td>";
-            echo "<td><code>{$r['name']}</code></td>";
-            echo "<td><small>{$r['middleware']}</small></td>";
-            echo "</tr>";
+        foreach ($routes as $route) {
+            $totalRoutes++;
+            $uri = $route->uri();
+            if (strpos($uri, 'admin/super-admin') !== false) {
+                $superAdminRoutes[] = [
+                    'method' => implode('|', $route->methods()),
+                    'uri' => $uri,
+                    'name' => $route->getName(),
+                    'action' => $route->getActionName(),
+                    'middleware' => implode(', ', $route->middleware())
+                ];
+            }
         }
-        echo "</table>";
-    } else {
-        echo "<div class='result error'>❌ NESSUNA rotta Super Admin trovata!</div>";
-        echo "<div class='result warning'>⚠️ Questo indica che il file routes/web.php non è stato caricato correttamente o le rotte non sono state registrate.</div>";
+
+        echo "<div class='result'>📊 Totale rotte caricate: <strong>$totalRoutes</strong></div>";
+
+        if (count($superAdminRoutes) > 0) {
+            echo "<div class='result success'>✅ Trovate <strong>" . count($superAdminRoutes) . "</strong> rotte Super Admin</div>";
+            echo "<table>";
+            echo "<tr><th>Method</th><th>URI</th><th>Name</th><th>Middleware</th></tr>";
+            foreach ($superAdminRoutes as $r) {
+                echo "<tr class='highlight'>";
+                echo "<td><code>{$r['method']}</code></td>";
+                echo "<td><code>{$r['uri']}</code></td>";
+                echo "<td><code>{$r['name']}</code></td>";
+                echo "<td><small>{$r['middleware']}</small></td>";
+                echo "</tr>";
+            }
+            echo "</table>";
+        } else {
+            echo "<div class='result error'>❌ NESSUNA rotta Super Admin trovata!</div>";
+            echo "<div class='result warning'>⚠️ Le rotte potrebbero essere registrate ma non caricate in questo contesto.</div>";
+        }
+    } catch (\Exception $e) {
+        echo "<div class='result error'>❌ Errore caricamento rotte: " . htmlspecialchars($e->getMessage()) . "</div>";
+        echo "<pre style='background:#f4f4f4; padding:10px; border-radius:5px; font-size:11px;'>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
     }
 
     // 4. Verifica file routes/web.php

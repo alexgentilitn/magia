@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
-                const response = await fetch('/admin/super-admin/toggle-debug', {
+                const response = await fetch(window.SuperAdminRoutes.toggleDebug, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Pulizia...';
 
             try {
-                const response = await fetch('/admin/super-admin/clear-all-cache', {
+                const response = await fetch(window.SuperAdminRoutes.clearAllCache, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
-                const response = await fetch('/admin/super-admin/clear-config-cache', {
+                const response = await fetch(window.SuperAdminRoutes.clearConfigCache, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             openModal('logModal');
 
             try {
-                const response = await fetch('/admin/super-admin/view-logs', {
+                const response = await fetch(window.SuperAdminRoutes.viewLogs, {
                     method: 'GET',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
-                const response = await fetch('/admin/super-admin/clear-logs', {
+                const response = await fetch(window.SuperAdminRoutes.clearLogs, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             openModal('databaseModal');
 
             try {
-                const response = await fetch('/admin/super-admin/database-info', {
+                const response = await fetch(window.SuperAdminRoutes.databaseInfo, {
                     method: 'GET',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Ottimizzazione...';
 
             try {
-                const response = await fetch('/admin/super-admin/optimize-database', {
+                const response = await fetch(window.SuperAdminRoutes.optimizeDatabase, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Esecuzione...';
 
             try {
-                const response = await fetch('/admin/super-admin/run-migrations', {
+                const response = await fetch(window.SuperAdminRoutes.runMigrations, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,

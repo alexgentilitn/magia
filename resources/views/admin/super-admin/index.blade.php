@@ -272,5 +272,18 @@
     </div>
 </div>
 
+<!-- Definizione rotte per JavaScript -->
+<script>
+    window.SuperAdminRoutes = {
+        toggleDebug: "{{ route('admin.super-admin.toggle-debug') }}",
+        clearAllCache: "{{ route('admin.super-admin.clear-all-cache') }}",
+        clearConfigCache: "{{ route('admin.super-admin.clear-config-cache') }}",
+        viewLogs: "{{ route('admin.super-admin.view-logs') }}",
+        clearLogs: "{{ route('admin.super-admin.clear-logs') }}",
+        databaseInfo: "{{ route('admin.super-admin.database-info') }}",
+        optimizeDatabase: "{{ route('admin.super-admin.optimize-database') }}",
+        runMigrations: "{{ route('admin.super-admin.run-migrations') }}"
+    };
+</script>
 <script src="{{ asset('js/admin/super-admin.js') }}"></script>
 @endsection

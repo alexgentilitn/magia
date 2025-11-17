@@ -1,25 +1,32 @@
 /**
  * Super Admin Dashboard - JavaScript
- * Gestione funzionalità AJAX per pannello manutenzione
+ * Gestione funzionalità AJAX per pannello manutenzione con Tailwind CSS
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    // Helper per mostrare toast/notifiche
+    // Helper per mostrare notifiche con SweetAlert2
     function showToast(message, type = 'success') {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const alert = document.createElement('div');
-        alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-        alert.style.zIndex = '9999';
-        alert.style.minWidth = '300px';
-        alert.innerHTML = `
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(alert);
-        setTimeout(() => alert.remove(), 5000);
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: type,
+            title: message,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    }
+
+    // Helper per aprire modal
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    // Helper per chiudere modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
     }
 
     // Toggle Debug Mode
@@ -29,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Attendere...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
                 const response = await fetch('/admin/super-admin/toggle-debug', {
@@ -47,13 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(data.message, 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    showToast(data.message || 'Errore durante l\'operazione', 'error');
+                    showToast(data.message || 'Errore durante operazione', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante l\'operazione', 'error');
+                showToast('Errore durante operazione', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -64,12 +71,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearAllCacheBtn = document.getElementById('clearAllCacheBtn');
     if (clearAllCacheBtn) {
         clearAllCacheBtn.addEventListener('click', async function() {
-            if (!confirm('Sei sicuro di voler pulire tutta la cache?')) return;
+            const result = await Swal.fire({
+                title: 'Conferma',
+                text: 'Sei sicuro di voler pulire tutta la cache?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Si, pulisci',
+                cancelButtonText: 'Annulla'
+            });
+
+            if (!result.isConfirmed) return;
 
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Pulizia in corso...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Pulizia...';
 
             try {
                 const response = await fetch('/admin/super-admin/clear-all-cache', {
@@ -87,13 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(data.message, 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    showToast(data.message || 'Errore durante la pulizia cache', 'error');
+                    showToast(data.message || 'Errore pulizia cache', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante la pulizia cache', 'error');
+                showToast('Errore pulizia cache', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -107,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Attendere...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
                 const response = await fetch('/admin/super-admin/clear-config-cache', {
@@ -131,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante la pulizia cache config', 'error');
+                showToast('Errore pulizia cache config', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -142,11 +158,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const viewLogsBtn = document.getElementById('viewLogsBtn');
     if (viewLogsBtn) {
         viewLogsBtn.addEventListener('click', async function() {
-            const modal = new bootstrap.Modal(document.getElementById('logModal'));
             const logContent = document.getElementById('logContent');
 
             logContent.textContent = 'Caricamento...';
-            modal.show();
+            openModal('logModal');
 
             try {
                 const response = await fetch('/admin/super-admin/view-logs', {
@@ -162,11 +177,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     logContent.textContent = data.content || 'Log vuoto';
                 } else {
-                    logContent.textContent = 'Errore nel caricamento del log: ' + (data.message || '');
+                    logContent.textContent = 'Errore caricamento log: ' + (data.message || '');
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                logContent.textContent = 'Errore nel caricamento del log';
+                logContent.textContent = 'Errore caricamento log';
             }
         });
     }
@@ -175,12 +190,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearLogsBtn = document.getElementById('clearLogsBtn');
     if (clearLogsBtn) {
         clearLogsBtn.addEventListener('click', async function() {
-            if (!confirm('Sei sicuro di voler cancellare tutto il log?')) return;
+            const result = await Swal.fire({
+                title: 'Conferma',
+                text: 'Sei sicuro di voler cancellare tutto il log?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Si, cancella',
+                cancelButtonText: 'Annulla'
+            });
+
+            if (!result.isConfirmed) return;
 
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Attendere...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Attendere...';
 
             try {
                 const response = await fetch('/admin/super-admin/clear-logs', {
@@ -204,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante la cancellazione log', 'error');
+                showToast('Errore cancellazione log', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -215,11 +239,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const databaseInfoBtn = document.getElementById('databaseInfoBtn');
     if (databaseInfoBtn) {
         databaseInfoBtn.addEventListener('click', async function() {
-            const modal = new bootstrap.Modal(document.getElementById('databaseModal'));
             const databaseContent = document.getElementById('databaseContent');
 
-            databaseContent.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p class="mt-2">Caricamento...</p></div>';
-            modal.show();
+            databaseContent.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i><p class="mt-2 text-gray-600">Caricamento...</p></div>';
+            openModal('databaseModal');
 
             try {
                 const response = await fetch('/admin/super-admin/database-info', {
@@ -233,37 +256,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (data.success) {
-                    let html = `
-                        <h6>Database: <strong>${data.database}</strong></h6>
-                        <p>Totale tabelle: <strong>${data.total_tables}</strong></p>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Tabella</th>
-                                        <th class="text-end">Righe</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
+                    let html = '<div class="mb-4"><h6 class="font-bold">Database: <span class="text-green-600">' + data.database + '</span></h6><p class="text-sm text-gray-600">Totale tabelle: <strong>' + data.total_tables + '</strong></p></div><div class="overflow-auto max-h-96"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tabella</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Righe</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">';
 
                     data.tables.forEach(table => {
-                        html += `
-                            <tr>
-                                <td>${table.name}</td>
-                                <td class="text-end">${table.rows.toLocaleString()}</td>
-                            </tr>
-                        `;
+                        html += '<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">' + table.name + '</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">' + table.rows.toLocaleString() + '</td></tr>';
                     });
 
-                    html += `</tbody></table></div>`;
+                    html += '</tbody></table></div>';
                     databaseContent.innerHTML = html;
                 } else {
-                    databaseContent.innerHTML = '<div class="alert alert-danger">Errore: ' + (data.message || '') + '</div>';
+                    databaseContent.innerHTML = '<div class="bg-red-50 border-l-4 border-red-400 p-4"><p class="text-red-700">Errore: ' + (data.message || '') + '</p></div>';
                 }
             } catch (error) {
                 console.error('Errore:', error);
-                databaseContent.innerHTML = '<div class="alert alert-danger">Errore nel caricamento info database</div>';
+                databaseContent.innerHTML = '<div class="bg-red-50 border-l-4 border-red-400 p-4"><p class="text-red-700">Errore caricamento info database</p></div>';
             }
         });
     }
@@ -272,12 +278,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const optimizeDatabaseBtn = document.getElementById('optimizeDatabaseBtn');
     if (optimizeDatabaseBtn) {
         optimizeDatabaseBtn.addEventListener('click', async function() {
-            if (!confirm('Ottimizzare il database? Questa operazione potrebbe richiedere alcuni minuti.')) return;
+            const result = await Swal.fire({
+                title: 'Conferma',
+                text: 'Ottimizzare il database? Questa operazione potrebbe richiedere alcuni minuti.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si, ottimizza',
+                cancelButtonText: 'Annulla'
+            });
+
+            if (!result.isConfirmed) return;
 
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ottimizzazione...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Ottimizzazione...';
 
             try {
                 const response = await fetch('/admin/super-admin/optimize-database', {
@@ -292,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (data.success) {
-                    showToast(`Database ottimizzato! ${data.tables_optimized} tabelle processate`, 'success');
+                    showToast('Database ottimizzato! ' + data.tables_optimized + ' tabelle processate', 'success');
                 } else {
                     showToast(data.message || 'Errore', 'error');
                 }
@@ -301,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.innerHTML = originalHtml;
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante l\'ottimizzazione database', 'error');
+                showToast('Errore ottimizzazione database', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -312,12 +327,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const runMigrationsBtn = document.getElementById('runMigrationsBtn');
     if (runMigrationsBtn) {
         runMigrationsBtn.addEventListener('click', async function() {
-            if (!confirm('Eseguire le migrations? Questa operazione modificherà lo schema del database.')) return;
+            const result = await Swal.fire({
+                title: 'Conferma',
+                text: 'Eseguire le migrations? Questa operazione modificherà lo schema del database.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Si, esegui',
+                cancelButtonText: 'Annulla'
+            });
+
+            if (!result.isConfirmed) return;
 
             const btn = this;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Esecuzione...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Esecuzione...';
 
             try {
                 const response = await fetch('/admin/super-admin/run-migrations', {
@@ -337,14 +361,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Output migrations:', data.output);
                     }
                 } else {
-                    showToast(data.message || 'Errore durante l\'esecuzione migrations', 'error');
+                    showToast(data.message || 'Errore esecuzione migrations', 'error');
                 }
 
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             } catch (error) {
                 console.error('Errore:', error);
-                showToast('Errore durante l\'esecuzione migrations', 'error');
+                showToast('Errore esecuzione migrations', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }

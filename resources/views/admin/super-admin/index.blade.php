@@ -3,275 +3,274 @@
 @section('titolo', 'Super Admin - Pannello Controllo')
 
 @section('contenuto')
-<div class="container-fluid">
+<div class="p-6 max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">
-            <i class="bi bi-shield-check text-danger"></i> Super Admin
-        </h1>
+    <div class="flex justify-between items-center mb-8">
         <div>
-            <span class="badge bg-danger me-2">
-                <i class="bi bi-clock"></i> Sessione attiva
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-shield-check text-red-600 mr-3"></i>
+                Super Admin
+            </h1>
+            <p class="text-gray-600 mt-1">Pannello manutenzione sistema</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-medium">
+                <i class="fas fa-clock mr-2"></i>Sessione attiva
             </span>
-            <a href="{{ route('admin.super-admin.logout') }}" class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <a href="{{ route('admin.super-admin.logout') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
             </a>
         </div>
     </div>
 
-    <!-- Info Sistema -->
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informazioni Sistema</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center p-3 bg-light rounded">
-                                <i class="bi bi-cpu fs-3 text-primary me-3"></i>
-                                <div>
-                                    <small class="text-muted">PHP Version</small>
-                                    <div class="fw-bold">{{ $systemInfo['php_version'] }}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center p-3 bg-light rounded">
-                                <i class="bi bi-box fs-3 text-success me-3"></i>
-                                <div>
-                                    <small class="text-muted">Laravel Version</small>
-                                    <div class="fw-bold">{{ $systemInfo['laravel_version'] }}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center p-3 bg-light rounded">
-                                <i class="bi bi-server fs-3 text-info me-3"></i>
-                                <div>
-                                    <small class="text-muted">Server</small>
-                                    <div class="fw-bold">{{ $systemInfo['server_software'] }}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center p-3 bg-light rounded">
-                                <i class="bi bi-gear fs-3 text-warning me-3"></i>
-                                <div>
-                                    <small class="text-muted">Environment</small>
-                                    <div class="fw-bold">{{ ucfirst($systemInfo['environment']) }}</div>
-                                </div>
-                            </div>
+    <!-- Grid principale -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Info Sistema -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                Informazioni Sistema
+            </h2>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-code text-3xl text-blue-600 mr-3"></i>
+                        <div>
+                            <p class="text-xs text-blue-600 font-medium">PHP Version</p>
+                            <p class="text-lg font-bold text-blue-900">{{ $systemInfo['php_version'] }}</p>
                         </div>
                     </div>
+                </div>
 
-                    <hr class="my-3">
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-box text-3xl text-green-600 mr-3"></i>
+                        <div>
+                            <p class="text-xs text-green-600 font-medium">Laravel Version</p>
+                            <p class="text-lg font-bold text-green-900">{{ $systemInfo['laravel_version'] }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <small class="text-muted">Memory Limit:</small>
-                            <span class="fw-bold">{{ $systemInfo['memory_limit'] }}</span>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-server text-3xl text-purple-600 mr-3"></i>
+                        <div>
+                            <p class="text-xs text-purple-600 font-medium">Server</p>
+                            <p class="text-sm font-bold text-purple-900">{{ Str::limit($systemInfo['server_software'], 20) }}</p>
                         </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Max Upload:</small>
-                            <span class="fw-bold">{{ $systemInfo['max_upload'] }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Max POST:</small>
-                            <span class="fw-bold">{{ $systemInfo['max_post'] }}</span>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-cog text-3xl text-orange-600 mr-3"></i>
+                        <div>
+                            <p class="text-xs text-orange-600 font-medium">Environment</p>
+                            <p class="text-lg font-bold text-orange-900">{{ ucfirst($systemInfo['environment']) }}</p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-200 grid grid-cols-3 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-500">Memory:</span>
+                    <span class="font-semibold text-gray-800 ml-1">{{ $systemInfo['memory_limit'] }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-500">Max Upload:</span>
+                    <span class="font-semibold text-gray-800 ml-1">{{ $systemInfo['max_upload'] }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-500">Max POST:</span>
+                    <span class="font-semibold text-gray-800 ml-1">{{ $systemInfo['max_post'] }}</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Debug Mode Control -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-{{ $systemInfo['debug_mode'] ? 'danger' : 'success' }}">
-                <div class="card-header bg-{{ $systemInfo['debug_mode'] ? 'danger' : 'success' }} text-white">
-                    <h5 class="mb-0"><i class="bi bi-bug"></i> Debug Mode</h5>
-                </div>
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <div class="fs-1">
-                            @if($systemInfo['debug_mode'])
-                                <i class="bi bi-toggle-on text-danger"></i>
-                            @else
-                                <i class="bi bi-toggle-off text-muted"></i>
-                            @endif
-                        </div>
-                        <div class="mt-2">
-                            <span class="badge bg-{{ $systemInfo['debug_mode'] ? 'danger' : 'success' }} fs-6">
-                                {{ $systemInfo['debug_mode'] ? 'ABILITATO' : 'DISABILITATO' }}
-                            </span>
-                        </div>
-                    </div>
+        <!-- Debug Mode -->
+        <div class="bg-white rounded-xl shadow-lg p-6 border-2 @if($systemInfo['debug_mode']) border-red-500 @else border-green-500 @endif">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-bug mr-2 @if($systemInfo['debug_mode']) text-red-600 @else text-green-600 @endif"></i>
+                Debug Mode
+            </h2>
 
+            <div class="text-center py-4">
+                <div class="text-6xl mb-4">
                     @if($systemInfo['debug_mode'])
-                        <div class="alert alert-warning py-2 mb-3">
-                            <small><i class="bi bi-exclamation-triangle"></i> Disabilita in produzione!</small>
-                        </div>
+                        <i class="fas fa-toggle-on text-red-600"></i>
+                    @else
+                        <i class="fas fa-toggle-off text-gray-400"></i>
                     @endif
+                </div>
 
-                    <button type="button" class="btn btn-{{ $systemInfo['debug_mode'] ? 'danger' : 'success' }} w-100" id="toggleDebugBtn">
-                        <i class="bi bi-arrow-repeat"></i>
-                        {{ $systemInfo['debug_mode'] ? 'Disabilita' : 'Abilita' }} Debug
+                <span class="inline-block px-4 py-2 rounded-full text-sm font-bold @if($systemInfo['debug_mode']) bg-red-100 text-red-800 @else bg-green-100 text-green-800 @endif">
+                    {{ $systemInfo['debug_mode'] ? 'ABILITATO' : 'DISABILITATO' }}
+                </span>
+
+                @if($systemInfo['debug_mode'])
+                    <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-3 text-left">
+                        <p class="text-xs text-yellow-700">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Disabilita in produzione!
+                        </p>
+                    </div>
+                @endif
+
+                <button
+                    id="toggleDebugBtn"
+                    class="mt-6 w-full @if($systemInfo['debug_mode']) bg-red-600 hover:bg-red-700 @else bg-green-600 hover:bg-green-700 @endif text-white font-semibold py-3 px-4 rounded-lg transition transform hover:scale-105"
+                >
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    {{ $systemInfo['debug_mode'] ? 'Disabilita' : 'Abilita' }} Debug
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestione Cache e Log -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Cache -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-database text-blue-600 mr-2"></i>
+                Gestione Cache
+            </h2>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-2">File Bootstrap Cache:</p>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($cacheInfo['files'] as $file => $exists)
+                        <span class="px-3 py-1 rounded-full text-xs font-medium @if($exists) bg-yellow-100 text-yellow-800 @else bg-gray-100 text-gray-600 @endif">
+                            {{ $file }}: {{ $exists ? 'Presente' : 'Assente' }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Views in cache: <strong>{{ $cacheInfo['views_cached'] }}</strong> file</p>
+            </div>
+
+            <div class="space-y-2">
+                <button id="clearAllCacheBtn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                    <i class="fas fa-trash mr-2"></i> Pulisci Tutta la Cache
+                </button>
+                <button id="clearConfigCacheBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold py-3 px-4 rounded-lg transition">
+                    <i class="fas fa-cog mr-2"></i> Pulisci Solo Cache Config
+                </button>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-file-alt text-orange-600 mr-2"></i>
+                Gestione Log
+            </h2>
+
+            @if($logInfo['exists'])
+                <div class="mb-4 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Dimensione:</span>
+                        <span class="font-semibold text-gray-800">{{ $logInfo['size_human'] }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Ultimo aggiornamento:</span>
+                        <span class="text-xs text-gray-600">{{ $logInfo['modified_human'] }}</span>
+                    </div>
+                </div>
+
+                @if($logInfo['size'] > 1048576)
+                    <div class="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-3">
+                        <p class="text-xs text-yellow-700">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Log molto grande, considera di pulirlo
+                        </p>
+                    </div>
+                @endif
+
+                <div class="space-y-2">
+                    <button id="viewLogsBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                        <i class="fas fa-eye mr-2"></i> Visualizza Log
+                    </button>
+                    <button id="clearLogsBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                        <i class="fas fa-trash mr-2"></i> Pulisci Log
                     </button>
                 </div>
-            </div>
+            @else
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                    <p class="text-sm text-blue-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Nessun file di log presente
+                    </p>
+                </div>
+            @endif
         </div>
     </div>
 
-    <!-- Funzioni Manutenzione -->
-    <div class="row mb-4">
-        <!-- Cache Management -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-database"></i> Gestione Cache</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6>Cache File Bootstrap:</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($cacheInfo['files'] as $file => $exists)
-                                <span class="badge bg-{{ $exists ? 'warning' : 'secondary' }}">
-                                    {{ $file }}: {{ $exists ? 'Presente' : 'Assente' }}
-                                </span>
-                            @endforeach
-                        </div>
-                    </div>
+    <!-- Strumenti Database -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-database text-green-600 mr-2"></i>
+            Strumenti Database
+        </h2>
 
-                    <div class="mb-3">
-                        <small class="text-muted">Views in cache:</small>
-                        <strong>{{ $cacheInfo['views_cached'] }}</strong> file
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-warning" id="clearAllCacheBtn">
-                            <i class="bi bi-trash"></i> Pulisci Tutta la Cache
-                        </button>
-                        <button type="button" class="btn btn-outline-warning" id="clearConfigCacheBtn">
-                            <i class="bi bi-gear"></i> Pulisci Solo Cache Config
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Log Management -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-file-text"></i> Gestione Log</h5>
-                </div>
-                <div class="card-body">
-                    @if($logInfo['exists'])
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">Dimensione:</span>
-                                <span class="badge bg-info">{{ $logInfo['size_human'] }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Ultimo aggiornamento:</span>
-                                <small>{{ $logInfo['modified_human'] }}</small>
-                            </div>
-                        </div>
-
-                        @if($logInfo['size'] > 1048576)
-                            <div class="alert alert-warning py-2">
-                                <small><i class="bi bi-exclamation-triangle"></i> Log molto grande, considera di pulirlo</small>
-                            </div>
-                        @endif
-
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary" id="viewLogsBtn">
-                                <i class="bi bi-eye"></i> Visualizza Log
-                            </button>
-                            <button type="button" class="btn btn-danger" id="clearLogsBtn">
-                                <i class="bi bi-trash"></i> Pulisci Log
-                            </button>
-                        </div>
-                    @else
-                        <div class="alert alert-info mb-0">
-                            <i class="bi bi-info-circle"></i> Nessun file di log presente
-                        </div>
-                    @endif
-                </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <button id="databaseInfoBtn" class="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-3 px-4 rounded-lg transition">
+                <i class="fas fa-info-circle mr-2"></i> Info Database
+            </button>
+            <button id="optimizeDatabaseBtn" class="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-3 px-4 rounded-lg transition">
+                <i class="fas fa-tachometer-alt mr-2"></i> Ottimizza Database
+            </button>
+            <button id="runMigrationsBtn" class="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-3 px-4 rounded-lg transition">
+                <i class="fas fa-sync-alt mr-2"></i> Esegui Migrations
+            </button>
+            <a href="{{ route('admin.impostazioni-sistema.index') }}" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold py-3 px-4 rounded-lg transition text-center">
+                <i class="fas fa-cog mr-2"></i> Impostazioni Sistema
+            </a>
         </div>
     </div>
+</div>
 
-    <!-- Database Tools -->
-    <div class="row mb-4">
-        <div class="col-lg-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-hdd"></i> Strumenti Database</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-success w-100" id="databaseInfoBtn">
-                                <i class="bi bi-info-circle"></i> Info Database
-                            </button>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-success w-100" id="optimizeDatabaseBtn">
-                                <i class="bi bi-speedometer"></i> Ottimizza Database
-                            </button>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-success w-100" id="runMigrationsBtn">
-                                <i class="bi bi-arrow-repeat"></i> Esegui Migrations
-                            </button>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{{ route('admin.impostazioni-sistema.index') }}" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-gear"></i> Impostazioni Sistema
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- Modal Log -->
+<div id="logModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-data="{ show: false }" x-show="show" x-cloak>
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">
+                <i class="fas fa-file-alt mr-2"></i> Laravel Log
+            </h3>
+            <button onclick="document.getElementById('logModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div class="bg-gray-900 p-4 rounded-lg overflow-auto max-h-96">
+            <pre id="logContent" class="text-gray-100 text-xs font-mono"></pre>
         </div>
     </div>
+</div>
 
-    <!-- Modal Log -->
-    <div class="modal fade" id="logModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title"><i class="bi bi-file-text"></i> Laravel Log</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <pre id="logContent" style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 4px; max-height: 500px; overflow-y: auto;"></pre>
-                </div>
-            </div>
+<!-- Modal Database -->
+<div id="databaseModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-data="{ show: false }" x-show="show" x-cloak>
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">
+                <i class="fas fa-database mr-2"></i> Informazioni Database
+            </h3>
+            <button onclick="document.getElementById('databaseModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
         </div>
-    </div>
-
-    <!-- Modal Database -->
-    <div class="modal fade" id="databaseModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-hdd"></i> Informazioni Database</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="databaseContent">
-                    <div class="text-center">
-                        <div class="spinner-border"></div>
-                    </div>
-                </div>
+        <div id="databaseContent">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+                <p class="mt-2 text-gray-600">Caricamento...</p>
             </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script src="{{ asset('js/admin/super-admin.js') }}"></script>
-@endpush
 @endsection

@@ -541,6 +541,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     // ============================================
     Route::middleware(['tipo_utente:amministratore', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\SuperAdminController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SuperAdminController::class, 'index'])->name('login'); // POST per login
         Route::post('/toggle-debug', [\App\Http\Controllers\Admin\SuperAdminController::class, 'toggleDebug'])->name('toggle-debug');
         Route::post('/clear-all-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearAllCache'])->name('clear-all-cache');
         Route::post('/clear-config-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearConfigCache'])->name('clear-config-cache');

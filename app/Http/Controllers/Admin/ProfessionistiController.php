@@ -74,17 +74,49 @@ class ProfessionistiController extends Controller
             \Log::info('Inizio creazione professionista', $request->all());
 
             $validated = $request->validate([
+                // Dati anagrafici
                 'nome' => 'required|string|max:100',
                 'cognome' => 'required|string|max:100',
+                'codice_fiscale' => 'nullable|string|max:16|unique:professionisti,codice_fiscale',
+                'data_nascita' => 'nullable|date|before:today',
+                'sesso' => 'nullable|in:F,M,Altro',
+
+                // Contatti e indirizzo
                 'email' => 'required|email|unique:utenti,email',
                 'telefono_mobile' => 'nullable|string|max:20',
+                'indirizzo' => 'nullable|string|max:200',
+                'citta' => 'nullable|string|max:100',
+                'provincia' => 'nullable|string|max:2',
+                'cap' => 'nullable|string|max:5',
+
+                // Dati professionali
                 'titolo_professionale' => 'nullable|string|max:100',
                 'bio' => 'nullable|string',
                 'anni_esperienza' => 'nullable|integer|min:0',
+                'partita_iva' => 'nullable|string|max:20',
+                'tipo_contratto' => 'nullable|in:dipendente,collaboratore,freelance,altro',
+                'data_assunzione' => 'nullable|date',
+
+                // Tariffe
                 'tariffa_oraria' => 'nullable|numeric|min:0',
                 'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
                 'tariffa_lezione_privata' => 'nullable|numeric|min:0',
+
+                // Disponibilità temporale
+                'disponibile_da' => 'nullable|date',
+                'disponibile_fino' => 'nullable|date|after:disponibile_da',
+
+                // Social media
+                'sito_web' => 'nullable|url|max:255',
+                'instagram' => 'nullable|string|max:100',
+                'facebook' => 'nullable|url|max:255',
+                'linkedin' => 'nullable|url|max:255',
+                'tiktok' => 'nullable|string|max:100',
+                'video_presentazione' => 'nullable|url|max:255',
+
+                // Stato e configurazioni
                 'stato' => 'required|in:pending,attivo,sospeso,inattivo',
+                'note_interne' => 'nullable|string',
             ]);
 
             \Log::info('Validazione OK', $validated);
@@ -205,22 +237,58 @@ class ProfessionistiController extends Controller
         $professionista = Professionista::findOrFail($id);
 
         $validated = $request->validate([
+            // Dati anagrafici
             'nome' => 'required|string|max:100',
             'cognome' => 'required|string|max:100',
+            'codice_fiscale' => 'nullable|string|max:16|unique:professionisti,codice_fiscale,' . $id,
+            'data_nascita' => 'nullable|date|before:today',
+            'sesso' => 'nullable|in:F,M,Altro',
+
+            // Contatti e indirizzo
             'email' => 'required|email|unique:utenti,email,' . $professionista->utente_id,
             'telefono_mobile' => 'nullable|string|max:20',
+            'indirizzo' => 'nullable|string|max:200',
+            'citta' => 'nullable|string|max:100',
+            'provincia' => 'nullable|string|max:2',
+            'cap' => 'nullable|string|max:5',
+
+            // Dati professionali
             'titolo_professionale' => 'nullable|string|max:100',
             'bio' => 'nullable|string',
             'anni_esperienza' => 'nullable|integer|min:0',
+            'partita_iva' => 'nullable|string|max:20',
+            'tipo_contratto' => 'nullable|in:dipendente,collaboratore,freelance,altro',
+            'data_assunzione' => 'nullable|date',
+
+            // Tariffe
             'tariffa_oraria' => 'nullable|numeric|min:0',
             'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
             'tariffa_lezione_privata' => 'nullable|numeric|min:0',
+
+            // Disponibilità temporale
+            'disponibile_da' => 'nullable|date',
+            'disponibile_fino' => 'nullable|date|after:disponibile_da',
+
+            // Social media
+            'sito_web' => 'nullable|url|max:255',
+            'instagram' => 'nullable|string|max:100',
+            'facebook' => 'nullable|url|max:255',
+            'linkedin' => 'nullable|url|max:255',
+            'tiktok' => 'nullable|string|max:100',
+            'video_presentazione' => 'nullable|url|max:255',
+
+            // Stato e configurazioni
             'stato' => 'required|in:pending,attivo,sospeso,inattivo',
             'visibile_pubblico' => 'boolean',
+            'note_interne' => 'nullable|string',
+
+            // Array dinamici
             'specializzazioni' => 'nullable|array',
             'specializzazioni.*' => 'string|max:100',
             'qualifiche' => 'nullable|array',
             'qualifiche.*' => 'string|max:200',
+            'lingue_parlate' => 'nullable|array',
+            'lingue_parlate.*' => 'string|max:50',
         ]);
 
         // Aggiorna utente base

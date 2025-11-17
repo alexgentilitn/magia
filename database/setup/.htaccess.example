@@ -1,0 +1,13 @@
+# ESEMPIO .htaccess per proteggere la cartella setup
+# Rinomina questo file in .htaccess DOPO aver eseguito gli script
+
+# Blocca accesso esterno
+Order Deny,Allow
+Deny from all
+
+# Consenti solo IP specifico (modifica con il tuo IP)
+# Allow from 123.456.789.000
+
+# Oppure consenti solo localhost
+Allow from 127.0.0.1
+Allow from ::1

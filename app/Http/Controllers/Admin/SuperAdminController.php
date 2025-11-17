@@ -77,78 +77,158 @@ class SuperAdminController extends Controller
     {
         $results = [];
         $totalDeleted = 0;
+        $errors = [];
+        $hasErrors = false;
 
         // 1. Cache configurazione bootstrap
         try {
-            $files = [
-                base_path('bootstrap/cache/config.php'),
-                base_path('bootstrap/cache/routes-v7.php'),
-                base_path('bootstrap/cache/services.php'),
-                base_path('bootstrap/cache/events.php'),
-            ];
+            $bootstrapCache = base_path('bootstrap/cache');
 
-            $deleted = 0;
-            foreach ($files as $file) {
-                if (File::exists($file)) {
-                    File::delete($file);
-                    $deleted++;
+            // Verifica permessi directory
+            if (!File::exists($bootstrapCache)) {
+                $results['bootstrap'] = 'Directory non esiste';
+            } elseif (!is_writable($bootstrapCache)) {
+                $results['bootstrap'] = 'ERRORE: Directory non scrivibile (permessi)';
+                $errors[] = 'Bootstrap cache: permessi insufficienti';
+                $hasErrors = true;
+            } else {
+                $files = [
+                    base_path('bootstrap/cache/config.php'),
+                    base_path('bootstrap/cache/routes-v7.php'),
+                    base_path('bootstrap/cache/services.php'),
+                    base_path('bootstrap/cache/events.php'),
+                ];
+
+                $deleted = 0;
+                $skipped = 0;
+                foreach ($files as $file) {
+                    if (File::exists($file)) {
+                        if (is_writable($file)) {
+                            File::delete($file);
+                            $deleted++;
+                        } else {
+                            $skipped++;
+                            $errors[] = "File non cancellabile: " . basename($file);
+                        }
+                    }
+                }
+
+                $results['bootstrap'] = "OK ($deleted eliminati, $skipped saltati)";
+                $totalDeleted += $deleted;
+
+                if ($skipped > 0) {
+                    $hasErrors = true;
                 }
             }
-
-            $results['bootstrap'] = "OK ($deleted files)";
-            $totalDeleted += $deleted;
         } catch (\Exception $e) {
             $results['bootstrap'] = 'ERRORE: ' . $e->getMessage();
+            $errors[] = 'Bootstrap: ' . $e->getMessage();
+            $hasErrors = true;
         }
 
         // 2. Cache view
         try {
             $viewsPath = storage_path('framework/views');
             $deleted = 0;
+            $skipped = 0;
 
-            if (File::exists($viewsPath)) {
+            if (!File::exists($viewsPath)) {
+                $results['views'] = 'Directory non esiste';
+            } elseif (!is_writable($viewsPath)) {
+                $results['views'] = 'ERRORE: Directory non scrivibile (permessi)';
+                $errors[] = 'Views cache: permessi insufficienti';
+                $hasErrors = true;
+            } else {
                 $files = File::files($viewsPath);
                 foreach ($files as $file) {
                     if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
-                        File::delete($file);
-                        $deleted++;
+                        if (is_writable($file)) {
+                            File::delete($file);
+                            $deleted++;
+                        } else {
+                            $skipped++;
+                        }
                     }
                 }
-            }
 
-            $results['views'] = "OK ($deleted files)";
-            $totalDeleted += $deleted;
+                $results['views'] = "OK ($deleted eliminati, $skipped saltati)";
+                $totalDeleted += $deleted;
+
+                if ($skipped > 0) {
+                    $hasErrors = true;
+                }
+            }
         } catch (\Exception $e) {
             $results['views'] = 'ERRORE: ' . $e->getMessage();
+            $errors[] = 'Views: ' . $e->getMessage();
+            $hasErrors = true;
         }
 
         // 3. Cache framework
         try {
             $cachePath = storage_path('framework/cache/data');
             $deleted = 0;
+            $skipped = 0;
 
-            if (File::exists($cachePath)) {
+            if (!File::exists($cachePath)) {
+                $results['framework'] = 'Directory non esiste';
+            } elseif (!is_writable($cachePath)) {
+                $results['framework'] = 'ERRORE: Directory non scrivibile (permessi)';
+                $errors[] = 'Framework cache: permessi insufficienti';
+                $hasErrors = true;
+            } else {
                 $dirs = File::directories($cachePath);
                 foreach ($dirs as $dir) {
-                    $files = File::files($dir);
-                    foreach ($files as $file) {
-                        File::delete($file);
-                        $deleted++;
+                    if (is_writable($dir)) {
+                        $files = File::files($dir);
+                        foreach ($files as $file) {
+                            if (is_writable($file)) {
+                                File::delete($file);
+                                $deleted++;
+                            } else {
+                                $skipped++;
+                            }
+                        }
+                    } else {
+                        $skipped++;
                     }
                 }
-            }
 
-            $results['framework'] = "OK ($deleted files)";
-            $totalDeleted += $deleted;
+                $results['framework'] = "OK ($deleted eliminati, $skipped saltati)";
+                $totalDeleted += $deleted;
+
+                if ($skipped > 0) {
+                    $hasErrors = true;
+                }
+            }
         } catch (\Exception $e) {
             $results['framework'] = 'ERRORE: ' . $e->getMessage();
+            $errors[] = 'Framework: ' . $e->getMessage();
+            $hasErrors = true;
+        }
+
+        // Prepara messaggio di risposta
+        if ($hasErrors && $totalDeleted === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore pulizia cache: ' . implode(', ', $errors),
+                'results' => $results,
+                'total_deleted' => $totalDeleted,
+                'errors' => $errors
+            ], 500);
+        }
+
+        $message = "Cache pulita con successo! $totalDeleted file eliminati";
+        if ($hasErrors) {
+            $message .= " (alcuni errori riscontrati)";
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Cache pulita con successo! $totalDeleted file eliminati",
+            'message' => $message,
             'results' => $results,
-            'total_deleted' => $totalDeleted
+            'total_deleted' => $totalDeleted,
+            'errors' => $errors
         ]);
     }
 

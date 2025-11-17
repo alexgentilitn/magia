@@ -97,19 +97,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
+                // Log detailed response info
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.success) {
-                    showToast(data.message, 'success');
+                    // Show detailed results if available
+                    let message = data.message;
+                    if (data.results) {
+                        console.log('Cache results:', data.results);
+                    }
+                    showToast(message, 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
+                    console.error('Error message:', data.message);
                     showToast(data.message || 'Errore pulizia cache', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }
             } catch (error) {
-                console.error('Errore:', error);
-                showToast('Errore pulizia cache', 'error');
+                console.error('Exception during cache clear:', error);
+                showToast('Errore pulizia cache: ' + error.message, 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }

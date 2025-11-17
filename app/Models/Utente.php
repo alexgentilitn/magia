@@ -130,6 +130,36 @@ class Utente extends Authenticatable
     }
 
     /**
+     * Relazione: Conversazioni chat dell'utente (many-to-many)
+     *
+     * Funzione: Conversazioni di cui l'utente fa parte
+     * Ritorna: Collection di Conversazione
+     */
+    public function conversazioni()
+    {
+        return $this->belongsToMany(
+            Conversazione::class,
+            'conversazione_utente',
+            'utente_id',
+            'conversazione_id'
+        )->withPivot(['ultimo_accesso', 'messaggi_non_letti'])
+          ->withTimestamps()
+          ->orderBy('ultimo_messaggio_at', 'desc');
+    }
+
+    /**
+     * Relazione: Notifiche dell'utente
+     *
+     * Funzione: Notifiche ricevute dall'utente
+     * Ritorna: Collection di Notifica
+     */
+    public function notifiche()
+    {
+        return $this->hasMany(Notifica::class, 'utente_id')
+            ->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Scope: Solo utenti attivi
      * 
      * Funzione: Filtra query per ottenere solo utenti attivi

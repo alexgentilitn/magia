@@ -183,9 +183,13 @@
                                 <i class="fas fa-comments w-5"></i>
                                 <span class="ml-3 font-medium">Chat</span>
                                 @php
-                                    $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
-                                        return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
-                                    });
+                                    try {
+                                        $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                                            return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                                        });
+                                    } catch (\Exception $e) {
+                                        $messaggiNonLetti = 0;
+                                    }
                                 @endphp
                                 @if($messaggiNonLetti > 0)
                                     <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -202,7 +206,11 @@
                                 <i class="fas fa-bell w-5"></i>
                                 <span class="ml-3 font-medium">Notifiche</span>
                                 @php
-                                    $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                                    try {
+                                        $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                                    } catch (\Exception $e) {
+                                        $notificheNonLette = 0;
+                                    }
                                 @endphp
                                 @if($notificheNonLette > 0)
                                     <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">

@@ -153,9 +153,13 @@
                 <div class="relative">
                     <i class="fas fa-comments"></i>
                     @php
-                        $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
-                            return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
-                        });
+                        try {
+                            $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                                return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                            });
+                        } catch (\Exception $e) {
+                            $messaggiNonLetti = 0;
+                        }
                     @endphp
                     @if($messaggiNonLetti > 0)
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">
@@ -170,7 +174,11 @@
                 <div class="relative">
                     <i class="fas fa-bell"></i>
                     @php
-                        $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                        try {
+                            $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                        } catch (\Exception $e) {
+                            $notificheNonLette = 0;
+                        }
                     @endphp
                     @if($notificheNonLette > 0)
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">

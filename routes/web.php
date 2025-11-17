@@ -597,6 +597,10 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::get('/smtp', [ImpostazioniController::class, 'smtp'])->name('smtp');
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
+
+        // Configurazione PayPal
+        Route::post('/paypal', [ImpostazioniController::class, 'salvaPaypal'])->name('paypal.salva');
+        Route::post('/paypal/test', [ImpostazioniController::class, 'testPaypal'])->name('paypal.test');
     });
 
     // ============================================

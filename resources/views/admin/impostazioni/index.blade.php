@@ -3,7 +3,7 @@
 @section('titolo', 'Impostazioni')
 
 @section('contenuto')
-<div class="p-6" x-data="{ activeTab: 'email' }">
+<div class="p-6" x-data="{ activeTab: '{{ session('active_tab', 'email') }}' }">
 
     <!-- Header -->
     <div class="mb-6">
@@ -61,6 +61,16 @@
                 >
                     <i class="fas fa-envelope mr-2"></i>
                     Email e Notifiche
+                </button>
+
+                <!-- Tab PayPal -->
+                <button
+                    @click="activeTab = 'paypal'"
+                    :class="activeTab === 'paypal' ? 'border-fucsia-magia text-fucsia-magia' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                >
+                    <i class="fab fa-paypal mr-2"></i>
+                    Pagamenti
                 </button>
 
                 <!-- Tab Valori Sistema -->
@@ -349,6 +359,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Tab Content: PayPal e Pagamenti -->
+    @include('admin.impostazioni._paypal')
 
     <!-- Tab Content: Valori Sistema -->
     <div x-show="activeTab === 'sistema'" x-cloak class="max-w-7xl mx-auto">

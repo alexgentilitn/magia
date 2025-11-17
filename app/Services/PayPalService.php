@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Impostazione;
 
 /**
  * Service: PayPal Integration
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Log;
  * - Creazione ordini
  * - Cattura pagamenti
  * - Gestione token OAuth
+ *
+ * NOTA: Le credenziali vengono lette dal database (tabella impostazioni)
+ *       configurabili dall'interfaccia admin in Impostazioni → PayPal
  *
  * Documentazione: https://developer.paypal.com/docs/api/orders/v2/
  */
@@ -25,9 +29,10 @@ class PayPalService
 
     public function __construct()
     {
-        $this->clientId = config('services.paypal.client_id');
-        $this->clientSecret = config('services.paypal.client_secret');
-        $this->mode = config('services.paypal.mode', 'sandbox');
+        // Leggi credenziali dal database (con fallback al .env)
+        $this->clientId = Impostazione::get('paypal_client_id', config('services.paypal.client_id'));
+        $this->clientSecret = Impostazione::get('paypal_client_secret', config('services.paypal.client_secret'));
+        $this->mode = Impostazione::get('paypal_mode', config('services.paypal.mode', 'sandbox'));
 
         // URL base API (sandbox o production)
         $this->baseUrl = $this->mode === 'live'
@@ -209,5 +214,50 @@ class PayPalService
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Ottieni importo quota registrazione da database
+     *
+     * @return float
+     */
+    public static function getImportoRegistrazione()
+    {
+        return floatval(Impostazione::get('paypal_importo_registrazione', '50.00'));
+    }
+
+    /**
+     * Verifica se PayPal è attivo
+     *
+     * @return bool
+     */
+    public static function isPayPalAttivo()
+    {
+        return Impostazione::get('paypal_attivo', '1') === '1';
+    }
+
+    /**
+     * Verifica se Bonifico è attivo
+     *
+     * @return bool
+     */
+    public static function isBonificoAttivo()
+    {
+        return Impostazione::get('bonifico_attivo', '1') === '1';
+    }
+
+    /**
+     * Ottieni dati bonifico bancario
+     *
+     * @return array
+     */
+    public static function getDatiBonifico()
+    {
+        return [
+            'iban' => Impostazione::get('bonifico_iban', 'IT00X0000000000000000000000'),
+            'intestatario' => Impostazione::get('bonifico_intestatario', 'MA.GIA DONNA S.R.L.'),
+            'banca' => Impostazione::get('bonifico_banca', 'Banca Esempio'),
+            'importo' => static::getImportoRegistrazione(),
+        ];
     }
 }

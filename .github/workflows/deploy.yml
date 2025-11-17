@@ -6,6 +6,7 @@ on:
       - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # Branch precedente
       - claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm  # Branch corrente - Testing e Fix Export
       - claude/clarify-session-description-01DThBJ4fcgMfm2BwogX8rN8  # Session corrente - Fix permessi
+      - claude/Magia_Brench-01DThBJ4fcgMfm2BwogX8rN8  # Session corrente - Sistema Pagamenti PayPal
       # Deploy automatico da branch claude/** con session ID
   workflow_dispatch:
     # Deploy manuale consentito
@@ -31,7 +32,6 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
-            .env
             .env.example
             README.md
             .github/**

@@ -53,22 +53,6 @@
         </div>
     @endif
 
-    <!-- Info Box -->
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6 rounded-lg">
-        <h5 class="font-bold text-blue-900 mb-3 flex items-center">
-            <i class="fas fa-info-circle mr-2"></i>Come funzionano i permessi individuali
-        </h5>
-        <p class="text-blue-800 mb-2">I permessi di un collaboratore si ottengono combinando:</p>
-        <ul class="list-disc list-inside text-blue-800 mb-3 space-y-1">
-            <li><strong>Permessi del Ruolo</strong>: Assegnati automaticamente in base al ruolo ({{ $utente->ruolo->nome ?? 'Nessun ruolo' }})</li>
-            <li><strong>Permessi Individuali</strong>: Assegnati specificamente a questo utente (priorità massima)</li>
-        </ul>
-        <p class="text-blue-800 flex items-start">
-            <i class="fas fa-lightbulb text-yellow-500 mr-2 mt-1"></i>
-            <span><strong>Suggerimento:</strong> Usa i permessi individuali per dare accesso a funzionalità specifiche non previste dal ruolo base.</span>
-        </p>
-    </div>
-
     <!-- Form Gestione Permessi -->
     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
         <div class="bg-purple-600 text-white p-4">

@@ -210,7 +210,7 @@ Alla fine dell'implementazione creeremo:
 ## 📝 NOTE SVILUPPO
 
 - Database changes: file PHP via browser alla fine
-- Branch: `claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm`
+- Branch: `claude/Magia_Brench-01DThBJ4fcgMfm2BwogX8rN8`
 - Commit frequenti con push
 - Testing manuale dopo ogni feature
 

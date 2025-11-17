@@ -211,6 +211,82 @@
         </div>
     </div>
 
+    <!-- Backup Database -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-save text-indigo-600 mr-2"></i>
+                Backup Database
+            </h2>
+            @if(!$mysqldumpAvailable)
+                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>mysqldump non disponibile
+                </span>
+            @else
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                    <i class="fas fa-check-circle mr-1"></i>Sistema pronto
+                </span>
+            @endif
+        </div>
+
+        <!-- Statistiche Backup -->
+        <div class="grid grid-cols-3 gap-4 mb-4">
+            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-lg border border-indigo-200">
+                <div class="flex items-center">
+                    <i class="fas fa-archive text-2xl text-indigo-600 mr-3"></i>
+                    <div>
+                        <p class="text-xs text-indigo-600 font-medium">Backup Totali</p>
+                        <p class="text-lg font-bold text-indigo-900">{{ $backupStats['total_backups'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div class="flex items-center">
+                    <i class="fas fa-hdd text-2xl text-purple-600 mr-3"></i>
+                    <div>
+                        <p class="text-xs text-purple-600 font-medium">Spazio Utilizzato</p>
+                        <p class="text-lg font-bold text-purple-900">{{ $backupStats['total_size_human'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-2xl text-blue-600 mr-3"></i>
+                    <div>
+                        <p class="text-xs text-blue-600 font-medium">Ultimo Backup</p>
+                        <p class="text-sm font-bold text-blue-900">{{ $backupStats['newest_backup'] ?? 'Mai' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Azioni Backup -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <button id="createBackupBtn"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg transition {{ !$mysqldumpAvailable ? 'opacity-50 cursor-not-allowed' : '' }}"
+                    {{ !$mysqldumpAvailable ? 'disabled' : '' }}>
+                <i class="fas fa-plus-circle mr-2"></i> Crea Backup Ora
+            </button>
+            <button id="viewBackupsBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                <i class="fas fa-list mr-2"></i> Visualizza Backup ({{ $backupStats['total_backups'] }})
+            </button>
+            <button id="cleanOldBackupsBtn" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition">
+                <i class="fas fa-broom mr-2"></i> Pulisci Backup Vecchi
+            </button>
+        </div>
+
+        @if(!$mysqldumpAvailable)
+        <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
+            <p class="text-sm text-red-700">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                <strong>Attenzione:</strong> mysqldump non è disponibile su questo server. Contatta l'amministratore di sistema per installarlo.
+            </p>
+        </div>
+        @endif
+    </div>
+
     <!-- Strumenti Database -->
     <div class="bg-white rounded-xl shadow-lg p-6">
         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -272,6 +348,26 @@
     </div>
 </div>
 
+<!-- Modal Backup List -->
+<div id="backupModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">
+                <i class="fas fa-archive mr-2"></i> Lista Backup Database
+            </h3>
+            <button onclick="document.getElementById('backupModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div id="backupListContent">
+            <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+                <p class="mt-2 text-gray-600">Caricamento backup...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Definizione rotte per JavaScript -->
 <script>
     window.SuperAdminRoutes = {
@@ -282,7 +378,12 @@
         clearLogs: "{{ route('admin.super-admin.clear-logs') }}",
         databaseInfo: "{{ route('admin.super-admin.database-info') }}",
         optimizeDatabase: "{{ route('admin.super-admin.optimize-database') }}",
-        runMigrations: "{{ route('admin.super-admin.run-migrations') }}"
+        runMigrations: "{{ route('admin.super-admin.run-migrations') }}",
+        backupCreate: "{{ route('admin.super-admin.backup.create') }}",
+        backupList: "{{ route('admin.super-admin.backup.list') }}",
+        backupDownload: "{{ route('admin.super-admin.backup.download') }}",
+        backupDelete: "{{ route('admin.super-admin.backup.delete') }}",
+        backupCleanOld: "{{ route('admin.super-admin.backup.clean-old') }}"
     };
 </script>
 <script src="{{ asset('js/admin/super-admin.js') }}"></script>

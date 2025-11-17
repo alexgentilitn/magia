@@ -551,6 +551,14 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::get('/database-info', [\App\Http\Controllers\Admin\SuperAdminController::class, 'databaseInfo'])->name('database-info');
         Route::post('/optimize-database', [\App\Http\Controllers\Admin\SuperAdminController::class, 'optimizeDatabase'])->name('optimize-database');
         Route::post('/run-migrations', [\App\Http\Controllers\Admin\SuperAdminController::class, 'runMigrations'])->name('run-migrations');
+
+        // Backup Database
+        Route::post('/backup/create', [\App\Http\Controllers\Admin\SuperAdminController::class, 'createBackup'])->name('backup.create');
+        Route::get('/backup/list', [\App\Http\Controllers\Admin\SuperAdminController::class, 'listBackups'])->name('backup.list');
+        Route::get('/backup/download', [\App\Http\Controllers\Admin\SuperAdminController::class, 'downloadBackup'])->name('backup.download');
+        Route::delete('/backup/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteBackup'])->name('backup.delete');
+        Route::post('/backup/clean-old', [\App\Http\Controllers\Admin\SuperAdminController::class, 'cleanOldBackups'])->name('backup.clean-old');
+
         Route::get('/logout', [\App\Http\Controllers\Admin\SuperAdminController::class, 'logout'])->name('logout');
     });
 

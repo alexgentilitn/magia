@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Middleware\SuperAdminAuth;
+use App\Services\BackupService;
 
 /**
  * Controller: Super Admin
@@ -19,13 +20,23 @@ class SuperAdminController extends Controller
     /**
      * Dashboard Super Admin
      */
-    public function index()
+    public function index(BackupService $backupService)
     {
         $systemInfo = $this->getSystemInfo();
         $cacheInfo = $this->getCacheInfo();
         $logInfo = $this->getLogInfo();
-        
-        return view('admin.super-admin.index', compact('systemInfo', 'cacheInfo', 'logInfo'));
+        $backupStats = $backupService->getBackupStats();
+        $backupList = $backupService->listBackups();
+        $mysqldumpAvailable = $backupService->isMysqldumpAvailable();
+
+        return view('admin.super-admin.index', compact(
+            'systemInfo',
+            'cacheInfo',
+            'logInfo',
+            'backupStats',
+            'backupList',
+            'mysqldumpAvailable'
+        ));
     }
 
     /**
@@ -418,12 +429,124 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Crea un backup del database
+     */
+    public function createBackup(Request $request, BackupService $backupService)
+    {
+        $request->validate([
+            'description' => 'nullable|string|max:255'
+        ]);
+
+        $result = $backupService->createBackup($request->input('description'));
+
+        return response()->json($result);
+    }
+
+    /**
+     * Lista tutti i backup disponibili
+     */
+    public function listBackups(BackupService $backupService)
+    {
+        $backups = $backupService->listBackups();
+
+        return response()->json([
+            'success' => true,
+            'backups' => $backups
+        ]);
+    }
+
+    /**
+     * Download di un backup
+     */
+    public function downloadBackup(Request $request, BackupService $backupService)
+    {
+        $filename = $request->input('filename');
+
+        if (!$filename) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nome file non specificato'
+            ], 400);
+        }
+
+        // Validazione del nome file (sicurezza)
+        if (!preg_match('/^backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.sql$/', $filename)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nome file non valido'
+            ], 400);
+        }
+
+        $download = $backupService->downloadBackup($filename);
+
+        if (!$download) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Backup non trovato'
+            ], 404);
+        }
+
+        return $download;
+    }
+
+    /**
+     * Elimina un backup
+     */
+    public function deleteBackup(Request $request, BackupService $backupService)
+    {
+        $filename = $request->input('filename');
+
+        if (!$filename) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nome file non specificato'
+            ], 400);
+        }
+
+        // Validazione del nome file (sicurezza)
+        if (!preg_match('/^backup_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.sql$/', $filename)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nome file non valido'
+            ], 400);
+        }
+
+        $success = $backupService->deleteBackup($filename);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup eliminato con successo'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Errore durante l\'eliminazione del backup'
+        ], 500);
+    }
+
+    /**
+     * Pulisce i backup vecchi
+     */
+    public function cleanOldBackups(BackupService $backupService)
+    {
+        $deleted = $backupService->cleanOldBackups();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Eliminati $deleted backup vecchi",
+            'deleted' => $deleted
+        ]);
+    }
+
+    /**
      * Logout Super Admin
      */
     public function logout(Request $request)
     {
         SuperAdminAuth::logout();
-        
+
         return redirect()->route('admin.dashboard')
             ->with('success', 'Logout Super Admin effettuato');
     }

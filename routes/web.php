@@ -360,6 +360,34 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     });
 
     // ============================================
+    // PAGAMENTI PROFESSIONISTI (Storico e Compensi)
+    // ============================================
+    Route::prefix('professionisti/pagamenti')->name('professionisti.pagamenti.')->group(function () {
+        // Lista pagamenti
+        Route::get('/', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'index'])->name('index');
+
+        // Crea pagamento
+        Route::get('/crea', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'store'])->name('store');
+
+        // Calcola compenso (AJAX)
+        Route::post('/calcola', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'calcolaCompenso'])->name('calcola');
+
+        // Storico pagamenti per professionista
+        Route::get('/professionista/{utente_id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'storicoProfessionista'])->name('storico-professionista');
+
+        // Visualizza pagamento
+        Route::get('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'show'])->name('show');
+
+        // Modifica pagamento
+        Route::get('/{id}/modifica', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'update'])->name('update');
+
+        // Elimina pagamento
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'destroy'])->name('destroy');
+    });
+
+    // ============================================
     // CALENDARIO VISUALE
     // ============================================
     Route::prefix('calendario')->name('calendario.')->group(function () {

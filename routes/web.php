@@ -536,6 +536,22 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
     });
 
+    // ============================================
+    // SUPER ADMIN (Manutenzione Sistema)
+    // ============================================
+    Route::middleware(['tipo_utente:amministratore', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SuperAdminController::class, 'index'])->name('index');
+        Route::post('/toggle-debug', [\App\Http\Controllers\Admin\SuperAdminController::class, 'toggleDebug'])->name('toggle-debug');
+        Route::post('/clear-all-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearAllCache'])->name('clear-all-cache');
+        Route::post('/clear-config-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearConfigCache'])->name('clear-config-cache');
+        Route::post('/clear-logs', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearLogs'])->name('clear-logs');
+        Route::get('/view-logs', [\App\Http\Controllers\Admin\SuperAdminController::class, 'viewLogs'])->name('view-logs');
+        Route::get('/database-info', [\App\Http\Controllers\Admin\SuperAdminController::class, 'databaseInfo'])->name('database-info');
+        Route::post('/optimize-database', [\App\Http\Controllers\Admin\SuperAdminController::class, 'optimizeDatabase'])->name('optimize-database');
+        Route::post('/run-migrations', [\App\Http\Controllers\Admin\SuperAdminController::class, 'runMigrations'])->name('run-migrations');
+        Route::get('/logout', [\App\Http\Controllers\Admin\SuperAdminController::class, 'logout'])->name('logout');
+    });
+
 });
 
 

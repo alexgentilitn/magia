@@ -286,6 +286,16 @@
                                 <span class="ml-3 font-medium">Impostazioni</span>
                             </a>
                         </li>
+
+                        <!-- Super Admin (solo amministratori) -->
+                        <li class="mt-2 pt-2 border-t border-white border-opacity-20">
+                            <a href="{{ route('admin.super-admin.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-red-600 hover:bg-opacity-30 rounded-lg transition @if(request()->routeIs('admin.super-admin.*')) bg-red-600 bg-opacity-30 @endif">
+                                <i class="fas fa-shield-alt w-5"></i>
+                                <span class="ml-3 font-medium">Super Admin</span>
+                                <span class="ml-auto text-xs bg-red-600 px-2 py-1 rounded">PRO</span>
+                            </a>
+                        </li>
                         @endif
 
                     </ul>

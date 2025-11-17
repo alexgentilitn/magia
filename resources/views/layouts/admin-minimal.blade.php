@@ -135,19 +135,10 @@
                             </a>
                         </li>
 
-                        <!-- Impostazioni Sistema (solo amministratori) -->
-                        <li>
-                            <a href="{{ route('admin.impostazioni-sistema.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni-sistema.*')) bg-white bg-opacity-20 @endif">
-                                <i class="fas fa-cogs w-5"></i>
-                                <span class="ml-3 font-medium">Impostazioni Sistema</span>
-                            </a>
-                        </li>
-
                         <!-- Impostazioni (solo amministratori) -->
                         <li>
-                            <a href="{{ route('admin.impostazioni.smtp') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni.*')) bg-white bg-opacity-20 @endif">
+                            <a href="{{ route('admin.impostazioni.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni.*') || request()->routeIs('admin.impostazioni-sistema.*')) bg-white bg-opacity-20 @endif">
                                 <i class="fas fa-cog w-5"></i>
                                 <span class="ml-3 font-medium">Impostazioni</span>
                             </a>

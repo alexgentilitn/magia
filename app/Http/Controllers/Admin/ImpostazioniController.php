@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Impostazione;
+use App\Models\ImpostazioneSistema;
 use App\Mail\TestEmailMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -16,7 +17,42 @@ use Illuminate\Support\Facades\Validator;
 class ImpostazioniController extends Controller
 {
     /**
-     * Mostra form configurazione SMTP
+     * Mostra pagina principale impostazioni con tutti i tab
+     */
+    public function index()
+    {
+        // Dati per tab Email (SMTP)
+        $impostazioniSmtp = Impostazione::getGruppo('smtp');
+
+        // Dati per tab Valori Sistema
+        $impostazioniSistema = ImpostazioneSistema::orderBy('categoria')
+            ->orderBy('ordinamento')
+            ->get()
+            ->groupBy('categoria');
+
+        $categorieSistema = [
+            'tipologia_lezione' => [
+                'nome' => 'Tipologie Lezione',
+                'descrizione' => 'Tipologie disponibili per le lezioni (individuale, gruppo, online, ecc.)',
+                'icona' => 'fa-tag',
+            ],
+            'stato_lezione' => [
+                'nome' => 'Stati Lezione',
+                'descrizione' => 'Stati possibili per una lezione (programmata, confermata, ecc.)',
+                'icona' => 'fa-flag',
+            ],
+            'frequenza_ricorrenza' => [
+                'nome' => 'Frequenze Ricorrenza',
+                'descrizione' => 'Frequenze disponibili per lezioni ricorrenti',
+                'icona' => 'fa-repeat',
+            ],
+        ];
+
+        return view('admin.impostazioni.index', compact('impostazioniSmtp', 'impostazioniSistema', 'categorieSistema'));
+    }
+
+    /**
+     * Mostra form configurazione SMTP (legacy - redirect a index)
      */
     public function smtp()
     {

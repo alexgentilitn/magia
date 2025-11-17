@@ -531,6 +531,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     // IMPOSTAZIONI (solo amministratori)
     // ============================================
     Route::middleware('tipo_utente:amministratore')->prefix('impostazioni')->name('impostazioni.')->group(function () {
+        // Pagina principale impostazioni (con tutti i tab)
+        Route::get('/', [ImpostazioniController::class, 'index'])->name('index');
+
         // Configurazione SMTP
         Route::get('/smtp', [ImpostazioniController::class, 'smtp'])->name('smtp');
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');

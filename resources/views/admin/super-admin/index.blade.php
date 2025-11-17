@@ -285,5 +285,17 @@
         runMigrations: "{{ route('admin.super-admin.run-migrations') }}"
     };
 </script>
-<script src="{{ asset('js/admin/super-admin.js') }}"></script>
+<script>
+    const BASE_PATH = '{{ config("app.url") }}'.replace(window.location.origin, '');
+</script>
+<script>
+    (function() {
+        const script = document.createElement('script');
+        script.src = BASE_PATH + '/js/admin/super-admin.js';
+        script.onerror = function() {
+            console.error('Errore caricamento script super-admin.js da:', script.src);
+        };
+        document.head.appendChild(script);
+    })();
+</script>
 @endsection

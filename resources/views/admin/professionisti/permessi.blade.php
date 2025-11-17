@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestione Permessi - ' . $utente->nome_completo)
+@section('titolo', 'Gestione Permessi - ' . $utente->nome_completo)
 
-@section('content')
+@section('contenuto')
 <div class="container-fluid px-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -17,7 +17,7 @@
             </p>
         </div>
         <div>
-            <a href="{{ route('admin.professionisti.show', $utente->id) }}" class="btn btn-outline-secondary">
+            <a href="{{ route('admin.professionisti.show', $utente->professionista->id) }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Torna al Profilo
             </a>
             <a href="{{ route('admin.professionisti.index') }}" class="btn btn-outline-primary">
@@ -107,7 +107,7 @@
                         <i class="fas fa-undo me-1"></i> Resetta Permessi Individuali
                     </button>
                     <div>
-                        <a href="{{ route('admin.professionisti.show', $utente->id) }}" class="btn btn-secondary me-2">
+                        <a href="{{ route('admin.professionisti.show', $utente->professionista->id) }}" class="btn btn-secondary me-2">
                             <i class="fas fa-times me-1"></i> Annulla
                         </a>
                         <button type="submit" class="btn btn-primary">

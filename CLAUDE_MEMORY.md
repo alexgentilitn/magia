@@ -986,6 +986,54 @@ README.md
 
 ---
 
+## 📍 PERCORSI PROGETTO
+
+### ⚠️ PERCORSI CORRETTI - INFORMAZIONI CRITICHE
+
+**Ambiente di Sviluppo (Docker/Container):**
+```
+/home/user/magia/
+```
+
+**Ambiente di Produzione (Server Aruba):**
+```
+/home/agstudiodiital/public_html/magia/
+```
+
+**⚠️ IMPORTANTE:**
+- Il progetto NON si trova in `/var/www/html/magia` sul server di produzione
+- Il percorso corretto su Aruba è `/home/agstudiodiital/public_html/magia/`
+- Accessibile via FTP: `ftp.agstudio.digital` → `/public_html/magia/`
+- URL pubblico: `https://www.agstudio.digital/magia/public/`
+
+### Directory Critiche del Progetto
+
+**Storage Backups (CORRETTA):**
+```
+storage/app/backups/          # Directory CORRETTA per backup database
+```
+
+**⚠️ Errore Comune:**
+```
+storage/backups/              # SBAGLIATO - directory esistente ma non usata dal codice
+```
+
+**Il BackupService Laravel usa `storage_path('app/backups')` che punta a `storage/app/backups/`**
+
+### Comando mysqldump sul Server Produzione
+
+**Path mysqldump:** `/bin/mysqldump`
+
+**Verifica disponibilità:**
+```bash
+which mysqldump
+# Output: /bin/mysqldump
+```
+
+**Versione installata:** MySQL dump 8.0.43
+
+---
+
 ## 📁 STRUTTURA PROGETTO
 
 ### Directory Laravel Standard
@@ -998,7 +1046,9 @@ README.md
 │   │   │   └── Admin/     # Controllers area admin
 │   │   └── Middleware/
 │   ├── Mail/
-│   └── Models/
+│   ├── Models/
+│   └── Services/
+│       └── BackupService.php  # Servizio backup database
 ├── bootstrap/
 │   └── cache/             # Cache Laravel (permessi 755)
 ├── config/                # Configurazioni Laravel
@@ -1012,12 +1062,15 @@ README.md
 ├── resources/
 │   └── views/
 │       ├── admin/        # Views area amministratore
+│       │   └── super-admin/  # Views super admin (backup, cache, ecc.)
 │       ├── emails/       # Template email
 │       └── layouts/      # Layout Blade
 ├── routes/
 │   └── web.php           # Route web
 ├── storage/              # Storage Laravel (permessi 755)
 │   ├── app/
+│   │   ├── backups/      # ⭐ Directory backup database (CORRETTA)
+│   │   └── public/
 │   ├── framework/
 │   │   ├── cache/
 │   │   ├── sessions/
@@ -1142,6 +1195,91 @@ Failed to open stream: vendor/composer/../symfony/deprecation-contracts/function
 - `.env` è nel `.gitignore` (per future modifiche)
 - `.env` è ESCLUSO dal workflow deploy
 - Modifiche future: solo via FTP direttamente sul server
+
+### 4. Errore Backup Database - Codice Errore 1 (RISOLTO)
+
+**Data risoluzione:** 17 Novembre 2025
+
+**Errore:**
+```
+Errore durante il backup. Codice errore: 1. Dettagli: Nessun output
+```
+
+**Errore visibile su:**
+`https://www.agstudio.digital/magia/public/admin/super-admin`
+Quando si clicca su "Crea backup ora"
+
+**Causa Principale:** Directory `storage/app/backups/` non esistente sul server di produzione.
+
+**Causa Secondaria:** `mysqldump` non installato nell'ambiente di sviluppo locale (ma già presente in produzione).
+
+**Analisi Problema:**
+1. Il `BackupService.php` usa `storage_path('app/backups')` che punta a `storage/app/backups/`
+2. Sul server esisteva solo `storage/backups/` (directory vuota, non utilizzata)
+3. Laravel tentava di scrivere in `storage/app/backups/` che non esisteva
+4. Il comando `mysqldump` restituiva exit code 1 (errore generico)
+
+**Soluzione applicata sul server di produzione:**
+
+**Step 1: Verifica percorso progetto**
+```bash
+cd /home/agstudiodiital/public_html/magia
+```
+
+**Step 2: Creazione directory corretta**
+```bash
+mkdir -p storage/app/backups
+chmod 775 storage/app/backups
+```
+
+**Step 3: Test mysqldump manuale**
+```bash
+mysqldump --user='agstudiodiital_agstudiomagia' \
+  --password='$Magia2015!' \
+  --host='localhost' \
+  --port=3306 \
+  agstudiodiital_magia > /tmp/test_backup.sql
+
+# Exit code: 0 (successo)
+# File creato: 97K
+```
+
+**Step 4: Verifica funzionalità**
+- Test su interfaccia web: ✅ Funzionante
+- Backup creato con successo in `storage/app/backups/`
+
+**Configurazione Finale:**
+```
+Directory: storage/app/backups/
+Permessi: 775 (rwxrwxr-x)
+Owner: agstudiodiital
+Group: agstudiodiital
+```
+
+**mysqldump Configurazione:**
+```
+Path: /bin/mysqldump
+Versione: MySQL dump 8.0.43
+Host DB: localhost (socket Unix, non TCP/IP)
+Database: agstudiodiital_magia
+```
+
+**⚠️ Note Importanti:**
+- La directory `storage/backups/` esiste ma NON è usata dal codice Laravel
+- BackupService usa sempre `storage_path('app/backups')`
+- I backup sono salvati come: `backup_YYYY-MM-DD_HH-MM-SS.sql`
+- Retention policy: mantiene ultimi 30 backup (`BackupService::MAX_BACKUPS`)
+
+**Verifica Funzionamento:**
+1. Accedi a: `https://www.agstudio.digital/magia/public/admin/super-admin`
+2. Sezione "Backup Database"
+3. Click su "Crea backup ora"
+4. ✅ Messaggio: "Backup creato con successo: backup_YYYY-MM-DD_HH-MM-SS.sql (XX KB)"
+
+**Files coinvolti nella risoluzione:**
+- `app/Services/BackupService.php` - Servizio backup (già corretto)
+- `app/Http/Controllers/Admin/SuperAdminController.php` - Controller (già corretto)
+- `storage/app/backups/` - Directory creata manualmente sul server
 
 ---
 
@@ -1397,9 +1535,16 @@ php artisan key:generate
 
 ---
 
-**📅 Ultimo aggiornamento:** 16 Novembre 2025
+**📅 Ultimo aggiornamento:** 17 Novembre 2025
 **✍️ Creato da:** Claude Code - Sessione review-technical-docs-01G4cTM33nQqZ3K3UtX3NGqm
-**🔄 Versione:** 4.0 - Aggiornato branch policy e workflow (BRANCH UNICO OBBLIGATORIO)
+**🔄 Versione:** 4.1 - Aggiornato percorsi progetto e risoluzione problema backup
+
+**🆕 Novità versione 4.1:**
+- ✅ Documentati percorsi corretti: sviluppo `/home/user/magia` e produzione `/home/agstudiodiital/public_html/magia`
+- ✅ Documentata directory backup corretta: `storage/app/backups/` (NON `storage/backups/`)
+- ✅ Risolto problema "Errore backup. Codice errore: 1" (directory mancante)
+- ✅ Configurazione mysqldump documentata: `/bin/mysqldump` su server produzione
+- ✅ Procedura completa per risoluzione problemi backup su server Aruba
 
 ---
 

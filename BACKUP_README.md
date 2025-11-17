@@ -2,6 +2,35 @@
 
 Sistema completo di backup automatico e manuale del database MySQL con interfaccia di gestione nel pannello Super Admin.
 
+## 📍 Percorsi e Configurazione Server
+
+### Percorsi Progetto
+
+**Ambiente Produzione (Server Aruba):**
+```
+Percorso completo: /home/agstudiodiital/public_html/magia/
+Directory backup:   /home/agstudiodiital/public_html/magia/storage/app/backups/
+URL pubblico:       https://www.agstudio.digital/magia/public/
+```
+
+**Ambiente Sviluppo (Container Docker):**
+```
+Percorso completo: /home/user/magia/
+Directory backup:   /home/user/magia/storage/app/backups/
+```
+
+### Configurazione mysqldump
+
+**Server Aruba:**
+- Path: `/bin/mysqldump`
+- Versione: MySQL dump 8.0.43
+- Tipo connessione: Socket Unix (host=localhost)
+
+**⚠️ ATTENZIONE:**
+- La directory backup CORRETTA è `storage/app/backups/`
+- NON usare `storage/backups/` (esiste ma non è utilizzata dal codice)
+- Il `BackupService` usa il path Laravel: `storage_path('app/backups')`
+
 ## 🚀 Funzionalità
 
 ### Backup Manuali
@@ -214,6 +243,57 @@ mysql -h localhost -u $(grep DB_USERNAME .env | cut -d '=' -f2) -p$(grep DB_PASS
 
 ## 🐛 Troubleshooting
 
+### ⚠️ Errore "Codice errore: 1. Dettagli: Nessun output"
+
+**Sintomo:** Quando si clicca su "Crea backup ora" nell'interfaccia Super Admin, si riceve un errore generico.
+
+**Causa più comune:** Directory `storage/app/backups/` non esistente.
+
+**Soluzione:**
+
+**Per server con accesso SSH (Aruba hosting condiviso):**
+```bash
+# 1. Naviga nella directory del progetto
+cd /home/agstudiodiital/public_html/magia
+
+# 2. Verifica se la directory esiste
+ls -la storage/app/
+
+# 3. Crea la directory se non esiste
+mkdir -p storage/app/backups
+
+# 4. Imposta i permessi corretti
+chmod 775 storage/app/backups
+
+# 5. Verifica
+ls -la storage/app/
+```
+
+**Per server con solo accesso FTP:**
+1. Connettiti via FTP a `ftp.agstudio.digital`
+2. Naviga in `/public_html/magia/storage/app/`
+3. Crea directory `backups` se non esiste
+4. Imposta permessi: 775 (rwxrwxr-x)
+
+**Test manuale mysqldump:**
+```bash
+# Testa il comando con le credenziali del .env
+mysqldump --user='INSERISCI_USERNAME' \
+  --password='INSERISCI_PASSWORD' \
+  --host='localhost' \
+  --port=3306 \
+  INSERISCI_DATABASE > /tmp/test_backup.sql
+
+# Verifica risultato
+echo "Exit code: $?"  # Deve essere 0
+ls -lh /tmp/test_backup.sql  # Deve esistere e avere dimensione > 0
+```
+
+**⚠️ IMPORTANTE:**
+- La directory corretta è `storage/app/backups/` (NON `storage/backups/`)
+- Il `BackupService` usa `storage_path('app/backups')`
+- Su server Aruba, il percorso completo è: `/home/agstudiodiital/public_html/magia/storage/app/backups/`
+
 ### Errore "mysqldump non disponibile"
 
 ```bash
@@ -222,14 +302,21 @@ sudo apt-get install mysql-client
 
 # Verifica installazione
 which mysqldump
+# Output atteso: /usr/bin/mysqldump o /bin/mysqldump
 ```
+
+**Per server Aruba:** mysqldump è già installato in `/bin/mysqldump`
 
 ### Errore permessi directory
 
 ```bash
 # Dai permessi corretti
-chmod -R 755 storage/app/backups
+chmod 775 storage/app/backups
 chown -R www-data:www-data storage/app/backups  # Ubuntu/Debian
+
+# Oppure su Aruba
+chmod 775 storage/app/backups
+# Owner: agstudiodiital (già corretto)
 ```
 
 ### Backup troppo lenti

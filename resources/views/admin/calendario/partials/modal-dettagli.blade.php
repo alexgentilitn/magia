@@ -194,47 +194,240 @@
     </div>
     @endif
 
-    <!-- Lista Partecipanti (se ci sono iscritti) -->
-    @if($lezione->posti_occupati > 0 && $lezione->clienti && $lezione->clienti->count() > 0)
+    <!-- Lista Partecipanti -->
     <div class="bg-white rounded-lg border border-gray-200">
-        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
             <div class="flex items-center">
                 <i class="fas fa-users text-fucsia-magia mr-2"></i>
-                <h4 class="font-semibold text-gray-900">Partecipanti Iscritti ({{ $lezione->clienti->count() }})</h4>
+                <h4 class="font-semibold text-gray-900">Partecipanti (<span id="contatorePartecipanti">{{ $lezione->clienti->where('pivot.stato', '!=', 'lista_attesa')->count() }}</span>/{{ $lezione->posti_totali }})</h4>
+            </div>
+            <div class="flex items-center gap-2">
+                @if($lezione->clienti->where('pivot.stato', 'prenotato')->count() > 0)
+                <button onclick="inviaReminder({{ $lezione->id }})"
+                        class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-paper-plane mr-1"></i>
+                    Invia Reminder
+                </button>
+                @endif
+                <button onclick="toggleAggiungiPartecipante()"
+                        class="px-3 py-1.5 bg-fucsia-magia text-white text-sm rounded-lg hover:bg-viola-magia transition-colors">
+                    <i class="fas fa-plus mr-1"></i>
+                    Aggiungi
+                </button>
             </div>
         </div>
-        <div class="p-4">
-            <div class="space-y-2 max-h-40 overflow-y-auto">
-                @foreach($lezione->clienti->take(10) as $cliente)
-                <div class="flex items-center py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                    <div class="w-8 h-8 bg-fucsia-magia rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        {{ strtoupper(substr($cliente->nome, 0, 1)) }}{{ strtoupper(substr($cliente->cognome, 0, 1)) }}
+
+        <!-- Form Aggiungi Partecipante (nascosto inizialmente) -->
+        <div id="formAggiungiPartecipante" class="hidden px-4 py-3 bg-blue-50 border-b border-blue-200">
+            <form id="formPrenota" onsubmit="prenotaCliente(event, {{ $lezione->id }})">
+                @csrf
+                <div class="flex items-end gap-3">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Seleziona Cliente</label>
+                        <select name="cliente_id" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia focus:border-transparent">
+                            <option value="">-- Scegli un cliente --</option>
+                            @php
+                                $clienti = \App\Models\Cliente::orderBy('cognome')->orderBy('nome')->get();
+                            @endphp
+                            @foreach($clienti as $c)
+                                <option value="{{ $c->id }}">{{ $c->cognome }} {{ $c->nome }} - {{ $c->email }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">{{ $cliente->nome }} {{ $cliente->cognome }}</p>
-                        <p class="text-xs text-gray-500">{{ $cliente->email }}</p>
+                    <button type="submit"
+                            class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition-colors">
+                        <i class="fas fa-check mr-1"></i>
+                        Conferma
+                    </button>
+                    <button type="button" onclick="toggleAggiungiPartecipante()"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="p-4">
+            @php
+                $prenotati = $lezione->clienti->where('pivot.stato', '!=', 'lista_attesa');
+                $listaAttesa = $lezione->clienti->where('pivot.stato', 'lista_attesa');
+            @endphp
+
+            @if($prenotati->count() > 0)
+            <div class="space-y-3 max-h-96 overflow-y-auto" id="listaPartecipanti">
+                @foreach($prenotati as $cliente)
+                <div class="py-3 px-3 rounded-lg border transition
+                    @if($cliente->pivot->stato === 'presente') bg-teal-50 border-teal-200
+                    @elseif($cliente->pivot->stato === 'assente') bg-red-50 border-red-200
+                    @else bg-gray-50 border-gray-200
+                    @endif"
+                     data-cliente-id="{{ $cliente->id }}">
+
+                    <!-- Riga superiore: Info cliente + Badge stato -->
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center flex-1">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold
+                                @if($cliente->pivot->stato === 'presente') bg-teal-500
+                                @elseif($cliente->pivot->stato === 'assente') bg-red-500
+                                @else bg-fucsia-magia
+                                @endif">
+                                {{ strtoupper(substr($cliente->nome ?? '', 0, 1)) }}{{ strtoupper(substr($cliente->cognome ?? '', 0, 1)) }}
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-sm font-semibold text-gray-900">{{ $cliente->nome }} {{ $cliente->cognome }}</p>
+                                <p class="text-xs text-gray-500">
+                                    <i class="fas fa-envelope mr-1"></i>{{ $cliente->email }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Badge Stato -->
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            @if($cliente->pivot->stato === 'presente') bg-teal-100 text-teal-800
+                            @elseif($cliente->pivot->stato === 'confermato') bg-green-100 text-green-800
+                            @elseif($cliente->pivot->stato === 'prenotato') bg-blue-100 text-blue-800
+                            @elseif($cliente->pivot->stato === 'assente') bg-red-100 text-red-800
+                            @else bg-gray-100 text-gray-800
+                            @endif">
+                            @if($cliente->pivot->stato === 'presente')
+                                <i class="fas fa-check-circle mr-1"></i>
+                            @elseif($cliente->pivot->stato === 'assente')
+                                <i class="fas fa-times-circle mr-1"></i>
+                            @endif
+                            {{ ucfirst($cliente->pivot->stato) }}
+                        </span>
+                    </div>
+
+                    <!-- Orari Check-in/Check-out (se presenti) -->
+                    @if($cliente->pivot->check_in || $cliente->pivot->check_out)
+                    <div class="flex items-center gap-4 text-xs text-gray-600 mb-2 pl-13">
+                        @if($cliente->pivot->check_in)
+                        <span class="flex items-center">
+                            <i class="fas fa-sign-in-alt mr-1 text-green-600"></i>
+                            Check-in: <strong class="ml-1">{{ \Carbon\Carbon::parse($cliente->pivot->check_in)->format('H:i') }}</strong>
+                        </span>
+                        @endif
+                        @if($cliente->pivot->check_out)
+                        <span class="flex items-center">
+                            <i class="fas fa-sign-out-alt mr-1 text-orange-600"></i>
+                            Check-out: <strong class="ml-1">{{ \Carbon\Carbon::parse($cliente->pivot->check_out)->format('H:i') }}</strong>
+                        </span>
+                        @endif
+                    </div>
+                    @endif
+
+                    <!-- Riga inferiore: Azioni -->
+                    <div class="flex items-center gap-2 flex-wrap pl-13">
+                        @if($cliente->pivot->stato !== 'presente' && $cliente->pivot->stato !== 'assente')
+                            <!-- Check-in -->
+                            <button onclick="checkIn({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                    class="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-xs font-medium">
+                                <i class="fas fa-sign-in-alt mr-1"></i>
+                                Check-in
+                            </button>
+
+                            <!-- Segna Assente -->
+                            <button onclick="segnaAssente({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                    class="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs font-medium">
+                                <i class="fas fa-user-times mr-1"></i>
+                                Assente
+                            </button>
+                        @endif
+
+                        @if($cliente->pivot->stato === 'presente' && !$cliente->pivot->check_out)
+                            <!-- Check-out -->
+                            <button onclick="checkOut({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                    class="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-xs font-medium">
+                                <i class="fas fa-sign-out-alt mr-1"></i>
+                                Check-out
+                            </button>
+                        @endif
+
+                        @if($cliente->pivot->stato === 'assente')
+                            <!-- Annulla Assenza -->
+                            <button onclick="annullaAssenza({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium">
+                                <i class="fas fa-undo mr-1"></i>
+                                Annulla Assenza
+                            </button>
+                        @endif
+
+                        <!-- Annulla Prenotazione (sempre disponibile) -->
+                        <button onclick="annullaPrenotazione({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                class="ml-auto px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs font-medium">
+                            <i class="fas fa-times mr-1"></i>
+                            Rimuovi
+                        </button>
                     </div>
                 </div>
                 @endforeach
-                @if($lezione->clienti->count() > 10)
-                <p class="text-xs text-gray-500 text-center pt-2">+ altri {{ $lezione->clienti->count() - 10 }} partecipanti</p>
-                @endif
             </div>
+            @else
+            <div class="text-center py-8 text-gray-500" id="nessunoPrenotato">
+                <i class="fas fa-users text-4xl mb-2 opacity-50"></i>
+                <p>Nessun partecipante ancora iscritto</p>
+                <p class="text-sm mt-1">Clicca "Aggiungi" per inserire il primo partecipante</p>
+            </div>
+            @endif
+
+            <!-- Lista d'Attesa -->
+            @if($listaAttesa->count() > 0)
+            <div class="mt-4 pt-4 border-t border-gray-200" id="sezioneListaAttesa">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-clock text-orange-500 mr-2"></i>
+                    <h5 class="font-semibold text-gray-700 text-sm">Lista d'Attesa (<span id="contatoreListaAttesa">{{ $listaAttesa->count() }}</span>)</h5>
+                </div>
+                <div class="space-y-2" id="listaAttesa">
+                    @foreach($listaAttesa as $cliente)
+                    <div class="flex items-center justify-between py-2 px-3 bg-orange-50 rounded-lg"
+                         data-cliente-id="{{ $cliente->id }}">
+                        <div class="flex items-center flex-1">
+                            <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                {{ strtoupper(substr($cliente->nome ?? '', 0, 1)) }}{{ strtoupper(substr($cliente->cognome ?? '', 0, 1)) }}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">{{ $cliente->nome }} {{ $cliente->cognome }}</p>
+                                <p class="text-xs text-gray-500">In attesa dal {{ \Carbon\Carbon::parse($cliente->pivot->created_at)->format('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        <button onclick="annullaPrenotazione({{ $lezione->id }}, {{ $cliente->id }}, '{{ $cliente->nome }} {{ $cliente->cognome }}')"
+                                class="ml-3 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs">
+                            <i class="fas fa-times mr-1"></i>
+                            Rimuovi
+                        </button>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
-    @endif
 
     <!-- Azioni -->
-    <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-        <a href="{{ route('admin.lezioni.show', $lezione->id) }}"
-           class="inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-            <i class="fas fa-eye mr-2"></i>
-            Dettagli Completi
-        </a>
-        <a href="{{ route('admin.lezioni.edit', $lezione->id) }}?return=calendario"
-           class="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition-all font-medium">
-            <i class="fas fa-edit mr-2"></i>
-            Modifica Lezione
-        </a>
+    <div class="pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <!-- Azione Elimina (sinistra) -->
+        <button onclick="eliminaLezione({{ $lezione->id }}, '{{ $lezione->titolo }}', {{ $lezione->isLezioneRicorrente() ? 'true' : 'false' }})"
+                class="inline-flex items-center justify-center px-5 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium">
+            <i class="fas fa-trash-alt mr-2"></i>
+            Elimina Lezione
+            @if($lezione->isLezioneRicorrente())
+            <i class="fas fa-sync-alt ml-1 text-sm" title="Lezione ricorrente"></i>
+            @endif
+        </button>
+
+        <!-- Azioni Visualizza/Modifica (destra) -->
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a href="{{ route('admin.lezioni.show', $lezione->id) }}"
+               class="inline-flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                <i class="fas fa-eye mr-2"></i>
+                Dettagli Completi
+            </a>
+            <a href="{{ route('admin.lezioni.edit', $lezione->id) }}?return=calendario"
+               class="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white rounded-lg hover:shadow-lg transition-all font-medium">
+                <i class="fas fa-edit mr-2"></i>
+                Modifica Lezione
+            </a>
+        </div>
     </div>
 </div>

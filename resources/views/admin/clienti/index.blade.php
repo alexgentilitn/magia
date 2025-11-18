@@ -196,11 +196,11 @@
                                class="text-fucsia-magia hover:text-viola-magia" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline" id="delete-form-{{ $cliente->id }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        onclick="return confirm('Sei sicuro di voler eliminare questa cliente?')"
+                                <button type="button"
+                                        onclick="confermaEliminazione('delete-form-{{ $cliente->id }}', 'Eliminare la cliente?', 'Tutti i dati della cliente {{ $cliente->nome }} {{ $cliente->cognome }} saranno eliminati definitivamente.')"
                                         class="text-red-600 hover:text-red-900" title="Elimina">
                                     <i class="fas fa-trash"></i>
                                 </button>

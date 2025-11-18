@@ -110,6 +110,14 @@ class Professionista extends Model
     }
 
     /**
+     * Relazione: Professionista ha molti Documenti
+     */
+    public function documenti()
+    {
+        return $this->hasMany(ProfessionistaDocumento::class, 'professionista_id');
+    }
+
+    /**
      * Accessor: Email dal relazione utente
      * Permette di usare $professionista->email invece di $professionista->utente->email
      */
@@ -148,6 +156,7 @@ class Professionista extends Model
     public function getBadgeStatoAttribute()
     {
         return match($this->stato) {
+            'pending' => 'bg-orange-100 text-orange-800',
             'attivo' => 'bg-green-100 text-green-800',
             'sospeso' => 'bg-yellow-100 text-yellow-800',
             'inattivo' => 'bg-gray-100 text-gray-800',
@@ -211,8 +220,36 @@ class Professionista extends Model
     public static function generaCodiceProfessionista()
     {
         $anno = now()->year;
-        $ultimoNumero = static::whereYear('created_at', $anno)->count();
-        return sprintf('PROF-%d-%04d', $anno, $ultimoNumero + 1);
+
+        // Trova l'ultimo numero utilizzato per l'anno corrente
+        // IMPORTANTE: usa withTrashed() per includere anche i professionisti cancellati
+        // perché il constraint UNIQUE del database non considera i soft deletes
+        $ultimoCodice = static::withTrashed()
+            ->where('codice_professionista', 'like', "PROF-{$anno}-%")
+            ->orderByRaw('CAST(SUBSTRING(codice_professionista, -4) AS UNSIGNED) DESC')
+            ->value('codice_professionista');
+
+        if ($ultimoCodice) {
+            // Estrai il numero dall'ultimo codice e incrementalo
+            preg_match('/PROF-\d{4}-(\d{4})/', $ultimoCodice, $matches);
+            $ultimoNumero = isset($matches[1]) ? (int)$matches[1] : 0;
+            $nuovoNumero = $ultimoNumero + 1;
+        } else {
+            // Primo professionista dell'anno
+            $nuovoNumero = 1;
+        }
+
+        // Genera il codice e verifica che non esista già (sicurezza extra)
+        // Anche qui usa withTrashed() per controllare tutti i record
+        do {
+            $codice = sprintf('PROF-%d-%04d', $anno, $nuovoNumero);
+            $esiste = static::withTrashed()->where('codice_professionista', $codice)->exists();
+            if ($esiste) {
+                $nuovoNumero++;
+            }
+        } while ($esiste);
+
+        return $codice;
     }
 
     /**

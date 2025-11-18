@@ -73,10 +73,10 @@
                 </form>
                 @endif
                 
-                <form method="POST" action="{{ route('admin.pagamenti.destroy', $pagamento->id) }}" class="block">
+                <form method="POST" action="{{ route('admin.pagamenti.destroy', $pagamento->id) }}" class="block" id="delete-pagamento-form">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" onclick="return confirm('Eliminare questo pagamento?')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    <button type="button" onclick="confermaEliminazione('delete-pagamento-form', 'Eliminare il pagamento?', 'Il pagamento di €{{ number_format($pagamento->importo, 2) }} sarà eliminato definitivamente.')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                         <i class="fas fa-trash mr-2"></i> Elimina
                     </button>
                 </form>

@@ -173,10 +173,10 @@
                         <i class="fas fa-clock mr-2"></i> Gestisci Orari
                     </a>
 
-                    <form method="POST" action="{{ route('admin.sedi.destroy', $sede->id) }}" class="block">
+                    <form method="POST" action="{{ route('admin.sedi.destroy', $sede->id) }}" class="block" id="delete-sede-form">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" onclick="return confirm('Eliminare questa sede?')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <button type="button" onclick="confermaEliminazione('delete-sede-form', 'Eliminare la sede?', 'La sede {{ $sede->nome }} sarà eliminata definitivamente. Le lezioni esistenti non saranno eliminate.')" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                             <i class="fas fa-trash mr-2"></i> Elimina
                         </button>
                     </form>

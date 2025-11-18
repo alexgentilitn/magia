@@ -1,0 +1,39 @@
+name: Deploy to Aruba FTP
+
+on:
+  push:
+    branches:
+      - claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc  # Branch precedente
+      - claude/Magia_Brench-01G4cTM33nQqZ3K3UtX3NGqm  # Branch corrente - Testing e Fix Export
+      - claude/clarify-session-description-01DThBJ4fcgMfm2BwogX8rN8  # Session precedente - Fix permessi
+      - claude/Magia_Brench-01DNXamdVeXgWB4ZTdwLV9Zx  # Branch ufficiale - Sistema Pesate MySQL
+      # Deploy automatico da branch claude/** con session ID
+  workflow_dispatch:
+    # Deploy manuale consentito
+
+jobs:
+  deploy:
+    name: Deploy Files to Aruba
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_PATH }}/
+
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .env.example
+            README.md
+            .github/**
+
+          dry-run: false

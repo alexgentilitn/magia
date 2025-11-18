@@ -6,38 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titolo', 'Admin') - MA.GIA DONNA</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- SweetAlert2 per notifiche belle -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        [x-cloak] { display: none !important; }
-        
-        /* Personalizza SweetAlert con i colori del brand */
-        .swal2-popup {
-            font-family: inherit;
-        }
-        .swal2-confirm {
-            background: linear-gradient(to right, #7B2869, #E91E8C) !important;
-        }
-    </style>
-    
+
+    <!-- Chart.js per grafici professionali -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     @stack('styles')
 </head>
 <body class="bg-gray-100">
@@ -187,6 +167,59 @@
                             </a>
                         </li>
 
+                        <!-- Report -->
+                        <li>
+                            <a href="{{ route('admin.report.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.report.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-chart-line w-5"></i>
+                                <span class="ml-3 font-medium">Report</span>
+                            </a>
+                        </li>
+
+                        <!-- Chat -->
+                        <li>
+                            <a href="{{ route('messaging.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('messaging.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-comments w-5"></i>
+                                <span class="ml-3 font-medium">Chat</span>
+                                @php
+                                    try {
+                                        $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                                            return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                                        });
+                                    } catch (\Exception $e) {
+                                        $messaggiNonLetti = 0;
+                                    }
+                                @endphp
+                                @if($messaggiNonLetti > 0)
+                                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        {{ $messaggiNonLetti > 9 ? '9+' : $messaggiNonLetti }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+
+                        <!-- Notifiche -->
+                        <li>
+                            <a href="{{ route('notifiche.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('notifiche.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-bell w-5"></i>
+                                <span class="ml-3 font-medium">Notifiche</span>
+                                @php
+                                    try {
+                                        $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                                    } catch (\Exception $e) {
+                                        $notificheNonLette = 0;
+                                    }
+                                @endphp
+                                @if($notificheNonLette > 0)
+                                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        {{ $notificheNonLette > 9 ? '9+' : $notificheNonLette }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+
                         <!-- Divider -->
                         <li class="px-4 py-2">
                             <div class="border-t border-white border-opacity-20"></div>
@@ -196,9 +229,18 @@
                         <!-- Clienti -->
                         <li>
                             <a href="{{ route('admin.clienti.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti.*')) bg-white bg-opacity-20 @endif">
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti.index')) bg-white bg-opacity-20 @endif">
                                 <i class="fas fa-users w-5"></i>
                                 <span class="ml-3 font-medium">Clienti</span>
+                            </a>
+                        </li>
+
+                        <!-- Clienti con Pesate -->
+                        <li>
+                            <a href="{{ route('admin.clienti-pesate.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti-pesate.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-weight w-5"></i>
+                                <span class="ml-3 font-medium">Clienti con Pesate</span>
                             </a>
                         </li>
 
@@ -257,21 +299,22 @@
                             </a>
                         </li>
 
-                        <!-- Impostazioni Sistema (solo amministratori) -->
+                        <!-- Impostazioni (solo amministratori) -->
                         <li>
-                            <a href="{{ route('admin.impostazioni-sistema.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni-sistema.*')) bg-white bg-opacity-20 @endif">
-                                <i class="fas fa-cogs w-5"></i>
-                                <span class="ml-3 font-medium">Impostazioni Sistema</span>
+                            <a href="{{ route('admin.impostazioni.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni.*') || request()->routeIs('admin.impostazioni-sistema.*')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-cog w-5"></i>
+                                <span class="ml-3 font-medium">Impostazioni</span>
                             </a>
                         </li>
 
-                        <!-- Impostazioni (solo amministratori) -->
-                        <li>
-                            <a href="{{ route('admin.impostazioni.smtp') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.impostazioni.*')) bg-white bg-opacity-20 @endif">
-                                <i class="fas fa-cog w-5"></i>
-                                <span class="ml-3 font-medium">Impostazioni</span>
+                        <!-- Super Admin (solo amministratori) -->
+                        <li class="mt-2 pt-2 border-t border-white border-opacity-20">
+                            <a href="{{ route('admin.super-admin.index') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-red-600 hover:bg-opacity-30 rounded-lg transition @if(request()->routeIs('admin.super-admin.*')) bg-red-600 bg-opacity-30 @endif">
+                                <i class="fas fa-shield-alt w-5"></i>
+                                <span class="ml-3 font-medium">Super Admin</span>
+                                <span class="ml-auto text-xs bg-red-600 px-2 py-1 rounded">PRO</span>
                             </a>
                         </li>
                         @endif
@@ -393,6 +436,14 @@
                         </a>
                     </li>
 
+                    <!-- Report -->
+                    <li>
+                        <a href="{{ route('admin.report.index') }}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg">
+                            <i class="fas fa-chart-line w-5"></i>
+                            <span class="ml-3">Report</span>
+                        </a>
+                    </li>
+
                     <!-- Divider -->
                     <li class="px-4 py-2">
                         <div class="border-t border-white border-opacity-20"></div>
@@ -476,6 +527,86 @@
             </div>
         </div>
     </div>
+
+    <!-- Script Globali per Conferme SweetAlert -->
+    <script>
+        /**
+         * Conferma eliminazione con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere dopo conferma
+         * @param {string} titolo - Titolo personalizzato (opzionale)
+         * @param {string} testo - Testo personalizzato (opzionale)
+         */
+        function confermaEliminazione(formId, titolo = 'Sei sicuro?', testo = 'Questa azione non può essere annullata!') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E91E8C',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sì, elimina!',
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma azione generica con SweetAlert2
+         * @param {string} formId - ID del form da sottomettere
+         * @param {string} titolo - Titolo della conferma
+         * @param {string} testo - Testo della conferma
+         * @param {string} bottoneConferma - Testo bottone conferma (opzionale)
+         */
+        function confermaAzione(formId, titolo, testo, bottoneConferma = 'Conferma') {
+            Swal.fire({
+                title: titolo,
+                text: testo,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: bottoneConferma,
+                cancelButtonText: 'Annulla',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+
+        /**
+         * Conferma con input personalizzato
+         * @param {string} formId - ID del form
+         * @param {string} titolo - Titolo
+         * @param {string} inputPlaceholder - Placeholder input
+         */
+        function confermaConInput(formId, titolo, inputPlaceholder) {
+            Swal.fire({
+                title: titolo,
+                input: 'text',
+                inputPlaceholder: inputPlaceholder,
+                showCancelButton: true,
+                confirmButtonColor: '#7B2869',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Conferma',
+                cancelButtonText: 'Annulla',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Devi inserire un valore!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
 
     @stack('scripts')
 

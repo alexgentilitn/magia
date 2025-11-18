@@ -82,6 +82,16 @@
                     <i class="fas fa-cogs mr-2"></i>
                     Valori Sistema
                 </button>
+
+                <!-- Tab Importa Pesate -->
+                <button
+                    @click="activeTab = 'pesate'"
+                    :class="activeTab === 'pesate' ? 'border-fucsia-magia text-fucsia-magia' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                >
+                    <i class="fas fa-file-excel mr-2"></i>
+                    Importa Pesate
+                </button>
             </nav>
         </div>
     </div>
@@ -468,6 +478,11 @@
             @endif
         @endforeach
 
+    </div>
+
+    <!-- Tab Content: Importa Pesate -->
+    <div x-show="activeTab === 'pesate'" x-cloak>
+        @include('admin.pesate.import-content')
     </div>
 
 </div>

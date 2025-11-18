@@ -1,3 +1,192 @@
+<?php
+/**
+ * Script di Verifica Area Cliente - MA.GIA DONNA
+ * Versione semplificata con connessione diretta al database
+ */
+
+// Configurazione database (da .env)
+$db_config = [
+    'host' => 'localhost',
+    'port' => '3306',
+    'database' => 'agstudiodiital_magia',
+    'username' => 'agstudiodiital_agstudiomagia',
+    'password' => '$Magia2015!',
+];
+
+// Gestione API endpoints
+if (isset($_GET['action'])) {
+    header('Content-Type: application/json');
+
+    try {
+        $pdo = new PDO(
+            "mysql:host={$db_config['host']};port={$db_config['port']};dbname={$db_config['database']};charset=utf8mb4",
+            $db_config['username'],
+            $db_config['password'],
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        );
+
+        switch ($_GET['action']) {
+            case 'check_db':
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Connessione al database riuscita (' . $db_config['database'] . ')'
+                ]);
+                break;
+
+            case 'check_utenti':
+                $stmt = $pdo->query("SELECT COUNT(*) as count FROM utenti");
+                $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Tabella utenti trovata ({$count} record)"
+                ]);
+                break;
+
+            case 'check_clienti':
+                $stmt = $pdo->query("SELECT COUNT(*) as count FROM clienti");
+                $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Tabella clienti trovata ({$count} record)"
+                ]);
+                break;
+
+            case 'check_fields':
+                $fields = ['peso_iniziale', 'altezza', 'programma_attuale', 'consenso_privacy'];
+                $stmt = $pdo->query("DESCRIBE clienti");
+                $columns = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+                $missing = array_diff($fields, $columns);
+                $success = empty($missing);
+
+                echo json_encode([
+                    'success' => $success,
+                    'message' => $success ? 'Tutti i campi richiesti sono presenti' : 'Campi mancanti: ' . implode(', ', $missing)
+                ]);
+                break;
+
+            case 'check_relation':
+                $stmt = $pdo->query("
+                    SELECT u.id, u.nome, u.email, c.id as cliente_id, c.programma_attuale
+                    FROM utenti u
+                    INNER JOIN clienti c ON c.utente_id = u.id
+                    WHERE u.tipo_utente = 'cliente'
+                    LIMIT 1
+                ");
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($result) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Relazione Utente-Cliente funzionante (trovato: ' . $result['nome'] . ')'
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Nessun cliente trovato con utente collegato'
+                    ]);
+                }
+                break;
+
+            case 'create_test_user':
+                $pdo->beginTransaction();
+
+                try {
+                    // Verifica se esiste già
+                    $stmt = $pdo->prepare("SELECT id FROM utenti WHERE email = ?");
+                    $stmt->execute(['test.cliente@magia.it']);
+                    if ($stmt->fetch()) {
+                        throw new Exception('Utente test già esistente');
+                    }
+
+                    // Crea utente
+                    $stmt = $pdo->prepare("
+                        INSERT INTO utenti (email, password, nome, cognome, telefono, tipo_utente, attivo, email_verificata, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    ");
+                    $stmt->execute([
+                        'test.cliente@magia.it',
+                        password_hash('password123', PASSWORD_DEFAULT),
+                        'Maria',
+                        'Test',
+                        '3331234567',
+                        'cliente',
+                        1,
+                        1
+                    ]);
+                    $utente_id = $pdo->lastInsertId();
+
+                    // Crea profilo cliente
+                    $stmt = $pdo->prepare("
+                        INSERT INTO clienti (
+                            utente_id, nome, cognome, codice_fiscale,
+                            indirizzo, citta, provincia, cap,
+                            telefono_mobile, email, data_nascita,
+                            peso_iniziale, altezza,
+                            programma_attuale, data_iscrizione, inizio_programma, fine_programma,
+                            consenso_privacy, stato_cliente, codice_cliente,
+                            created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), ?, ?, ?, NOW(), NOW())
+                    ");
+                    $stmt->execute([
+                        $utente_id,
+                        'Maria',
+                        'Test',
+                        'TSTMRA90A01H501X',
+                        'Via Test 123',
+                        'Trento',
+                        'TN',
+                        '38100',
+                        '3331234567',
+                        'test.cliente@magia.it',
+                        '1990-01-01',
+                        65.5,
+                        165,
+                        'Balla & Snella',
+                        1,
+                        'attivo',
+                        'CLT' . str_pad($utente_id, 5, '0', STR_PAD_LEFT)
+                    ]);
+                    $cliente_id = $pdo->lastInsertId();
+
+                    $pdo->commit();
+
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Utente test creato con successo',
+                        'email' => 'test.cliente@magia.it',
+                        'password' => 'password123',
+                        'utente_id' => $utente_id,
+                        'cliente_id' => $cliente_id
+                    ]);
+
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    throw $e;
+                }
+                break;
+
+            default:
+                echo json_encode(['success' => false, 'message' => 'Azione non valida']);
+        }
+
+    } catch (PDOException $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Errore database: ' . $e->getMessage()
+        ]);
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Errore: ' . $e->getMessage()
+        ]);
+    }
+
+    exit;
+}
+
+// HTML Interface (resto uguale)
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -80,9 +269,6 @@
         .check-item .icon.error {
             background: #dc3545;
         }
-        .check-item .icon.warning {
-            background: #ffc107;
-        }
         button {
             background: linear-gradient(135deg, #7B2869 0%, #E91E8C 100%);
             color: white;
@@ -96,27 +282,6 @@
         }
         button:hover {
             transform: scale(1.05);
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-        }
-        pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.9em;
-        }
-        .info-box {
-            background: #e7f3ff;
-            border-left: 5px solid #0d6efd;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
         }
         .progress-bar {
             width: 100%;
@@ -136,31 +301,19 @@
             color: white;
             font-weight: bold;
         }
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #dee2e6;
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #0d6efd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
         }
-        .tab-button {
-            background: none;
-            border: none;
-            padding: 15px 25px;
-            cursor: pointer;
-            color: #6c757d;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        .tab-button.active {
-            color: #E91E8C;
-            border-bottom-color: #E91E8C;
-            font-weight: bold;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -169,155 +322,40 @@
         <h1>🦋 Setup Area Cliente</h1>
         <p class="subtitle">MA.GIA DONNA - Verifica e Configurazione Database</p>
 
-        <!-- Tab Navigation -->
-        <div class="tab-buttons">
-            <button class="tab-button active" onclick="switchTab('verifica')">📋 Verifica</button>
-            <button class="tab-button" onclick="switchTab('struttura')">🗂️ Struttura</button>
-            <button class="tab-button" onclick="switchTab('test')">🧪 Test Dati</button>
-            <button class="tab-button" onclick="switchTab('info')">ℹ️ Informazioni</button>
+        <div class="info-box">
+            <strong>📌 Cosa fa questo script:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Verifica la connessione al database</li>
+                <li>Controlla l'esistenza delle tabelle necessarie</li>
+                <li>Verifica i campi richiesti</li>
+                <li>Testa la relazione Utente-Cliente</li>
+                <li>Può creare un utente di test</li>
+            </ul>
         </div>
 
-        <!-- Tab 1: Verifica -->
-        <div id="tab-verifica" class="tab-content active">
-            <div class="info-box">
-                <strong>📌 Cosa fa questo script:</strong>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Verifica la connessione al database</li>
-                    <li>Controlla l'esistenza delle tabelle necessarie</li>
-                    <li>Verifica i campi richiesti</li>
-                    <li>Testa la relazione Utente-Cliente</li>
-                </ul>
-            </div>
+        <div id="check-results"></div>
 
-            <div id="check-results">
-                <!-- I risultati verranno inseriti qui dal JavaScript -->
-            </div>
+        <button onclick="runChecks()" style="width: 100%;">
+            🔍 Avvia Verifica Completa
+        </button>
 
-            <button onclick="runChecks()" style="width: 100%;">
-                🔍 Avvia Verifica Completa
-            </button>
-        </div>
-
-        <!-- Tab 2: Struttura -->
-        <div id="tab-struttura" class="tab-content">
-            <h2 style="color: #7B2869; margin-bottom: 20px;">📊 Struttura Database</h2>
-
-            <h3 style="color: #E91E8C; margin-top: 30px;">Tabella: utenti</h3>
-            <div class="status-box">
-                <strong>Campi principali:</strong>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>id (Primary Key)</li>
-                    <li>email (unique)</li>
-                    <li>password</li>
-                    <li>nome, cognome</li>
-                    <li>telefono</li>
-                    <li>tipo_utente (amministratore, professionista, cliente)</li>
-                    <li>attivo, email_verificata</li>
-                </ul>
-            </div>
-
-            <h3 style="color: #E91E8C; margin-top: 30px;">Tabella: clienti</h3>
-            <div class="status-box">
-                <strong>Campi principali:</strong>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>id (Primary Key)</li>
-                    <li>utente_id (Foreign Key → utenti)</li>
-                    <li>nome, cognome, codice_fiscale</li>
-                    <li>indirizzo, citta, provincia, cap</li>
-                    <li>telefono_mobile, email</li>
-                    <li><strong>Dati corporei:</strong> peso_iniziale, altezza, circonferenze</li>
-                    <li><strong>Programma:</strong> programma_attuale, inizio_programma, fine_programma</li>
-                    <li><strong>Consensi:</strong> consenso_privacy, consenso_marketing, consenso_foto</li>
-                    <li>certificato_medico, certificato_medico_scadenza</li>
-                </ul>
-            </div>
-
-            <h3 style="color: #E91E8C; margin-top: 30px;">Relazioni</h3>
-            <div class="status-box success">
-                <strong>✅ Utente hasOne Cliente</strong><br>
-                Un utente con tipo_utente='cliente' ha un profilo cliente collegato tramite utente_id
-            </div>
-        </div>
-
-        <!-- Tab 3: Test Dati -->
-        <div id="tab-test" class="tab-content">
-            <div class="info-box">
-                <strong>🧪 Crea utente e cliente di test</strong><br>
-                Questo creerà un utente cliente di prova per testare l'area cliente
-            </div>
-
-            <div id="test-results"></div>
-
-            <button onclick="createTestUser()">
+        <div style="margin-top: 30px;">
+            <button onclick="createTestUser()" style="background: linear-gradient(135deg, #FF6B35 0%, #FF8A5C 100%);">
                 👤 Crea Utente Test
             </button>
-
-            <div class="status-box warning" style="margin-top: 20px;">
-                <strong>⚠️ Credenziali Test Create:</strong><br>
-                Email: <code>test.cliente@magia.it</code><br>
-                Password: <code>password123</code><br>
-                (Le credenziali verranno mostrate dopo la creazione)
-            </div>
+            <div id="test-results" style="margin-top: 20px;"></div>
         </div>
 
-        <!-- Tab 4: Info -->
-        <div id="tab-info" class="tab-content">
-            <h2 style="color: #7B2869; margin-bottom: 20px;">ℹ️ Informazioni Implementazione</h2>
-
-            <div class="status-box">
-                <h3>🎨 Design</h3>
-                <p>L'area cliente segue il design mobile-first come da demo grafica fornita, con:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Dashboard con 5 bottoni colorati (Balla & Snella, Alimentazione, Pelle, Community, Coaching)</li>
-                    <li>Profilo completo con 4 sezioni tabbed</li>
-                    <li>Pagina programmi con progressione visuale</li>
-                    <li>Calendario con filtri e vista mensile</li>
-                </ul>
-            </div>
-
-            <div class="status-box">
-                <h3>🔗 Utilizzo nelle View</h3>
-                <p>Per accedere ai dati del cliente nelle view Blade:</p>
-                <pre>{{ Auth::user()->nome }}          // Nome dall'utente
-{{ Auth::user()->cliente->peso_iniziale }}  // Dati dal profilo cliente
-{{ Auth::user()->cliente->programma_attuale }}</pre>
-            </div>
-
-            <div class="status-box">
-                <h3>📁 File Creati</h3>
-                <ul style="margin-left: 20px;">
-                    <li>resources/views/cliente/dashboard.blade.php</li>
-                    <li>resources/views/cliente/profilo.blade.php</li>
-                    <li>resources/views/cliente/programmi.blade.php</li>
-                    <li>resources/views/cliente/calendario.blade.php</li>
-                </ul>
-            </div>
-
-            <div class="status-box warning">
-                <h3>⚠️ Fix Necessario</h3>
-                <p>Le view create usano <code>Auth::user()->campo</code> invece di <code>Auth::user()->cliente->campo</code>.</p>
-                <p><strong>Verrà corretto automaticamente dopo questa verifica.</strong></p>
-            </div>
+        <div class="status-box" style="margin-top: 30px;">
+            <h3>✅ Il Database è GIÀ Pronto!</h3>
+            <p>Non servono modifiche al database. Le view sono state corrette per usare:</p>
+            <pre>Auth::user()->cliente->peso_iniziale
+Auth::user()->cliente->programma_attuale
+ecc...</pre>
         </div>
     </div>
 
     <script>
-        // Switch tra tab
-        function switchTab(tabName) {
-            // Nascondi tutti i contenuti
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-
-            // Mostra il contenuto selezionato
-            document.getElementById('tab-' + tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        // Esegui verifiche
         async function runChecks() {
             const results = document.getElementById('check-results');
             results.innerHTML = '<div class="progress-bar"><div class="progress-fill" style="width: 0%">0%</div></div>';
@@ -337,7 +375,6 @@
                 const check = checks[i];
                 const progress = ((i + 1) / checks.length) * 100;
 
-                // Aggiorna barra progresso
                 results.querySelector('.progress-fill').style.width = progress + '%';
                 results.querySelector('.progress-fill').textContent = Math.round(progress) + '%';
 
@@ -374,7 +411,6 @@
                 }
             }
 
-            // Risultato finale
             const allOk = successCount === checks.length;
             const statusClass = allOk ? 'success' : (successCount > 0 ? 'warning' : 'error');
 
@@ -387,7 +423,6 @@
             `;
         }
 
-        // Crea utente test
         async function createTestUser() {
             const results = document.getElementById('test-results');
             results.innerHTML = '<p>Creazione in corso...</p>';
@@ -404,6 +439,7 @@
                             <p><strong>Password:</strong> ${data.password}</p>
                             <p><strong>ID Utente:</strong> ${data.utente_id}</p>
                             <p><strong>ID Cliente:</strong> ${data.cliente_id}</p>
+                            <p style="margin-top: 10px;"><a href="/login" style="color: #E91E8C; font-weight: bold;">→ Vai al Login</a></p>
                         </div>
                     `;
                 } else {
@@ -426,156 +462,3 @@
     </script>
 </body>
 </html>
-
-<?php
-/**
- * API Endpoints per le verifiche
- */
-if (isset($_GET['action'])) {
-    header('Content-Type: application/json');
-
-    // Carica Laravel
-    require __DIR__ . '/../vendor/autoload.php';
-    $app = require_once __DIR__ . '/../bootstrap/app.php';
-    $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
-
-    $action = $_GET['action'];
-
-    try {
-        switch ($action) {
-            case 'check_db':
-                $connected = \DB::connection()->getPdo() !== null;
-                echo json_encode([
-                    'success' => $connected,
-                    'message' => $connected ? 'Connessione al database riuscita' : 'Impossibile connettersi al database'
-                ]);
-                break;
-
-            case 'check_utenti':
-                $exists = \Schema::hasTable('utenti');
-                $count = $exists ? \DB::table('utenti')->count() : 0;
-                echo json_encode([
-                    'success' => $exists,
-                    'message' => $exists ? "Tabella utenti trovata ({$count} record)" : 'Tabella utenti NON trovata'
-                ]);
-                break;
-
-            case 'check_clienti':
-                $exists = \Schema::hasTable('clienti');
-                $count = $exists ? \DB::table('clienti')->count() : 0;
-                echo json_encode([
-                    'success' => $exists,
-                    'message' => $exists ? "Tabella clienti trovata ({$count} record)" : 'Tabella clienti NON trovata'
-                ]);
-                break;
-
-            case 'check_fields':
-                $fields = ['peso_iniziale', 'altezza', 'programma_attuale', 'consenso_privacy'];
-                $missing = [];
-
-                foreach ($fields as $field) {
-                    if (!\Schema::hasColumn('clienti', $field)) {
-                        $missing[] = $field;
-                    }
-                }
-
-                $success = empty($missing);
-                echo json_encode([
-                    'success' => $success,
-                    'message' => $success ? 'Tutti i campi richiesti sono presenti' : 'Campi mancanti: ' . implode(', ', $missing)
-                ]);
-                break;
-
-            case 'check_relation':
-                try {
-                    $utente = \App\Models\Utente::where('tipo_utente', 'cliente')->first();
-                    if ($utente && $utente->cliente) {
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Relazione Utente->Cliente funzionante'
-                        ]);
-                    } else {
-                        echo json_encode([
-                            'success' => false,
-                            'message' => 'Nessun cliente trovato o relazione non configurata'
-                        ]);
-                    }
-                } catch (\Exception $e) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Errore nella relazione: ' . $e->getMessage()
-                    ]);
-                }
-                break;
-
-            case 'create_test_user':
-                \DB::beginTransaction();
-                try {
-                    // Crea utente
-                    $utente = \App\Models\Utente::create([
-                        'email' => 'test.cliente@magia.it',
-                        'password' => bcrypt('password123'),
-                        'nome' => 'Maria',
-                        'cognome' => 'Test',
-                        'telefono' => '3331234567',
-                        'tipo_utente' => 'cliente',
-                        'attivo' => true,
-                        'email_verificata' => true,
-                    ]);
-
-                    // Crea profilo cliente
-                    $cliente = \App\Models\Cliente::create([
-                        'utente_id' => $utente->id,
-                        'nome' => 'Maria',
-                        'cognome' => 'Test',
-                        'codice_fiscale' => 'TSTMRA90A01H501X',
-                        'indirizzo' => 'Via Test 123',
-                        'citta' => 'Trento',
-                        'provincia' => 'TN',
-                        'cap' => '38100',
-                        'telefono_mobile' => '3331234567',
-                        'email' => 'test.cliente@magia.it',
-                        'data_nascita' => '1990-01-01',
-                        'peso_iniziale' => 65.5,
-                        'altezza' => 165,
-                        'programma_attuale' => 'Balla & Snella',
-                        'data_iscrizione' => now(),
-                        'inizio_programma' => now(),
-                        'fine_programma' => now()->addMonths(3),
-                        'consenso_privacy' => true,
-                        'stato_cliente' => 'attivo',
-                        'codice_cliente' => 'CLT' . str_pad($utente->id, 5, '0', STR_PAD_LEFT),
-                    ]);
-
-                    \DB::commit();
-
-                    echo json_encode([
-                        'success' => true,
-                        'message' => 'Utente test creato con successo',
-                        'email' => 'test.cliente@magia.it',
-                        'password' => 'password123',
-                        'utente_id' => $utente->id,
-                        'cliente_id' => $cliente->id
-                    ]);
-                } catch (\Exception $e) {
-                    \DB::rollBack();
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Errore: ' . $e->getMessage()
-                    ]);
-                }
-                break;
-
-            default:
-                echo json_encode(['success' => false, 'message' => 'Azione non valida']);
-        }
-    } catch (\Exception $e) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Errore: ' . $e->getMessage()
-        ]);
-    }
-
-    exit;
-}
-?>

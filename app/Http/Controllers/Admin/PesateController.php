@@ -51,7 +51,21 @@ class PesateController extends Controller
      */
     public function store(Request $request, $cliente_id)
     {
-        $cliente = Cliente::findOrFail($cliente_id);
+        // LOG DETTAGLIATO PER DEBUG
+        \Log::info('===== INIZIO SALVATAGGIO PESATA =====');
+        \Log::info('Cliente ID: ' . $cliente_id);
+        \Log::info('Dati ricevuti:', $request->all());
+        \Log::info('URL: ' . $request->url());
+        \Log::info('Metodo: ' . $request->method());
+
+        try {
+            $cliente = Cliente::findOrFail($cliente_id);
+            \Log::info('Cliente trovato: ' . $cliente->nome . ' ' . $cliente->cognome);
+        } catch (\Exception $e) {
+            \Log::error('Cliente non trovato: ' . $e->getMessage());
+            return redirect()->back()
+                           ->with('error', 'Cliente non trovato');
+        }
 
         $validator = Validator::make($request->all(), [
             'data_rilevazione' => 'required|date',
@@ -73,35 +87,43 @@ class PesateController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::warning('Validazione fallita:', $validator->errors()->toArray());
+
             return redirect()->back()
                            ->withErrors($validator)
-                           ->withInput();
+                           ->withInput()
+                           ->with('error', 'Errori: ' . implode(', ', $validator->errors()->all()));
         }
 
+        \Log::info('Validazione OK');
+
         try {
-            // Usa solo i dati validati invece di $request->all()
             $data = $validator->validated();
             $data['cliente_id'] = $cliente_id;
 
+            \Log::info('Dati da salvare:', $data);
+
             $pesata = Pesata::create($data);
 
-            // Verifica che sia stato creato
+            \Log::info('Pesata salvata con ID: ' . $pesata->id);
+
             if (!$pesata) {
-                throw new \Exception('Errore durante il salvataggio della pesata');
+                throw new \Exception('Errore durante il salvataggio');
             }
+
+            \Log::info('===== SALVATAGGIO OK =====');
 
             return redirect()->route('admin.clienti.pesate.index', $cliente_id)
                            ->with('success', 'Pesata aggiunta con successo!');
 
         } catch (\Exception $e) {
-            \Log::error('Errore salvataggio pesata: ' . $e->getMessage(), [
-                'cliente_id' => $cliente_id,
-                'data' => $request->all()
-            ]);
+            \Log::error('===== ERRORE SALVATAGGIO =====');
+            \Log::error('Messaggio: ' . $e->getMessage());
+            \Log::error('File: ' . $e->getFile() . ':' . $e->getLine());
 
             return redirect()->back()
                            ->withInput()
-                           ->with('error', 'Errore durante il salvataggio: ' . $e->getMessage());
+                           ->with('error', 'Errore: ' . $e->getMessage());
         }
     }
 

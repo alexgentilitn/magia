@@ -319,18 +319,26 @@ try {
         echo '</tbody></table>';
 
         // Foreign Keys
-        $fks = $pdo->query("
-            SELECT
-                CONSTRAINT_NAME,
-                COLUMN_NAME,
-                REFERENCED_TABLE_NAME,
-                REFERENCED_COLUMN_NAME,
-                DELETE_RULE
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = '$dbName'
-            AND TABLE_NAME = '$table'
-            AND REFERENCED_TABLE_NAME IS NOT NULL
-        ")->fetchAll();
+        try {
+            $fks = $pdo->query("
+                SELECT
+                    kcu.CONSTRAINT_NAME,
+                    kcu.COLUMN_NAME,
+                    kcu.REFERENCED_TABLE_NAME,
+                    kcu.REFERENCED_COLUMN_NAME,
+                    COALESCE(rc.DELETE_RULE, 'N/A') as DELETE_RULE
+                FROM information_schema.KEY_COLUMN_USAGE kcu
+                LEFT JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
+                    ON kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
+                    AND kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
+                WHERE kcu.TABLE_SCHEMA = '$dbName'
+                AND kcu.TABLE_NAME = '$table'
+                AND kcu.REFERENCED_TABLE_NAME IS NOT NULL
+            ")->fetchAll();
+        } catch (PDOException $e) {
+            // Fallback se la query non funziona
+            $fks = [];
+        }
 
         if (count($fks) > 0) {
             echo '<h3 style="color: #764ba2; margin: 20px 0 15px;">🔗 Foreign Keys</h3>';

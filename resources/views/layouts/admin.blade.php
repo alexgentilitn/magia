@@ -229,18 +229,9 @@
                         <!-- Clienti -->
                         <li>
                             <a href="{{ route('admin.clienti.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti.index')) bg-white bg-opacity-20 @endif">
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti.*')) bg-white bg-opacity-20 @endif">
                                 <i class="fas fa-users w-5"></i>
                                 <span class="ml-3 font-medium">Clienti</span>
-                            </a>
-                        </li>
-
-                        <!-- Clienti con Pesate -->
-                        <li>
-                            <a href="{{ route('admin.clienti-pesate.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.clienti-pesate.*')) bg-white bg-opacity-20 @endif">
-                                <i class="fas fa-weight w-5"></i>
-                                <span class="ml-3 font-medium">Clienti con Pesate</span>
                             </a>
                         </li>
 

@@ -172,6 +172,30 @@ try {
     $stmt = $pdo->query("SHOW TABLES LIKE 'segnalazioni'");
     $tableExists = $stmt->rowCount() > 0;
 
+    // Gestisci azione ricrea
+    if (isset($_GET['action']) && $_GET['action'] == 'ricrea' && $tableExists) {
+        echo '<div class="step warning">';
+        echo '<div class="step-title">🔄 Eliminazione Tabella Esistente</div>';
+        echo '<div class="step-content">Eliminazione della tabella esistente in corso...</div>';
+        echo '</div>';
+
+        try {
+            // Elimina foreign keys prima
+            $pdo->exec("ALTER TABLE `segnalazioni` DROP FOREIGN KEY `fk_segnalazioni_utente`");
+            $pdo->exec("ALTER TABLE `segnalazioni` DROP FOREIGN KEY `fk_segnalazioni_risolto_da`");
+        } catch (PDOException $e) {
+            // Ignora errori se le FK non esistono
+        }
+
+        $pdo->exec("DROP TABLE IF EXISTS `segnalazioni`");
+        $tableExists = false;
+
+        echo '<div class="step success">';
+        echo '<div class="step-title">✅ Tabella Eliminata</div>';
+        echo '<div class="step-content">La vecchia tabella è stata eliminata. Ora ricreo con le foreign keys corrette...</div>';
+        echo '</div>';
+    }
+
     if ($tableExists) {
         echo '<div class="step warning">';
         echo '<div class="step-title">⚠️ 2. Verifica Tabella</div>';
@@ -210,7 +234,15 @@ try {
 
         echo '<div class="step success">';
         echo '<div class="step-title">✅ Risultato</div>';
-        echo '<div class="step-content"><strong>La tabella è già pronta!</strong> Non è necessario crearla nuovamente.</div>';
+        echo '<div class="step-content">';
+        echo '<strong>La tabella esiste già!</strong><br><br>';
+        echo '<strong>⚠️ ATTENZIONE:</strong> Se hai creato questa tabella prima delle correzioni, ';
+        echo 'le foreign keys puntano alla tabella sbagliata (<code>users</code> invece di <code>utenti</code>).<br><br>';
+        echo '<strong>Soluzione:</strong> ';
+        echo '<a href="?action=ricrea" onclick="return confirm(\'Sei sicuro? Questo eliminerà tutte le segnalazioni esistenti!\')" ';
+        echo 'style="display: inline-block; padding: 8px 16px; background: #ef4444; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">';
+        echo '🔄 Elimina e Ricrea Tabella con Foreign Keys Corrette</a>';
+        echo '</div>';
         echo '</div>';
 
     } else {
@@ -219,7 +251,7 @@ try {
         echo '<div class="step-content">La tabella <strong>segnalazioni</strong> non esiste. Procedo con la creazione...</div>';
         echo '</div>';
 
-        // Crea la tabella
+        // Crea la tabella con foreign keys corrette su 'utenti'
         $sql = "CREATE TABLE `segnalazioni` (
             `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             `utente_id` bigint(20) UNSIGNED NOT NULL COMMENT 'ID dell\'utente che ha creato la segnalazione',
@@ -239,8 +271,8 @@ try {
             KEY `idx_segnalazioni_stato` (`stato`),
             KEY `idx_segnalazioni_tipo` (`tipo`),
             KEY `idx_segnalazioni_created` (`created_at`),
-            CONSTRAINT `fk_segnalazioni_utente` FOREIGN KEY (`utente_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-            CONSTRAINT `fk_segnalazioni_risolto_da` FOREIGN KEY (`risolto_da`) REFERENCES `users` (`id`) ON DELETE SET NULL
+            CONSTRAINT `fk_segnalazioni_utente` FOREIGN KEY (`utente_id`) REFERENCES `utenti` (`id`) ON DELETE CASCADE,
+            CONSTRAINT `fk_segnalazioni_risolto_da` FOREIGN KEY (`risolto_da`) REFERENCES `utenti` (`id`) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
         $pdo->exec($sql);

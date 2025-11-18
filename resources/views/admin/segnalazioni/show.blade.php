@@ -105,7 +105,7 @@
                             @if($segnalazione->risolutore)
                             <div class="mt-4 pt-4 border-t border-green-200 text-sm text-green-700">
                                 <i class="fas fa-user-check mr-2"></i>
-                                Gestita da: <strong>{{ $segnalazione->risolutore->nome }} {{ $segnalazione->risolutore->cognome }}</strong>
+                                Gestita da: <strong>{{ $segnalazione->risolutore->name ?? 'N/D' }}</strong>
                                 @if($segnalazione->risolto_il)
                                     il {{ $segnalazione->risolto_il->format('d/m/Y H:i') }}
                                 @endif
@@ -202,10 +202,10 @@
                 <div class="p-6">
                     <div class="flex items-center mb-4">
                         <div class="h-12 w-12 bg-gradient-to-br from-viola-magia to-fucsia-magia rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            {{ substr($segnalazione->utente->nome ?? 'N', 0, 1) }}{{ substr($segnalazione->utente->cognome ?? 'D', 0, 1) }}
+                            {{ substr($segnalazione->utente->name ?? 'ND', 0, 2) }}
                         </div>
                         <div class="ml-3">
-                            <p class="font-medium text-gray-900">{{ $segnalazione->utente->nome ?? 'N/D' }} {{ $segnalazione->utente->cognome ?? '' }}</p>
+                            <p class="font-medium text-gray-900">{{ $segnalazione->utente->name ?? 'N/D' }}</p>
                             <p class="text-sm text-gray-500">{{ ucfirst($segnalazione->utente->tipo_utente ?? 'N/D') }}</p>
                         </div>
                     </div>

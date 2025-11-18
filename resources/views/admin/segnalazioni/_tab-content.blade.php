@@ -219,7 +219,7 @@
                             </td>
                             @if($isSuperAdmin)
                             <td class="px-6 py-4 text-sm text-gray-700">
-                                {{ $seg->utente->nome ?? 'N/D' }}
+                                {{ $seg->utente->name ?? 'N/D' }}
                             </td>
                             @endif
                             <td class="px-6 py-4 text-center text-sm text-gray-700">

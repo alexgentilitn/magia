@@ -34,12 +34,12 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('utente_id', 'fk_segnalazioni_utente')
                   ->references('id')
-                  ->on('users')
+                  ->on('utenti')
                   ->onDelete('cascade');
 
             $table->foreign('risolto_da', 'fk_segnalazioni_risolto_da')
                   ->references('id')
-                  ->on('users')
+                  ->on('utenti')
                   ->onDelete('set null');
         });
     }

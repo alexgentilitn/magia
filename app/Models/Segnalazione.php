@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use App\Models\Utente;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SegnalazioneStatoCambiatoMail;
 
@@ -46,7 +46,7 @@ class Segnalazione extends Model
      */
     public function utente()
     {
-        return $this->belongsTo(User::class, 'utente_id');
+        return $this->belongsTo(Utente::class, 'utente_id');
     }
 
     /**
@@ -54,7 +54,7 @@ class Segnalazione extends Model
      */
     public function risolutore()
     {
-        return $this->belongsTo(User::class, 'risolto_da');
+        return $this->belongsTo(Utente::class, 'risolto_da');
     }
 
     // ============================================

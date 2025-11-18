@@ -52,10 +52,13 @@ class PagamentoClienteController extends Controller
         }
 
         // Importo quota iscrizione (da impostazioni o fisso)
-        $importo = 50.00; // TODO: Prendere da impostazioni sistema
+        $importo_base = 50.00; // TODO: Prendere da impostazioni sistema
+        $commissione_percentuale = 4; // 4% commissione PayPal
+        $commissione = round(($importo_base * $commissione_percentuale) / 100, 2);
+        $importo_totale = $importo_base + $commissione;
         $descrizione = "Quota iscrizione MA.GIA DONNA";
 
-        return view('registrazione.pagamento', compact('utente', 'importo', 'descrizione'));
+        return view('registrazione.pagamento', compact('utente', 'importo_base', 'commissione', 'importo_totale', 'descrizione'));
     }
 
     /**

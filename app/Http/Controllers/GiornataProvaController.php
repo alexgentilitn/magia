@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\Utente;
+use App\Models\Sede;
+use App\Models\Notifica;
 use App\Models\Analytics;
 use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -166,5 +170,176 @@ class GiornataProvaController extends Controller
         ";
 
         $this->emailService->inviaEmail($request->email, $oggetto, $corpo);
+    }
+
+    /**
+     * Registra cliente di prova nel database (metodo completo)
+     */
+    public function registraClienteProva(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required|string|max:100',
+            'cognome' => 'required|string|max:100',
+            'email' => 'required|email|max:255|unique:utenti,email',
+            'telefono_mobile' => 'required|string|max:20',
+            'data_nascita' => 'nullable|date',
+            'sede_preferita_id' => 'nullable|exists:sedi,id',
+            'note' => 'nullable|string|max:1000',
+            'privacy' => 'required|accepted',
+        ], [
+            'nome.required' => 'Il nome è obbligatorio',
+            'cognome.required' => 'Il cognome è obbligatorio',
+            'email.required' => 'L\'email è obbligatoria',
+            'email.email' => 'Inserisci un\'email valida',
+            'email.unique' => 'Questa email è già registrata',
+            'telefono_mobile.required' => 'Il numero di telefono è obbligatorio',
+            'privacy.required' => 'Devi accettare l\'informativa privacy',
+            'privacy.accepted' => 'Devi accettare l\'informativa privacy',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Crea utente con credenziali temporanee (NON attivo)
+            $password_temporanea = 'Prova' . rand(1000, 9999);
+
+            $utente = Utente::create([
+                'nome' => $request->nome,
+                'cognome' => $request->cognome,
+                'email' => $request->email,
+                'password' => Hash::make($password_temporanea),
+                'tipo_utente' => 'cliente',
+                'attivo' => false, // ❌ Non attivo finché non diventa cliente effettiva
+            ]);
+
+            // 2. Crea cliente con tipo "prova"
+            $cliente = Cliente::create([
+                'utente_id' => $utente->id,
+                'nome' => $request->nome,
+                'cognome' => $request->cognome,
+                'email' => $request->email,
+                'telefono_mobile' => $request->telefono_mobile,
+                'data_nascita' => $request->data_nascita ?? null,
+                'sede_preferita_id' => $request->sede_preferita_id ?? null,
+                'note_interne' => $request->note ?? '',
+                'consenso_privacy' => true,
+                'consenso_privacy_data' => now(),
+                'tipo_cliente' => 'prova', // 🆕 Cliente di prova
+                'stato_cliente' => 'prova', // Stato speciale
+                'data_iscrizione' => now(),
+            ]);
+
+            // 3. Traccia evento analytics
+            Analytics::traccia('form_submit', 'Giornata di Prova', 'cliente_prova_registrato', [
+                'cliente_id' => $cliente->id,
+                'email' => $cliente->email,
+            ]);
+
+            // 4. Invia notifica agli amministratori
+            $this->notificaAmministratori($cliente);
+
+            // 5. Invia email conferma
+            $this->inviaConfermaRichiedente($request);
+
+            DB::commit();
+
+            return redirect()->route('giornata-prova.index')
+                           ->with('success', 'Registrazione completata! Ti aspettiamo alla giornata di prova.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Errore registrazione cliente prova: ' . $e->getMessage());
+
+            return back()->withInput()
+                       ->with('error', 'Si è verificato un errore. Riprova o contattaci direttamente.');
+        }
+    }
+
+    /**
+     * Invia notifica agli amministratori (notifica DB)
+     */
+    protected function notificaAmministratori($cliente)
+    {
+        // Trova tutti gli admin
+        $amministratori = Utente::where('tipo_utente', 'amministratore')->get();
+
+        foreach ($amministratori as $admin) {
+            Notifica::create([
+                'utente_id' => $admin->id,
+                'tipo' => 'cliente_prova',
+                'titolo' => 'Nuova iscrizione Giornata di Prova',
+                'messaggio' => "{$cliente->nome_completo} si è iscritta alla giornata di prova",
+                'url' => route('admin.clienti.show', $cliente->id),
+                'letta' => false,
+            ]);
+        }
+    }
+
+    /**
+     * [ADMIN] Converti cliente di prova in cliente effettiva
+     */
+    public function convertiCliente($id)
+    {
+        $cliente = Cliente::findOrFail($id);
+
+        // Verifica che sia un cliente di prova
+        if ($cliente->tipo_cliente !== 'prova') {
+            return back()->with('error', 'Questo cliente non è un cliente di prova.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Aggiorna tipo e stato cliente
+            $cliente->update([
+                'tipo_cliente' => 'effettiva',
+                'stato_cliente' => 'attivo',
+            ]);
+
+            // 2. Attiva l'utente
+            $cliente->utente->update([
+                'attivo' => true,
+            ]);
+
+            // 3. Log attività
+            \Log::info("Cliente {$cliente->id} convertito da prova a effettiva");
+
+            DB::commit();
+
+            return back()->with('success', "Cliente {$cliente->nome_completo} convertita con successo in cliente effettiva!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Errore conversione cliente: ' . $e->getMessage());
+
+            return back()->with('error', 'Errore durante la conversione del cliente.');
+        }
+    }
+
+    /**
+     * [ADMIN] Lista clienti di prova
+     */
+    public function listaClientiProva()
+    {
+        $clienti_prova = Cliente::where('tipo_cliente', 'prova')
+                                ->with(['utente', 'sedePreferita'])
+                                ->orderBy('created_at', 'desc')
+                                ->paginate(20);
+
+        $stats = [
+            'totale' => Cliente::where('tipo_cliente', 'prova')->count(),
+            'ultimi_7_giorni' => Cliente::where('tipo_cliente', 'prova')
+                                        ->where('created_at', '>=', now()->subDays(7))
+                                        ->count(),
+            'da_convertire' => Cliente::where('tipo_cliente', 'prova')
+                                     ->where('stato_cliente', 'prova')
+                                     ->count(),
+        ];
+
+        return view('admin.clienti.clienti-prova', compact('clienti_prova', 'stats'));
     }
 }

@@ -64,6 +64,7 @@ class Cliente extends Model
         'consenso_foto',
         'note_interne',
         'stato_cliente',
+        'tipo_cliente', // 🆕 prova | effettiva
         'codice_cliente',
         'codice_referral',
         'invitato_da_cliente_id',
@@ -99,6 +100,14 @@ class Cliente extends Model
     public function utente()
     {
         return $this->belongsTo(Utente::class, 'utente_id');
+    }
+
+    /**
+     * Relazione: Sede preferita del cliente
+     */
+    public function sedePreferita()
+    {
+        return $this->belongsTo(Sede::class, 'sede_preferita_id');
     }
 
     /**
@@ -153,6 +162,22 @@ class Cliente extends Model
         return $this->belongsToMany(Lezione::class, 'cliente_lezione')
                     ->withPivot('stato', 'data_prenotazione', 'check_in', 'check_out', 'valutazione', 'feedback')
                     ->withTimestamps();
+    }
+
+    /**
+     * Relazione: Storico parametri corporei
+     */
+    public function parametriCorporei()
+    {
+        return $this->hasMany(ParametroCorporeo::class)->orderBy('data_rilevazione', 'desc');
+    }
+
+    /**
+     * Relazione: Ultimo parametro corporeo rilevato
+     */
+    public function ultimoParametro()
+    {
+        return $this->hasOne(ParametroCorporeo::class)->latestOfMany('data_rilevazione');
     }
 
     /**

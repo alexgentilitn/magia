@@ -39,6 +39,7 @@ Route::get('/', function () {
 
 Route::get('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'index'])->name('giornata-prova.index');
 Route::post('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'richiedi'])->name('giornata-prova.richiedi');
+Route::post('/giornata-di-prova/registra', [\App\Http\Controllers\GiornataProvaController::class, 'registraClienteProva'])->name('giornata-prova.registra');
 
 
 // ============================================
@@ -173,6 +174,20 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
 
         // Elimina
         Route::delete('/{id}', [ClientiController::class, 'destroy'])->name('destroy');
+
+        // GESTIONE CLIENTI DI PROVA
+        Route::get('/clienti-prova', [\App\Http\Controllers\GiornataProvaController::class, 'listaClientiProva'])->name('clienti-prova');
+        Route::post('/{id}/converti', [\App\Http\Controllers\GiornataProvaController::class, 'convertiCliente'])->name('converti');
+
+        // GESTIONE PARAMETRI CORPOREI CLIENTE
+        Route::prefix('{cliente}/parametri-corporei')->name('parametri-corporei.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'index'])->name('index');
+            Route::get('/aggiungi', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'store'])->name('store');
+            Route::get('/{parametro}/modifica', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'edit'])->name('edit');
+            Route::put('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'update'])->name('update');
+            Route::delete('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'destroy'])->name('destroy');
+        });
 
         // GESTIONE DOCUMENTI CLIENTE
         Route::prefix('{cliente}/documenti')->name('documenti.')->group(function () {

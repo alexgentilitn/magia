@@ -125,6 +125,7 @@
                             </a>
                         </li>
 
+                        @if(Auth::user()->tipo_utente === 'amministratore')
                         <!-- Impostazioni (solo amministratori) -->
                         <li>
                             <a href="{{ route('admin.impostazioni.index') }}"

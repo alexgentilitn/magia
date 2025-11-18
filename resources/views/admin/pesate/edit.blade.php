@@ -18,137 +18,163 @@
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- DATI BASE -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-info-circle text-fucsia-magia mr-2"></i>Dati Base
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Data <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="data_rilevazione" value="{{ old('data_rilevazione', $pesata->data_rilevazione->format('Y-m-d')) }}"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia @error('data_rilevazione') border-red-500 @enderror" required>
+                        @error('data_rilevazione')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Data Rilevazione -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Data Rilevazione <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" name="data_rilevazione" value="{{ old('data_rilevazione', $pesata->data_rilevazione->format('Y-m-d')) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia @error('data_rilevazione') border-red-500 @enderror" required>
-                    @error('data_rilevazione')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
+                        <select name="sede" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                            <option value="">Seleziona...</option>
+                            @foreach($sedi as $sede)
+                                <option value="{{ $sede }}" {{ old('sede', $pesata->sede) == $sede ? 'selected' : '' }}>{{ $sede }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Peso (kg) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" step="0.01" name="peso" value="{{ old('peso', $pesata->peso) }}"
+                               placeholder="es. 65.5"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia @error('peso') border-red-500 @enderror" required>
+                        @error('peso')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">BMI</label>
+                        <input type="number" step="0.1" name="bmi" value="{{ old('bmi', $pesata->bmi) }}"
+                               placeholder="es. 22.5"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
                 </div>
+            </div>
 
-                <!-- Sede -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sede</label>
-                    <select name="sede" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                        <option value="">Seleziona sede...</option>
-                        @foreach($sedi as $sede)
-                            <option value="{{ $sede }}" {{ old('sede', $pesata->sede) == $sede ? 'selected' : '' }}>{{ $sede }}</option>
-                        @endforeach
-                    </select>
+            <!-- COMPOSIZIONE CORPOREA -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-chart-pie text-fucsia-magia mr-2"></i>Composizione Corporea
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Peso Senza Grassi (kg)</label>
+                        <input type="number" step="0.01" name="peso_corporeo_senza_grassi" value="{{ old('peso_corporeo_senza_grassi', $pesata->peso_corporeo_senza_grassi) }}"
+                               placeholder="es. 45.2"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Muscolo Scheletrico (%)</label>
+                        <input type="number" step="0.1" name="muscolo_scheletrico" value="{{ old('muscolo_scheletrico', $pesata->muscolo_scheletrico) }}"
+                               placeholder="es. 35.5"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Grasso Corporeo (%)</label>
+                        <input type="number" step="0.1" name="grasso_corporeo" value="{{ old('grasso_corporeo', $pesata->grasso_corporeo) }}"
+                               placeholder="es. 28.3"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Grasso Sottocutaneo (%)</label>
+                        <input type="number" step="0.1" name="grasso_sottocutaneo" value="{{ old('grasso_sottocutaneo', $pesata->grasso_sottocutaneo) }}"
+                               placeholder="es. 24.1"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Grasso Viscerale</label>
+                        <input type="number" name="grasso_viscerale" value="{{ old('grasso_viscerale', $pesata->grasso_viscerale) }}"
+                               placeholder="es. 5"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Acqua Corporea (%)</label>
+                        <input type="number" step="0.1" name="acqua_corporea" value="{{ old('acqua_corporea', $pesata->acqua_corporea) }}"
+                               placeholder="es. 52.8"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Proteine (%)</label>
+                        <input type="number" step="0.1" name="proteine" value="{{ old('proteine', $pesata->proteine) }}"
+                               placeholder="es. 18.2"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
                 </div>
+            </div>
 
-                <!-- Peso -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Peso (kg) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" step="0.01" name="peso" value="{{ old('peso', $pesata->peso) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia @error('peso') border-red-500 @enderror" required>
-                    @error('peso')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+            <!-- MASSA CORPOREA -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-dumbbell text-fucsia-magia mr-2"></i>Massa Corporea
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Massa Muscolare (kg)</label>
+                        <input type="number" step="0.01" name="massa_muscolare" value="{{ old('massa_muscolare', $pesata->massa_muscolare) }}"
+                               placeholder="es. 42.3"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Massa Ossea (kg)</label>
+                        <input type="number" step="0.01" name="massa_ossea" value="{{ old('massa_ossea', $pesata->massa_ossea) }}"
+                               placeholder="es. 2.5"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
                 </div>
+            </div>
 
-                <!-- BMI -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">BMI</label>
-                    <input type="number" step="0.1" name="bmi" value="{{ old('bmi', $pesata->bmi) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia @error('bmi') border-red-500 @enderror">
-                    @error('bmi')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+            <!-- METABOLISMO -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-fire text-fucsia-magia mr-2"></i>Metabolismo
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">BMR (kcal)</label>
+                        <input type="number" name="bmr" value="{{ old('bmr', $pesata->bmr) }}"
+                               placeholder="es. 1450"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Età Metabolica (anni)</label>
+                        <input type="number" name="eta_metabolica" value="{{ old('eta_metabolica', $pesata->eta_metabolica) }}"
+                               placeholder="es. 28"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                    </div>
                 </div>
+            </div>
 
-                <!-- Peso Corporeo Senza Grassi -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Peso Senza Grassi (kg)</label>
-                    <input type="number" step="0.01" name="peso_corporeo_senza_grassi" value="{{ old('peso_corporeo_senza_grassi', $pesata->peso_corporeo_senza_grassi) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Muscolo Scheletrico -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Muscolo Scheletrico (%)</label>
-                    <input type="number" step="0.1" name="muscolo_scheletrico" value="{{ old('muscolo_scheletrico', $pesata->muscolo_scheletrico) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Grasso Corporeo -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Grasso Corporeo (%)</label>
-                    <input type="number" step="0.1" name="grasso_corporeo" value="{{ old('grasso_corporeo', $pesata->grasso_corporeo) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Grasso Sottocutaneo -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Grasso Sottocutaneo (%)</label>
-                    <input type="number" step="0.1" name="grasso_sottocutaneo" value="{{ old('grasso_sottocutaneo', $pesata->grasso_sottocutaneo) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Grasso Viscerale -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Grasso Viscerale</label>
-                    <input type="number" name="grasso_viscerale" value="{{ old('grasso_viscerale', $pesata->grasso_viscerale) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Acqua Corporea -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Acqua Corporea (%)</label>
-                    <input type="number" step="0.1" name="acqua_corporea" value="{{ old('acqua_corporea', $pesata->acqua_corporea) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Massa Muscolare -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Massa Muscolare (kg)</label>
-                    <input type="number" step="0.01" name="massa_muscolare" value="{{ old('massa_muscolare', $pesata->massa_muscolare) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Massa Ossea -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Massa Ossea (kg)</label>
-                    <input type="number" step="0.01" name="massa_ossea" value="{{ old('massa_ossea', $pesata->massa_ossea) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Proteine -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Proteine (%)</label>
-                    <input type="number" step="0.1" name="proteine" value="{{ old('proteine', $pesata->proteine) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- BMR -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">BMR (cal)</label>
-                    <input type="number" name="bmr" value="{{ old('bmr', $pesata->bmr) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Età Metabolica -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Età Metabolica</label>
-                    <input type="number" name="eta_metabolica" value="{{ old('eta_metabolica', $pesata->eta_metabolica) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                </div>
-
-                <!-- Note -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Note</label>
-                    <textarea name="note" rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">{{ old('note', $pesata->note) }}</textarea>
-                </div>
-
+            <!-- NOTE -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-sticky-note text-fucsia-magia mr-2"></i>Note
+                </h3>
+                <textarea name="note" rows="3"
+                          placeholder="Aggiungi eventuali note o osservazioni..."
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">{{ old('note', $pesata->note) }}</textarea>
             </div>
 
             <div class="flex justify-end gap-3 mt-6">

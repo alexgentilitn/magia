@@ -14,7 +14,11 @@
             <h2 class="text-2xl font-bold text-gray-800">{{ $cliente->nomeCompleto }}</h2>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('admin.clienti.edit', $cliente->id) }}" 
+            <a href="{{ route('admin.clienti.pesate.index', $cliente->id) }}"
+               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-weight mr-2"></i> Vedi Pesate
+            </a>
+            <a href="{{ route('admin.clienti.edit', $cliente->id) }}"
                class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition">
                 <i class="fas fa-edit mr-2"></i> Modifica
             </a>

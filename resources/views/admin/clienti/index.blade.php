@@ -188,11 +188,15 @@
                             {{ $cliente->created_at->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
-                            <a href="{{ route('admin.clienti.show', $cliente->id) }}" 
+                            <a href="{{ route('admin.clienti.show', $cliente->id) }}"
                                class="text-blue-600 hover:text-blue-900" title="Visualizza">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.clienti.edit', $cliente->id) }}" 
+                            <a href="{{ route('admin.clienti.pesate.index', $cliente->id) }}"
+                               class="text-green-600 hover:text-green-900" title="Pesate">
+                                <i class="fas fa-weight"></i>
+                            </a>
+                            <a href="{{ route('admin.clienti.edit', $cliente->id) }}"
                                class="text-fucsia-magia hover:text-viola-magia" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>

@@ -159,6 +159,11 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     // LISTA CLIENTI CON PESATE
     Route::get('/clienti-pesate', [\App\Http\Controllers\Admin\PesateController::class, 'listaClientiConPesate'])->name('clienti-pesate.index');
 
+    // IMPORTAZIONE PESATE DA EXCEL
+    Route::get('/pesate/import', [\App\Http\Controllers\Admin\PesateController::class, 'showImportForm'])->name('pesate.import');
+    Route::post('/pesate/process-import', [\App\Http\Controllers\Admin\PesateController::class, 'processImport'])->name('pesate.process-import');
+    Route::post('/pesate/confirm-import', [\App\Http\Controllers\Admin\PesateController::class, 'confirmImport'])->name('pesate.confirm-import');
+
     // GESTIONE CLIENTI
     Route::prefix('clienti')->name('clienti.')->group(function () {
         // Lista

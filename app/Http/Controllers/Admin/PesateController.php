@@ -7,6 +7,8 @@ use App\Models\Pesata;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
  * Controller: Gestione Pesate (Admin)
@@ -193,5 +195,191 @@ class PesateController extends Controller
         ];
 
         return view('admin.clienti-pesate.index', compact('clienti', 'statistiche'));
+    }
+
+    /**
+     * Mostra form per importazione Excel
+     */
+    public function showImportForm()
+    {
+        return view('admin.pesate.import');
+    }
+
+    /**
+     * Processa file Excel e mostra anteprima
+     */
+    public function processImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+            'sede' => 'required|string|max:100',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $sede = $request->sede;
+
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $highestRow = $worksheet->getHighestRow();
+
+            $preview_data = [];
+            $errors = [];
+
+            // Header nella riga 2, dati dalla riga 3
+            for ($row = 3; $row <= $highestRow; $row++) {
+                $cognome = trim($worksheet->getCell("A$row")->getValue() ?? '');
+                $nome = trim($worksheet->getCell("B$row")->getValue() ?? '');
+
+                if (empty($cognome) && empty($nome)) {
+                    continue;
+                }
+
+                // Cerca cliente
+                $cliente = Cliente::where('cognome', 'LIKE', $cognome)
+                                ->where('nome', 'LIKE', $nome)
+                                ->first();
+
+                $rowErrors = [];
+                if (!$cliente) {
+                    $rowErrors[] = 'Cliente non trovato nel database';
+                }
+
+                // Estrai dati pesata
+                $peso = $this->pulisciNumero($worksheet->getCell("C$row")->getValue());
+                if (!$peso || $peso < 20 || $peso > 300) {
+                    $rowErrors[] = 'Peso non valido (deve essere tra 20 e 300 kg)';
+                }
+
+                $dataRilevazione = $worksheet->getCell("P$row")->getValue();
+                if ($dataRilevazione instanceof \DateTime) {
+                    $dataRilevazione = $dataRilevazione->format('Y-m-d');
+                } elseif (is_numeric($dataRilevazione)) {
+                    // Excel date serial
+                    $dataRilevazione = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dataRilevazione)->format('Y-m-d');
+                }
+
+                if (empty($dataRilevazione)) {
+                    $rowErrors[] = 'Data rilevazione mancante';
+                }
+
+                $preview_data[] = [
+                    'row' => $row,
+                    'cliente_id' => $cliente->id ?? null,
+                    'cognome' => $cognome,
+                    'nome' => $nome,
+                    'sede' => $sede,
+                    'peso' => $peso,
+                    'bmi' => $this->pulisciNumero($worksheet->getCell("D$row")->getValue()),
+                    'peso_corporeo_senza_grassi' => $this->pulisciNumero($worksheet->getCell("E$row")->getValue()),
+                    'muscolo_scheletrico' => $this->pulisciPercentuale($worksheet->getCell("F$row")->getValue()),
+                    'grasso_corporeo' => $this->pulisciPercentuale($worksheet->getCell("G$row")->getValue()),
+                    'grasso_sottocutaneo' => $this->pulisciPercentuale($worksheet->getCell("H$row")->getValue()),
+                    'grasso_viscerale' => (int) $worksheet->getCell("I$row")->getValue(),
+                    'acqua_corporea' => $this->pulisciPercentuale($worksheet->getCell("J$row")->getValue()),
+                    'massa_muscolare' => $this->pulisciNumero($worksheet->getCell("K$row")->getValue()),
+                    'massa_ossea' => $this->pulisciNumero($worksheet->getCell("L$row")->getValue()),
+                    'proteine' => $this->pulisciPercentuale($worksheet->getCell("M$row")->getValue()),
+                    'bmr' => (int) $worksheet->getCell("N$row")->getValue(),
+                    'eta_metabolica' => (int) $worksheet->getCell("O$row")->getValue(),
+                    'data_rilevazione' => $dataRilevazione,
+                    'errors' => $rowErrors,
+                ];
+            }
+
+            return view('admin.pesate.import-preview', compact('preview_data', 'sede'));
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Errore nella lettura del file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Conferma e importa i dati
+     */
+    public function confirmImport(Request $request)
+    {
+        $data = json_decode($request->preview_data, true);
+        $sede = $request->sede;
+
+        $imported = 0;
+        $skipped = 0;
+        $import_errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($data as $row) {
+                // Salta righe con errori
+                if (!empty($row['errors']) || !$row['cliente_id']) {
+                    $skipped++;
+                    $import_errors[] = "Riga {$row['row']}: " . implode(', ', $row['errors']);
+                    continue;
+                }
+
+                // Crea pesata
+                Pesata::create([
+                    'cliente_id' => $row['cliente_id'],
+                    'sede' => $sede,
+                    'peso' => $row['peso'],
+                    'bmi' => $row['bmi'],
+                    'peso_corporeo_senza_grassi' => $row['peso_corporeo_senza_grassi'],
+                    'muscolo_scheletrico' => $row['muscolo_scheletrico'],
+                    'grasso_corporeo' => $row['grasso_corporeo'],
+                    'grasso_sottocutaneo' => $row['grasso_sottocutaneo'],
+                    'grasso_viscerale' => $row['grasso_viscerale'],
+                    'acqua_corporea' => $row['acqua_corporea'],
+                    'massa_muscolare' => $row['massa_muscolare'],
+                    'massa_ossea' => $row['massa_ossea'],
+                    'proteine' => $row['proteine'],
+                    'bmr' => $row['bmr'],
+                    'eta_metabolica' => $row['eta_metabolica'],
+                    'data_rilevazione' => $row['data_rilevazione'],
+                ]);
+
+                $imported++;
+            }
+
+            DB::commit();
+
+            $import_results = [
+                'imported' => $imported,
+                'skipped' => $skipped,
+                'errors' => $import_errors,
+            ];
+
+            return view('admin.pesate.import-results', compact('import_results'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Errore durante l\'importazione: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper: pulisce numero da percentuali e formattazione
+     */
+    private function pulisciNumero($valore)
+    {
+        if (is_null($valore) || $valore === '') {
+            return null;
+        }
+
+        // Rimuovi simboli e converti
+        $numero = str_replace(['%', ','], ['', '.'], $valore);
+        return is_numeric($numero) ? (float) $numero : null;
+    }
+
+    /**
+     * Helper: pulisce percentuale
+     */
+    private function pulisciPercentuale($valore)
+    {
+        if (is_null($valore) || $valore === '') {
+            return null;
+        }
+
+        $numero = str_replace(['%', ','], ['', '.'], $valore);
+        return is_numeric($numero) ? (float) $numero : null;
     }
 }

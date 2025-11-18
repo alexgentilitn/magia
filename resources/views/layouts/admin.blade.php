@@ -244,6 +244,15 @@
                             </a>
                         </li>
 
+                        <!-- Importa Pesate Excel -->
+                        <li>
+                            <a href="{{ route('admin.pesate.import') }}"
+                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.pesate.import') || request()->routeIs('admin.pesate.process-import') || request()->routeIs('admin.pesate.confirm-import')) bg-white bg-opacity-20 @endif">
+                                <i class="fas fa-file-excel w-5"></i>
+                                <span class="ml-3 font-medium">Importa Pesate</span>
+                            </a>
+                        </li>
+
                         <!-- Lezioni -->
                         <li>
                             <a href="{{ route('admin.lezioni.index') }}"

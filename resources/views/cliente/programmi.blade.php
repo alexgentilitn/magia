@@ -17,7 +17,7 @@
 </div>
 
 <!-- Programma Attivo -->
-@if(Auth::user()->programma_attuale)
+@if(Auth::user()->cliente->programma_attuale)
 <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">
@@ -30,31 +30,31 @@
     </div>
 
     <div class="bg-gradient-to-r from-viola-magia to-fucsia-magia rounded-xl p-6 text-white mb-6">
-        <h3 class="text-3xl font-bold mb-4">{{ Auth::user()->programma_attuale }}</h3>
+        <h3 class="text-3xl font-bold mb-4">{{ Auth::user()->cliente->programma_attuale }}</h3>
         <div class="grid md:grid-cols-2 gap-4">
             <div class="flex items-center space-x-3">
                 <i class="far fa-calendar-alt text-2xl"></i>
                 <div>
                     <p class="text-sm opacity-90">Data Inizio</p>
-                    <p class="font-semibold">{{ Auth::user()->inizio_programma ? Auth::user()->inizio_programma->format('d/m/Y') : 'Non specificata' }}</p>
+                    <p class="font-semibold">{{ Auth::user()->cliente->inizio_programma ? Auth::user()->cliente->inizio_programma->format('d/m/Y') : 'Non specificata' }}</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
                 <i class="far fa-calendar-check text-2xl"></i>
                 <div>
                     <p class="text-sm opacity-90">Data Fine Prevista</p>
-                    <p class="font-semibold">{{ Auth::user()->fine_programma ? Auth::user()->fine_programma->format('d/m/Y') : 'Non specificata' }}</p>
+                    <p class="font-semibold">{{ Auth::user()->cliente->fine_programma ? Auth::user()->cliente->fine_programma->format('d/m/Y') : 'Non specificata' }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    @if(Auth::user()->inizio_programma && Auth::user()->fine_programma)
+    @if(Auth::user()->cliente->inizio_programma && Auth::user()->cliente->fine_programma)
     <!-- Progress Bar -->
     @php
         $oggi = \Carbon\Carbon::now();
-        $inizio = Auth::user()->inizio_programma;
-        $fine = Auth::user()->fine_programma;
+        $inizio = Auth::user()->cliente->inizio_programma;
+        $fine = Auth::user()->cliente->fine_programma;
         $totaleGiorni = $inizio->diffInDays($fine);
         $giorniTrascorsi = $inizio->diffInDays($oggi);
         $percentuale = $totaleGiorni > 0 ? min(100, ($giorniTrascorsi / $totaleGiorni) * 100) : 0;

@@ -156,6 +156,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::post('/cambia-password', [ProfiloController::class, 'salvaNuovaPassword'])->name('salva-password');
     });
 
+    // LISTA CLIENTI CON PESATE
+    Route::get('/clienti-pesate', [\App\Http\Controllers\Admin\PesateController::class, 'listaClientiConPesate'])->name('clienti-pesate.index');
+
     // GESTIONE CLIENTI
     Route::prefix('clienti')->name('clienti.')->group(function () {
         // Lista
@@ -187,6 +190,16 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
             Route::get('/{parametro}/modifica', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'edit'])->name('edit');
             Route::put('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'update'])->name('update');
             Route::delete('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'destroy'])->name('destroy');
+        });
+
+        // GESTIONE PESATE CLIENTE (MySQL)
+        Route::prefix('{cliente}/pesate')->name('pesate.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PesateController::class, 'index'])->name('index');
+            Route::get('/aggiungi', [\App\Http\Controllers\Admin\PesateController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\PesateController::class, 'store'])->name('store');
+            Route::get('/{pesata}/modifica', [\App\Http\Controllers\Admin\PesateController::class, 'edit'])->name('edit');
+            Route::put('/{pesata}', [\App\Http\Controllers\Admin\PesateController::class, 'update'])->name('update');
+            Route::delete('/{pesata}', [\App\Http\Controllers\Admin\PesateController::class, 'destroy'])->name('destroy');
         });
 
         // GESTIONE DOCUMENTI CLIENTE
@@ -808,5 +821,8 @@ Route::middleware(['auth', 'tipo_utente:cliente'])->prefix('cliente')->name('cli
     Route::get('/profilo', function() {
         return view('cliente.profilo');
     })->name('profilo');
+
+    // Le Mie Pesate
+    Route::get('/pesate', [\App\Http\Controllers\Cliente\PesateController::class, 'index'])->name('pesate');
 });
 

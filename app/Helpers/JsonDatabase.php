@@ -89,6 +89,9 @@ class JsonDatabase
             self::db()->insert("$table.json", $data);
             return true;
         } catch (\Exception $e) {
+            // Log errore per debug
+            error_log("JsonDatabase::insert error in table $table: " . $e->getMessage());
+            error_log("Data: " . json_encode($data));
             return false;
         }
     }

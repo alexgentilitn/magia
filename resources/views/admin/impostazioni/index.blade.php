@@ -92,6 +92,21 @@
                     <i class="fas fa-file-excel mr-2"></i>
                     Importa Pesate
                 </button>
+
+                <!-- Tab Segnalazioni -->
+                <button
+                    @click="activeTab = 'segnalazioni'"
+                    :class="activeTab === 'segnalazioni' ? 'border-fucsia-magia text-fucsia-magia' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                >
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Segnalazioni
+                    @if($statsSegnalazioni['aperte'] > 0)
+                    <span class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                        {{ $statsSegnalazioni['aperte'] }}
+                    </span>
+                    @endif
+                </button>
             </nav>
         </div>
     </div>
@@ -484,6 +499,9 @@
     <div x-show="activeTab === 'pesate'" x-cloak>
         @include('admin.pesate.import-content')
     </div>
+
+    <!-- Tab Content: Segnalazioni -->
+    @include('admin.segnalazioni._tab-content')
 
 </div>
 

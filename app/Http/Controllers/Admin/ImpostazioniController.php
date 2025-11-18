@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Impostazione;
 use App\Models\ImpostazioneSistema;
+use App\Models\Segnalazione;
 use App\Mail\TestEmailMail;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Controller: Gestione Impostazioni Sistema
@@ -53,12 +55,35 @@ class ImpostazioniController extends Controller
             ],
         ];
 
+        // Dati per tab Segnalazioni
+        $segnalazioniQuery = Segnalazione::with(['utente', 'risolutore'])->recenti();
+
+        // Se non è super admin, mostra solo le proprie segnalazioni
+        if (Auth::user()->tipo_utente !== 'super_admin') {
+            $segnalazioniQuery->where('utente_id', Auth::id());
+        }
+
+        $segnalazioni = $segnalazioniQuery->paginate(10);
+
+        // Statistiche segnalazioni
+        $statsSegnalazioni = [
+            'totali' => Segnalazione::count(),
+            'aperte' => Segnalazione::aperte()->count(),
+            'in_lavorazione' => Segnalazione::inLavorazione()->count(),
+            'risolte' => Segnalazione::risolte()->count(),
+        ];
+
+        $isSuperAdmin = Auth::user()->tipo_utente === 'super_admin';
+
         return view('admin.impostazioni.index', compact(
             'impostazioniSmtp',
             'impostazioniPaypal',
             'impostazioniPagamento',
             'impostazioniSistema',
-            'categorieSistema'
+            'categorieSistema',
+            'segnalazioni',
+            'statsSegnalazioni',
+            'isSuperAdmin'
         ));
     }
 

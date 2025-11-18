@@ -648,6 +648,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         // Configurazione PayPal
         Route::post('/paypal', [ImpostazioniController::class, 'salvaPaypal'])->name('paypal.salva');
         Route::post('/paypal/test', [ImpostazioniController::class, 'testPaypal'])->name('paypal.test');
+
+        // Segnalazioni Bug/Suggerimenti
+        Route::resource('segnalazioni', \App\Http\Controllers\Admin\SegnalazioniController::class)->except(['edit']);
     });
 
     // ============================================

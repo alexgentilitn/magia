@@ -12,6 +12,15 @@
         <h2 class="text-2xl font-bold text-gray-800">Nuova Pesata - {{ $cliente->nome }} {{ $cliente->cognome }}</h2>
     </div>
 
+    @if(session('error'))
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" role="alert">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <p class="font-medium">{{ session('error') }}</p>
+        </div>
+    </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow p-6">
         <form method="POST" action="{{ route('admin.clienti.pesate.store', $cliente->id) }}">
             @csrf

@@ -78,13 +78,31 @@ class PesateController extends Controller
                            ->withInput();
         }
 
-        $data = $request->all();
-        $data['cliente_id'] = $cliente_id;
+        try {
+            // Usa solo i dati validati invece di $request->all()
+            $data = $validator->validated();
+            $data['cliente_id'] = $cliente_id;
 
-        Pesata::create($data);
+            $pesata = Pesata::create($data);
 
-        return redirect()->route('admin.clienti.pesate.index', $cliente_id)
-                       ->with('success', 'Pesata aggiunta con successo!');
+            // Verifica che sia stato creato
+            if (!$pesata) {
+                throw new \Exception('Errore durante il salvataggio della pesata');
+            }
+
+            return redirect()->route('admin.clienti.pesate.index', $cliente_id)
+                           ->with('success', 'Pesata aggiunta con successo!');
+
+        } catch (\Exception $e) {
+            \Log::error('Errore salvataggio pesata: ' . $e->getMessage(), [
+                'cliente_id' => $cliente_id,
+                'data' => $request->all()
+            ]);
+
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Errore durante il salvataggio: ' . $e->getMessage());
+        }
     }
 
     /**

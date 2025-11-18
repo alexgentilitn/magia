@@ -13,10 +13,41 @@
     </div>
 
     @if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" role="alert">
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            <p class="font-medium">{{ session('error') }}</p>
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-circle text-2xl mr-3 mt-1"></i>
+            <div>
+                <p class="font-bold text-lg mb-1">Errore</p>
+                <p class="font-medium">{{ session('error') }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-800 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-times-circle text-2xl mr-3 mt-1 text-red-500"></i>
+            <div class="flex-1">
+                <p class="font-bold text-lg mb-2">Attenzione! Ci sono {{ $errors->count() }} errori da correggere:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach($errors->all() as $error)
+                        <li class="text-sm">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if(session('success'))
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-check-circle text-2xl mr-3 mt-1"></i>
+            <div>
+                <p class="font-bold text-lg mb-1">Successo!</p>
+                <p class="font-medium">{{ session('success') }}</p>
+            </div>
         </div>
     </div>
     @endif

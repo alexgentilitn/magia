@@ -13,6 +13,46 @@
         <p class="text-gray-600 text-sm mt-1">Pesata del {{ $pesata->data_rilevazione->format('d/m/Y') }}</p>
     </div>
 
+    @if(session('error'))
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-circle text-2xl mr-3 mt-1"></i>
+            <div>
+                <p class="font-bold text-lg mb-1">Errore</p>
+                <p class="font-medium">{{ session('error') }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="bg-red-50 border-l-4 border-red-500 text-red-800 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-times-circle text-2xl mr-3 mt-1 text-red-500"></i>
+            <div class="flex-1">
+                <p class="font-bold text-lg mb-2">Attenzione! Ci sono {{ $errors->count() }} errori da correggere:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach($errors->all() as $error)
+                        <li class="text-sm">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if(session('success'))
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-lg mb-6 shadow-md" role="alert">
+        <div class="flex items-start">
+            <i class="fas fa-check-circle text-2xl mr-3 mt-1"></i>
+            <div>
+                <p class="font-bold text-lg mb-1">Successo!</p>
+                <p class="font-medium">{{ session('success') }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow p-6">
         <form method="POST" action="{{ route('admin.clienti.pesate.update', [$cliente->id, $pesata->id]) }}">
             @csrf

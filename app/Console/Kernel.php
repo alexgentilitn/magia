@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Pubblica ricette schedulate ogni ora
+        $schedule->command('ricette:pubblica')
+            ->hourly()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/ricette-pubblica.log'));
     }
 
     /**

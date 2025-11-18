@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "nome": "Nuova sede test",
+        "slug": "nuova-sede-test",
+        "descrizione": "Breve descrizione della sede test",
+        "indirizzo_via": "Via G. B. Trener 16",
+        "indirizzo_citta": "Trento",
+        "indirizzo_provincia": "TN",
+        "indirizzo_cap": "38121",
+        "telefono": "0461823395",
+        "email": "arredogiunco@hotmail.com",
+        "attiva": true,
+        "visibile_pubblico": true,
+        "sede_principale": true,
+        "ordine": 0,
+        "created_at": "2025-11-13 08:47:37",
+        "updated_at": "2025-11-13 09:09:16"
+    }
+]

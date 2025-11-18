@@ -18,11 +18,11 @@
                class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition">
                 <i class="fas fa-edit mr-2"></i> Modifica
             </a>
-            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline">
+            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline" id="delete-cliente-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" 
-                        onclick="return confirm('Sei sicuro di voler eliminare questa cliente?')"
+                <button type="button"
+                        onclick="confermaEliminazione('delete-cliente-form', 'Eliminare la cliente?', 'Tutti i dati della cliente {{ $cliente->nome }} {{ $cliente->cognome }} saranno eliminati definitivamente, incluse tutte le prenotazioni e pagamenti associati.')"
                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                     <i class="fas fa-trash mr-2"></i> Elimina
                 </button>

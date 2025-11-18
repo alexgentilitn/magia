@@ -128,74 +128,106 @@ DELETE /admin/clienti/{id}         → Elimina (soft)
 
 ---
 
+## ✅ IMPLEMENTAZIONI RECENTI - NOVEMBRE 2025
+
+### 1. **Gestione Lezioni** ✅ COMPLETATO (16/11/2025)
+
+**Tabella:** `lezioni`
+**Stato:** ✅ **COMPLETAMENTE IMPLEMENTATO**
+
+**Implementato:**
+- ✅ Model: `Lezione.php` (427 righe) - Relazioni, scopes, gestione ricorrenze
+- ✅ Controller: `LezioniController.php` (767 righe) - CRUD completo + funzionalità avanzate
+- ✅ Views: 6 views complete
+  - `index.blade.php` (26KB) - Lista con filtri avanzati
+  - `create.blade.php` (18KB) - Form creazione con ricorrenze
+  - `edit.blade.php` (20KB) - Form modifica
+  - `show.blade.php` (29KB) - Dettaglio completo
+  - `prenotazioni.blade.php` (19KB) - Gestione prenotazioni e check-in
+  - `edit-multiple.blade.php` (13KB) - Modifica multipla
+- ✅ Routes: 13 routes configurate
+- ✅ Sidebar: Link aggiunto
+
+**Funzionalità Disponibili:**
+- ✅ Lista lezioni con filtri (data, stato, programma, sede, professionista)
+- ✅ CRUD completo (crea, modifica, elimina, visualizza)
+- ✅ Gestione stati (programmata, confermata, in corso, completata, cancellata, rinviata)
+- ✅ Lezioni ricorrenti (giornaliera, settimanale, bisettimanale, mensile)
+- ✅ Gestione posti (totali, occupati, lista attesa)
+- ✅ **Gestione prenotazioni clienti**
+- ✅ **Check-in/Check-out partecipanti**
+- ✅ **Segna assenze**
+- ✅ Modifica multipla lezioni
+- ✅ Lezioni online (link meeting, password)
+
+---
+
+### 2. **Gestione Programmi** ✅ COMPLETATO (16/11/2025)
+
+**Tabella:** `programmi`
+**Stato:** ✅ **COMPLETAMENTE IMPLEMENTATO**
+
+**Implementato:**
+- ✅ Model: `Programma.php` (217 righe) - Relazioni, prezzi, promozioni
+- ✅ Controller: `ProgrammiController.php` (366 righe) - CRUD completo
+- ✅ Views: 4 views complete
+  - `index.blade.php` (19KB) - Lista con filtri
+  - `create.blade.php` (21KB) - Form creazione
+  - `edit.blade.php` (22KB) - Form modifica
+  - `show.blade.php` (15KB) - Dettaglio completo
+- ✅ Routes: 7 routes configurate
+- ✅ Sidebar: Link aggiunto
+
+**Funzionalità Disponibili:**
+- ✅ Lista programmi (Balla & Snella, Alimentazione, Wellness, ecc.)
+- ✅ CRUD completo
+- ✅ **Gestione prezzi e promozioni** (prezzo base, promo, validità)
+- ✅ Calcolo automatico sconti
+- ✅ Gestione posti disponibili
+- ✅ Assegnazione sede e professionista
+- ✅ Durata programma (giorni/mesi, lezioni totali/settimana)
+- ✅ Attiva/disattiva programma
+- ✅ Visibilità pubblica e evidenza
+- ✅ **Duplica programma** (copia rapida)
+- ✅ Cambia stato con un click
+
+---
+
+### 3. **Gestione Pagamenti** ✅ COMPLETATO (16/11/2025)
+
+**Tabella:** `pagamenti`
+**Stato:** ✅ **COMPLETAMENTE IMPLEMENTATO**
+
+**Implementato:**
+- ✅ Model: `Pagamento.php` (231 righe) - Relazioni, stati, metodi
+- ✅ Controller: `PagamentiController.php` (331 righe) - CRUD completo
+- ✅ Views: 4 views complete
+  - `index.blade.php` (5KB) - Lista con filtri
+  - `create.blade.php` (4.5KB) - Form creazione
+  - `edit.blade.php` (6.4KB) - Form modifica
+  - `show.blade.php` (4.5KB) - Dettaglio completo
+- ✅ Routes: 8 routes configurate
+- ✅ Sidebar: Link aggiunto
+
+**Funzionalità Disponibili:**
+- ✅ Lista pagamenti con filtri (cliente, stato, tipo, metodo, date)
+- ✅ CRUD completo
+- ✅ **Pagamenti parziali** (importo pagato, residuo, percentuale)
+- ✅ Stati: in attesa, parziale, completato, scaduto, rimborsato, cancellato
+- ✅ Metodi: contanti, bonifico, carta, POS, PayPal, Satispay
+- ✅ Collegamento a programmi e lezioni
+- ✅ **Genera numero fattura automatico**
+- ✅ Riferimento transazione
+- ✅ Scadenze e promemoria
+- ✅ Azioni speciali:
+  - Registra pagamento parziale
+  - Marca come completato
+  - Rimborso
+- ✅ Badge colorati per stato e metodo
+
+---
+
 ## ❌ COSA MANCA / DA IMPLEMENTARE
-
-### 1. **Gestione Lezioni** 🔴 MANCANTE
-
-**Tabella:** `lezioni` (esiste nel DB)
-**Stato:** ❌ Controller, views e routes NON implementate
-
-**Da Creare:**
-- ❌ Controller: `LezioniController.php`
-- ❌ Views: `admin/lezioni/` (index, create, edit, show)
-- ❌ Routes: CRUD completo lezioni
-- ❌ Modello: `Lezione.php` (probabilmente esiste ma da verificare)
-
-**Funzionalità Richieste:**
-- Lista lezioni (calendario/griglia)
-- Crea nuova lezione
-- Modifica lezione
-- Cancella lezione
-- Assegnazione clienti a lezioni
-- Gestione prenotazioni
-- Check-in/check-out partecipanti
-- Capienza massima lezione
-
----
-
-### 2. **Gestione Programmi** 🔴 MANCANTE
-
-**Tabella:** `programmi` (esiste nel DB)
-**Stato:** ❌ Controller, views e routes NON implementate
-
-**Da Creare:**
-- ❌ Controller: `ProgrammiController.php`
-- ❌ Views: `admin/programmi/` (index, create, edit, show)
-- ❌ Routes: CRUD completo programmi
-- ❌ Modello: `Programma.php`
-
-**Funzionalità Richieste:**
-- Lista programmi disponibili (Balla & Snella, Alimentazione, ecc.)
-- Crea nuovo programma
-- Modifica programma
-- Attiva/disattiva programma
-- Assegnazione programmi a clienti
-- Durata programma
-- Prezzo programma
-
----
-
-### 3. **Gestione Pagamenti** 🔴 MANCANTE
-
-**Tabella:** `pagamenti` (esiste nel DB)
-**Stato:** ❌ Controller, views e routes NON implementate
-
-**Da Creare:**
-- ❌ Controller: `PagamentiController.php`
-- ❌ Views: `admin/pagamenti/` (index, create, show)
-- ❌ Routes: Visualizzazione e registrazione pagamenti
-- ❌ Modello: `Pagamento.php`
-
-**Funzionalità Richieste:**
-- Lista pagamenti (filtrabili per cliente, data, stato)
-- Registra nuovo pagamento
-- Segna pagamento come effettuato
-- Storico pagamenti cliente
-- Report pagamenti per periodo
-- Stato: pagato/pending/scaduto
-- Integrazione con programmi/abbonamenti
-
----
 
 ### 4. **Gestione Sedi** 🔴 MANCANTE
 
@@ -311,22 +343,21 @@ DELETE /admin/clienti/{id}         → Elimina (soft)
 
 ## 📋 PRIORITÀ SVILUPPO CONSIGLIATE
 
+### ✅ **COMPLETATO - NOVEMBRE 2025**
+
+1. ~~**Gestione Lezioni**~~ ✅ **COMPLETATO (16/11/2025)**
+   - 767 righe controller, 6 views, 13 routes
+   - Check-in/Check-out, prenotazioni, ricorrenze
+
+2. ~~**Gestione Programmi**~~ ✅ **COMPLETATO (16/11/2025)**
+   - 366 righe controller, 4 views, 7 routes
+   - Prezzi, promozioni, duplica programma
+
+3. ~~**Gestione Pagamenti**~~ ✅ **COMPLETATO (16/11/2025)**
+   - 331 righe controller, 4 views, 8 routes
+   - Pagamenti parziali, fatturazione, rimborsi
+
 ### 🔴 **PRIORITÀ ALTA** (Funzionalità Core Mancanti)
-
-1. **Gestione Lezioni** ⭐⭐⭐⭐⭐
-   - È il cuore del business
-   - Necessaria per prenotazioni
-   - Stimata: 3-4 giorni sviluppo
-
-2. **Gestione Programmi** ⭐⭐⭐⭐⭐
-   - Collega clienti a servizi
-   - Necessaria per fatturazione
-   - Stimata: 2-3 giorni sviluppo
-
-3. **Gestione Pagamenti** ⭐⭐⭐⭐⭐
-   - Fondamentale per business
-   - Tracking incassi
-   - Stimata: 2-3 giorni sviluppo
 
 ### 🟡 **PRIORITÀ MEDIA** (Miglioramenti Gestionali)
 
@@ -406,23 +437,32 @@ DELETE /admin/clienti/{id}         → Elimina (soft)
 
 ## 🎯 ROADMAP SUGGERITA
 
-### **FASE 1 - Core Business** (2-3 settimane)
-1. ✅ Fix autenticazione e permessi (COMPLETATO)
-2. 🔲 Implementare gestione Lezioni
-3. 🔲 Implementare gestione Programmi
-4. 🔲 Implementare gestione Pagamenti
+### **FASE 1 - Core Business** ✅ **COMPLETATA (16/11/2025)**
+1. ✅ Fix autenticazione e permessi (COMPLETATO 13/11/2025)
+2. ✅ Implementare gestione Lezioni (**COMPLETATO 16/11/2025**)
+3. ✅ Implementare gestione Programmi (**COMPLETATO 16/11/2025**)
+4. ✅ Implementare gestione Pagamenti (**COMPLETATO 16/11/2025**)
 
-### **FASE 2 - Esperienza Utente** (1-2 settimane)
-5. 🔲 Calendario lezioni interattivo
+**Risultato Fase 1:**
+- 🎉 **1464 righe** di codice controller
+- 🎉 **14 views** complete
+- 🎉 **28 routes** configurate
+- 🎉 Tutte le funzionalità core del business operative
+
+### **FASE 2 - Esperienza Utente** 🟡 **PARZIALMENTE COMPLETA**
+5. 🔲 Calendario lezioni interattivo (FullCalendar.js)
 6. 🔲 Dashboard migliorata con più statistiche
-7. 🔲 Sistema prenotazioni lezioni
+7. ✅ Sistema prenotazioni lezioni (**GIÀ IMPLEMENTATO** - incluso in Lezioni)
+   - Check-in/Check-out
+   - Lista attesa
+   - Segna assenze
 
-### **FASE 3 - Gestione Avanzata** (1-2 settimane)
+### **FASE 3 - Gestione Avanzata** (1-2 settimane) 🔴 **DA FARE**
 8. 🔲 Gestione Sedi
 9. 🔲 Gestione Utenti/Professionisti
-10. 🔲 Report e export dati
+10. 🔲 Report e export dati avanzati
 
-### **FASE 4 - Marketing & Automazione** (1-2 settimane)
+### **FASE 4 - Marketing & Automazione** (1-2 settimane) 🔴 **DA FARE**
 11. 🔲 Sistema referral completo
 12. 🔲 Newsletter e comunicazioni
 13. 🔲 Log attività completo

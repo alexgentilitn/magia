@@ -5,33 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#7B2869">
     <title>@yield('titolo', 'Area Cliente') - MA.GIA DONNA</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                        'arancio-magia': '#FF6B35',
-                    },
-                    fontFamily: {
-                        'sans': ['Poppins', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
+
     <style>
         * {
             font-family: 'Poppins', sans-serif;
@@ -165,7 +148,47 @@
                 <i class="far fa-calendar"></i>
                 <span>Calendario</span>
             </a>
-            
+
+            <a href="{{ route('messaging.index') }}" class="nav-item {{ request()->routeIs('messaging.*') ? 'active' : '' }}">
+                <div class="relative">
+                    <i class="fas fa-comments"></i>
+                    @php
+                        try {
+                            $messaggiNonLetti = auth()->user()->conversazioni()->get()->sum(function($conv) {
+                                return $conv->utenti()->where('utente_id', auth()->id())->first()->pivot->messaggi_non_letti ?? 0;
+                            });
+                        } catch (\Exception $e) {
+                            $messaggiNonLetti = 0;
+                        }
+                    @endphp
+                    @if($messaggiNonLetti > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">
+                            {{ $messaggiNonLetti > 9 ? '9+' : $messaggiNonLetti }}
+                        </span>
+                    @endif
+                </div>
+                <span>Chat</span>
+            </a>
+
+            <a href="{{ route('notifiche.index') }}" class="nav-item {{ request()->routeIs('notifiche.*') ? 'active' : '' }}">
+                <div class="relative">
+                    <i class="fas fa-bell"></i>
+                    @php
+                        try {
+                            $notificheNonLette = \App\Models\Notifica::where('utente_id', auth()->id())->where('letta', false)->count();
+                        } catch (\Exception $e) {
+                            $notificheNonLette = 0;
+                        }
+                    @endphp
+                    @if($notificheNonLette > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1 rounded-full min-w-[16px] text-center">
+                            {{ $notificheNonLette > 9 ? '9+' : $notificheNonLette }}
+                        </span>
+                    @endif
+                </div>
+                <span>Notifiche</span>
+            </a>
+
             <a href="{{ route('cliente.profilo') }}" class="nav-item {{ request()->routeIs('cliente.profilo') ? 'active' : '' }}">
                 <i class="far fa-user"></i>
                 <span>Profilo</span>

@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "utente_id": 11,
+        "nome": "Cinzia",
+        "cognome": "Tonelli",
+        "titolo_professionale": "Personal Trainer",
+        "bio": "aaaaa",
+        "anni_esperienza": 10,
+        "telefono_mobile": "3478445159",
+        "tariffa_oraria": 10,
+        "visibile_pubblico": false,
+        "stato": "attivo",
+        "codice_professionista": "PROF-2025-0001",
+        "valutazione_media": null,
+        "numero_recensioni": 0,
+        "lezioni_completate": 0,
+        "clienti_seguiti": 0,
+        "created_at": "2025-11-13 09:59:18",
+        "updated_at": "2025-11-13 09:59:18"
+    }
+]

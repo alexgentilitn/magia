@@ -8,6 +8,7 @@ on:
       - claude/clarify-session-description-01DThBJ4fcgMfm2BwogX8rN8  # Session precedente - Fix permessi
       - claude/Magia_Brench-01DNXamdVeXgWB4ZTdwLV9Zx  # Branch ufficiale - Sistema Pesate MySQL
       - claude/magia_1-01PbEMSDbW8Zwx2btzyUVKyo  # Branch con interfaccia import pesate
+      - claude/magia_2-014g9oFtUHSZYLpEbGMBJTok  # Branch MAGIA_2 - Fix salvataggio pesate con gestione errori
       # Deploy automatico da branch claude/** con session ID
   workflow_dispatch:
     # Deploy manuale consentito

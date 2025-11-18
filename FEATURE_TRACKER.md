@@ -237,7 +237,7 @@ Alla fine dell'implementazione creeremo:
 ## 📝 NOTE SVILUPPO
 
 - Database setup: Script SQL `SQL_IMPOSTAZIONI_PAYPAL.sql` da eseguire
-- Branch attuale: `claude/Magia_Brench-01DThBJ4fcgMfm2BwogX8rN8`
+- Branch attuale: `claude/Magia_Brench-01DNXamdVeXgWB4ZTdwLV9Zx`
 - Deploy automatico: FTP via GitHub Actions (attivo)
 - Configurazione PayPal: Via pannello Admin → Impostazioni → Pagamenti
 

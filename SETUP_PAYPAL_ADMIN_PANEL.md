@@ -366,7 +366,7 @@ Il sistema di configurazione PayPal è ora completamente integrato nell'interfac
 
 **Deploy automatico:** Il push è stato completato con successo.
 **GitHub Actions:** Deploy FTP partirà automaticamente tra 5-10 minuti.
-**Branch:** `claude/Magia_Brench-01DThBJ4fcgMfm2BwogX8rN8`
+**Branch:** `claude/Magia_Brench-01DNXamdVeXgWB4ZTdwLV9Zx`
 
 ---
 

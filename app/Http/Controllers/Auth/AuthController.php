@@ -22,11 +22,13 @@ class AuthController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
-            if (in_array($user->tipo_utente, ['amministratore', 'professionista'])) {
+            if ($user->tipo_utente === 'amministratore') {
                 return redirect()->route('admin.dashboard');
+            } elseif ($user->tipo_utente === 'professionista') {
+                return redirect()->route('professionista.dashboard');
             }
         }
-        
+
         return view('admin.auth.login');
     }
 
@@ -70,17 +72,23 @@ class AuthController extends Controller
 
         // Tentativo di login
         $remember = $request->boolean('remember');
-        
+
         if (Auth::attempt($credenziali, $remember)) {
             $request->session()->regenerate();
-            
+
             // Aggiorna ultimo accesso
             $utente->ultimo_accesso = now();
             $utente->ultimo_ip = $request->ip();
             $utente->save();
-            
-            return redirect()->route('admin.dashboard')
-                ->with('success', "Benvenuto {$utente->nome}!");
+
+            // Redirect in base al tipo utente
+            if ($utente->tipo_utente === 'professionista') {
+                return redirect()->route('professionista.dashboard')
+                    ->with('success', "Benvenuto {$utente->nome}!");
+            } else {
+                return redirect()->route('admin.dashboard')
+                    ->with('success', "Benvenuto {$utente->nome}!");
+            }
         }
 
         throw ValidationException::withMessages([

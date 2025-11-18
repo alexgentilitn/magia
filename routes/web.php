@@ -13,6 +13,11 @@ use App\Http\Controllers\Admin\ProfessionistiController;
 use App\Http\Controllers\Admin\ProfiloController;
 use App\Http\Controllers\Admin\ImpostazioniController;
 use App\Http\Controllers\Admin\CalendarioController;
+use App\Http\Controllers\Admin\RicetteController;
+use App\Http\Controllers\Admin\ReferralController;
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\TemplateEmailController;
+use App\Http\Controllers\Admin\SuperAdminController;
 
 /**
  * File: Routes Web
@@ -26,6 +31,24 @@ use App\Http\Controllers\Admin\CalendarioController;
 Route::get('/', function () {
     return view('homepage');
 })->name('home');
+
+
+// ============================================
+// LANDING PAGE - GIORNATA DI PROVA
+// ============================================
+
+Route::get('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'index'])->name('giornata-prova.index');
+Route::post('/giornata-di-prova', [\App\Http\Controllers\GiornataProvaController::class, 'richiedi'])->name('giornata-prova.richiedi');
+Route::post('/giornata-di-prova/registra', [\App\Http\Controllers\GiornataProvaController::class, 'registraClienteProva'])->name('giornata-prova.registra');
+
+
+// ============================================
+// LE NOSTRE SEDI (mappa interattiva)
+// ============================================
+
+Route::get('/sedi', function() {
+    return view('sedi.index');
+})->name('sedi.index');
 
 
 // ============================================
@@ -58,6 +81,53 @@ Route::post('/verifica-codice-invito', [RegistrazioneController::class, 'verific
 
 
 // ============================================
+// PAGAMENTO REGISTRAZIONE
+// ============================================
+
+Route::prefix('pagamento')->name('pagamento.')->group(function () {
+    // Scelta metodo pagamento
+    Route::get('/{utente_id}/scelta', [\App\Http\Controllers\PagamentoClienteController::class, 'sceltaMetodo'])->name('scelta');
+
+    // PayPal
+    Route::post('/paypal/inizia', [\App\Http\Controllers\PagamentoClienteController::class, 'iniziaPayPal'])->name('paypal.inizia');
+    Route::get('/paypal/success', [\App\Http\Controllers\PagamentoClienteController::class, 'paypalSuccess'])->name('paypal.success');
+    Route::get('/paypal/cancel', [\App\Http\Controllers\PagamentoClienteController::class, 'paypalCancel'])->name('paypal.cancel');
+
+    // Bonifico
+    Route::get('/{utente_id}/bonifico', [\App\Http\Controllers\PagamentoClienteController::class, 'formBonifico'])->name('bonifico.form');
+    Route::post('/bonifico/salva', [\App\Http\Controllers\PagamentoClienteController::class, 'salvaBonifico'])->name('bonifico.salva');
+});
+
+
+// ============================================
+// MESSAGING E NOTIFICHE (Tutti gli utenti autenticati)
+// ============================================
+
+Route::middleware(['auth'])->group(function () {
+    // Messaging
+    Route::prefix('messaging')->name('messaging.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MessagingController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\MessagingController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\MessagingController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\MessagingController::class, 'show'])->name('show');
+        Route::post('/{id}/send', [\App\Http\Controllers\MessagingController::class, 'sendMessage'])->name('send');
+        Route::get('/{id}/messages', [\App\Http\Controllers\MessagingController::class, 'getNewMessages'])->name('messages');
+        Route::post('/{id}/read', [\App\Http\Controllers\MessagingController::class, 'markAsRead'])->name('read');
+        Route::get('/allegato/{messaggioId}', [\App\Http\Controllers\MessagingController::class, 'downloadAllegato'])->name('download');
+    });
+
+    // Notifiche
+    Route::prefix('notifiche')->name('notifiche.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificheController::class, 'index'])->name('index');
+        Route::get('/recenti', [\App\Http\Controllers\NotificheController::class, 'getRecenti'])->name('recenti');
+        Route::post('/{id}/read', [\App\Http\Controllers\NotificheController::class, 'markAsRead'])->name('read');
+        Route::post('/read-all', [\App\Http\Controllers\NotificheController::class, 'markAllAsRead'])->name('read-all');
+        Route::delete('/{id}', [\App\Http\Controllers\NotificheController::class, 'destroy'])->name('destroy');
+    });
+});
+
+
+// ============================================
 // LOGOUT GLOBALE
 // ============================================
 
@@ -65,10 +135,10 @@ Route::post('/logout', [AuthController::class, 'effettuaLogout'])->name('logout'
 
 
 // ============================================
-// AREA ADMIN (Protetta)
+// AREA ADMIN (Protetta - Solo Amministratori)
 // ============================================
 
-Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -86,24 +156,75 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/cambia-password', [ProfiloController::class, 'salvaNuovaPassword'])->name('salva-password');
     });
 
+    // LISTA CLIENTI CON PESATE
+    Route::get('/clienti-pesate', [\App\Http\Controllers\Admin\PesateController::class, 'listaClientiConPesate'])->name('clienti-pesate.index');
+
+    // IMPORTAZIONE PESATE DA EXCEL
+    Route::get('/pesate/import', [\App\Http\Controllers\Admin\PesateController::class, 'showImportForm'])->name('pesate.import');
+    Route::post('/pesate/process-import', [\App\Http\Controllers\Admin\PesateController::class, 'processImport'])->name('pesate.process-import');
+    Route::post('/pesate/confirm-import', [\App\Http\Controllers\Admin\PesateController::class, 'confirmImport'])->name('pesate.confirm-import');
+
     // GESTIONE CLIENTI
     Route::prefix('clienti')->name('clienti.')->group(function () {
         // Lista
         Route::get('/', [ClientiController::class, 'index'])->name('index');
-        
+
         // Crea
         Route::get('/crea', [ClientiController::class, 'create'])->name('create');
         Route::post('/', [ClientiController::class, 'store'])->name('store');
-        
+
         // Visualizza
         Route::get('/{id}', [ClientiController::class, 'show'])->name('show');
-        
+
         // Modifica
         Route::get('/{id}/modifica', [ClientiController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ClientiController::class, 'update'])->name('update');
-        
+
         // Elimina
         Route::delete('/{id}', [ClientiController::class, 'destroy'])->name('destroy');
+
+        // GESTIONE CLIENTI DI PROVA
+        Route::get('/clienti-prova', [\App\Http\Controllers\GiornataProvaController::class, 'listaClientiProva'])->name('clienti-prova');
+        Route::post('/{id}/converti', [\App\Http\Controllers\GiornataProvaController::class, 'convertiCliente'])->name('converti');
+
+        // GESTIONE PARAMETRI CORPOREI CLIENTE
+        Route::prefix('{cliente}/parametri-corporei')->name('parametri-corporei.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'index'])->name('index');
+            Route::get('/aggiungi', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'store'])->name('store');
+            Route::get('/{parametro}/modifica', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'edit'])->name('edit');
+            Route::put('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'update'])->name('update');
+            Route::delete('/{parametro}', [\App\Http\Controllers\Admin\ParametriCorporeiController::class, 'destroy'])->name('destroy');
+        });
+
+        // GESTIONE PESATE CLIENTE (MySQL)
+        Route::prefix('{cliente}/pesate')->name('pesate.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\PesateController::class, 'index'])->name('index');
+            Route::get('/aggiungi', [\App\Http\Controllers\Admin\PesateController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\PesateController::class, 'store'])->name('store');
+            Route::get('/{pesata}/modifica', [\App\Http\Controllers\Admin\PesateController::class, 'edit'])->name('edit');
+            Route::put('/{pesata}', [\App\Http\Controllers\Admin\PesateController::class, 'update'])->name('update');
+            Route::delete('/{pesata}', [\App\Http\Controllers\Admin\PesateController::class, 'destroy'])->name('destroy');
+        });
+
+        // GESTIONE DOCUMENTI CLIENTE
+        Route::prefix('{cliente}/documenti')->name('documenti.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\DocumentiController::class, 'index'])->name('index');
+            Route::get('/carica', [\App\Http\Controllers\Admin\DocumentiController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\DocumentiController::class, 'store'])->name('store');
+        });
+    });
+
+    // GESTIONE DOCUMENTI (azioni singolo documento)
+    Route::prefix('documenti')->name('documenti.')->group(function () {
+        Route::get('/{id}/visualizza', [\App\Http\Controllers\Admin\DocumentiController::class, 'show'])->name('show');
+        Route::get('/{id}/download', [\App\Http\Controllers\Admin\DocumentiController::class, 'download'])->name('download');
+        Route::get('/{id}/modifica', [\App\Http\Controllers\Admin\DocumentiController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\DocumentiController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\DocumentiController::class, 'destroy'])->name('destroy');
+
+        // Alert scadenze
+        Route::get('/scadenza', [\App\Http\Controllers\Admin\DocumentiController::class, 'scadenza'])->name('scadenza');
     });
 
     // GESTIONE LEZIONI
@@ -193,6 +314,12 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
         Route::post('/{id}/pagamento-parziale', [PagamentiController::class, 'registraPagamentoParziale'])->name('pagamento-parziale');
         Route::post('/{id}/marca-completato', [PagamentiController::class, 'marcaCompletato'])->name('marca-completato');
         Route::post('/{id}/rimborsa', [PagamentiController::class, 'rimborsa'])->name('rimborsa');
+
+        // Verifica bonifici registrazione
+        Route::get('/bonifici', [\App\Http\Controllers\PagamentoClienteController::class, 'listaVerifiche'])->name('bonifici');
+        Route::post('/bonifici/{utente_id}/approva', [\App\Http\Controllers\PagamentoClienteController::class, 'approvaBonifico'])->name('bonifici.approva');
+        Route::post('/bonifici/{utente_id}/rifiuta', [\App\Http\Controllers\PagamentoClienteController::class, 'rifiutaBonifico'])->name('bonifici.rifiuta');
+        Route::get('/bonifici/{utente_id}/ricevuta', [\App\Http\Controllers\PagamentoClienteController::class, 'visualizzaRicevuta'])->name('bonifici.ricevuta');
     });
 
     // ============================================
@@ -248,10 +375,18 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
 
         // Azioni speciali
         Route::patch('/{id}/cambia-stato', [ProfessionistiController::class, 'cambiaStato'])->name('cambia-stato');
+        Route::post('/{id}/approva', [ProfessionistiController::class, 'approva'])->name('approva');
+        Route::post('/{id}/rifiuta', [ProfessionistiController::class, 'rifiuta'])->name('rifiuta');
 
         // Gestione certificazioni
         Route::get('/{id}/certificazioni', [ProfessionistiController::class, 'certificazioni'])->name('certificazioni');
         Route::post('/{id}/certificazioni', [ProfessionistiController::class, 'salvaCertificazioni'])->name('salva-certificazioni');
+
+        // Gestione permessi individuali collaboratore
+        Route::get('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'edit'])->name('permessi.edit');
+        Route::put('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'update'])->name('permessi.update');
+        Route::delete('/{id}/permessi', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'reset'])->name('permessi.reset');
+        Route::get('/{id}/permessi/api', [\App\Http\Controllers\Admin\PermessiCollaboratoreController::class, 'getPermessi'])->name('permessi.api');
 
         // Gestione disponibilità
         Route::get('/{id}/disponibilita', [ProfessionistiController::class, 'disponibilita'])->name('disponibilita');
@@ -259,6 +394,58 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
 
         // Reset password
         Route::post('/{id}/reset-password', [ProfessionistiController::class, 'resetPassword'])->name('reset-password');
+
+        // Gestione foto profilo
+        Route::post('/{id}/upload-foto', [ProfessionistiController::class, 'uploadFoto'])->name('upload-foto');
+        Route::delete('/{id}/elimina-foto', [ProfessionistiController::class, 'eliminaFoto'])->name('elimina-foto');
+
+        // Gestione Documenti
+        Route::prefix('/{id}/documenti')->name('documenti.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'index'])->name('index');
+            Route::post('/upload', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'upload'])->name('upload');
+            Route::get('/{documento_id}/download', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'download'])->name('download');
+            Route::delete('/{documento_id}', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'destroy'])->name('destroy');
+            Route::post('/{documento_id}/verifica', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'verifica'])->name('verifica');
+            Route::post('/{documento_id}/revoca-verifica', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'revocaVerifica'])->name('revoca-verifica');
+            Route::put('/{documento_id}', [\App\Http\Controllers\Admin\ProfessionistaDocumentiController::class, 'update'])->name('update');
+        });
+
+        // Gestione Galleria Foto
+        Route::prefix('/{id}/galleria')->name('galleria.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'index'])->name('index');
+            Route::post('/upload', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'upload'])->name('upload');
+            Route::delete('/{index}', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'destroy'])->name('destroy');
+            Route::post('/{index}/imposta-copertina', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'impostaCopertina'])->name('imposta-copertina');
+            Route::get('/download-all', [\App\Http\Controllers\Admin\ProfessionistaGalleriaController::class, 'downloadAll'])->name('download-all');
+        });
+    });
+
+    // ============================================
+    // PAGAMENTI PROFESSIONISTI (Storico e Compensi)
+    // ============================================
+    Route::prefix('professionisti/pagamenti')->name('professionisti.pagamenti.')->group(function () {
+        // Lista pagamenti
+        Route::get('/', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'index'])->name('index');
+
+        // Crea pagamento
+        Route::get('/crea', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'store'])->name('store');
+
+        // Calcola compenso (AJAX)
+        Route::post('/calcola', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'calcolaCompenso'])->name('calcola');
+
+        // Storico pagamenti per professionista
+        Route::get('/professionista/{utente_id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'storicoProfessionista'])->name('storico-professionista');
+
+        // Visualizza pagamento
+        Route::get('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'show'])->name('show');
+
+        // Modifica pagamento
+        Route::get('/{id}/modifica', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'update'])->name('update');
+
+        // Elimina pagamento
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\PagamentiProfessionistiController::class, 'destroy'])->name('destroy');
     });
 
     // ============================================
@@ -273,6 +460,164 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
 
         // Dettagli lezione
         Route::get('/{id}', [CalendarioController::class, 'show'])->name('show');
+
+        // Sposta lezione (drag & drop)
+        Route::post('/{id}/move', [CalendarioController::class, 'move'])->name('move');
+
+        // Modifica durata lezione (resize)
+        Route::post('/{id}/resize', [CalendarioController::class, 'resize'])->name('resize');
+
+        // Elimina lezione
+        Route::delete('/{id}', [CalendarioController::class, 'destroy'])->name('destroy');
+
+        // Prenotazioni
+        Route::post('/{id}/prenota', [CalendarioController::class, 'prenota'])->name('prenota');
+        Route::delete('/{lezione}/prenotazioni/{cliente}', [CalendarioController::class, 'annullaPrenotazione'])->name('annulla-prenotazione');
+        Route::post('/{id}/invia-reminder', [CalendarioController::class, 'inviaReminder'])->name('invia-reminder');
+
+        // Presenze (Check-in/Check-out)
+        Route::post('/{lezione}/check-in/{cliente}', [CalendarioController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezione}/check-out/{cliente}', [CalendarioController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezione}/segna-assente/{cliente}', [CalendarioController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezione}/annulla-assenza/{cliente}', [CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // GESTIONE RICETTE
+    // ============================================
+    Route::prefix('ricette')->name('ricette.')->group(function () {
+        // Lista
+        Route::get('/', [RicetteController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [RicetteController::class, 'create'])->name('create');
+        Route::post('/', [RicetteController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{id}', [RicetteController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{id}/modifica', [RicetteController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [RicetteController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{id}', [RicetteController::class, 'destroy'])->name('destroy');
+
+        // Pubblica/Schedula
+        Route::post('/{id}/pubblica', [RicetteController::class, 'pubblica'])->name('pubblica');
+        Route::post('/{id}/nascondi', [RicetteController::class, 'nascondi'])->name('nascondi');
+
+        // Upload immagine
+        Route::post('/upload-immagine', [RicetteController::class, 'uploadImmagine'])->name('upload-immagine');
+    });
+
+    // ============================================
+    // GESTIONE TEMPLATE EMAIL
+    // ============================================
+    Route::prefix('template-email')->name('template-email.')->group(function () {
+        // Lista
+        Route::get('/', [TemplateEmailController::class, 'index'])->name('index');
+
+        // Crea
+        Route::get('/crea', [TemplateEmailController::class, 'create'])->name('create');
+        Route::post('/', [TemplateEmailController::class, 'store'])->name('store');
+
+        // Visualizza
+        Route::get('/{id}', [TemplateEmailController::class, 'show'])->name('show');
+
+        // Modifica
+        Route::get('/{id}/modifica', [TemplateEmailController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [TemplateEmailController::class, 'update'])->name('update');
+
+        // Elimina
+        Route::delete('/{id}', [TemplateEmailController::class, 'destroy'])->name('destroy');
+
+        // Preview
+        Route::post('/{id}/preview', [TemplateEmailController::class, 'preview'])->name('preview');
+
+        // Invia email di test
+        Route::post('/{id}/test', [TemplateEmailController::class, 'inviaTest'])->name('test');
+
+        // Toggle attivo/inattivo
+        Route::patch('/{id}/toggle-attivo', [TemplateEmailController::class, 'toggleAttivo'])->name('toggle-attivo');
+    });
+
+    // ============================================
+    // PROGRAMMA REFERRAL "PORTA UN AMICO"
+    // ============================================
+    Route::prefix('referral')->name('referral.')->group(function () {
+        // Dashboard principale
+        Route::get('/', [ReferralController::class, 'index'])->name('index');
+
+        // Dettagli referral
+        Route::get('/{id}', [ReferralController::class, 'show'])->name('show');
+
+        // Cambia stato referral
+        Route::post('/{id}/cambia-stato', [ReferralController::class, 'cambiaStato'])->name('cambia-stato');
+
+        // Applica sconto
+        Route::post('/{id}/applica-sconto', [ReferralController::class, 'applicaSconto'])->name('applica-sconto');
+
+        // Configurazione programma
+        Route::get('/config/impostazioni', [ReferralController::class, 'configurazione'])->name('configurazione');
+        Route::post('/config/impostazioni', [ReferralController::class, 'salvaConfigurazione'])->name('salva-configurazione');
+
+        // Report
+        Route::get('/report/statistiche', [ReferralController::class, 'report'])->name('report');
+        Route::get('/report/export-csv', [ReferralController::class, 'exportCsv'])->name('export-csv');
+
+        // Crea referral manualmente
+        Route::get('/crea', [ReferralController::class, 'create'])->name('create');
+        Route::post('/', [ReferralController::class, 'store'])->name('store');
+    });
+
+    // ============================================
+    // ANALYTICS COMPORTAMENTALI
+    // ============================================
+    Route::prefix('analytics')->name('analytics.')->group(function () {
+        // Dashboard analytics
+        Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+
+        // Eventi dettagliati
+        Route::get('/eventi', [AnalyticsController::class, 'eventi'])->name('eventi');
+
+        // Analytics per singolo utente
+        Route::get('/utente/{utente_id}', [AnalyticsController::class, 'utente'])->name('utente');
+
+        // Export CSV
+        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
+
+        // API per grafici (AJAX)
+        Route::get('/api/grafico-visite', [AnalyticsController::class, 'graficoVisite'])->name('api.grafico-visite');
+        Route::get('/api/grafico-dispositivi', [AnalyticsController::class, 'graficoDispositivi'])->name('api.grafico-dispositivi');
+    });
+
+    // ============================================
+    // REPORT E STATISTICHE
+    // ============================================
+    Route::prefix('report')->name('report.')->group(function () {
+        // Dashboard report principale
+        Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+
+        // Debug report (senza JavaScript)
+        Route::get('/debug', [\App\Http\Controllers\Admin\ReportController::class, 'debug'])->name('debug');
+
+        // Report presenze dettagliato
+        Route::get('/presenze', [\App\Http\Controllers\Admin\ReportController::class, 'presenze'])->name('presenze');
+
+        // Report performance professionisti
+        Route::get('/professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'professionisti'])->name('professionisti');
+
+        // Export CSV (legacy)
+        Route::get('/export-csv', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('export-csv');
+
+        // Export Excel
+        Route::get('/export-excel-presenze', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelPresenze'])->name('export-excel-presenze');
+        Route::get('/export-excel-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportExcelCalendario'])->name('export-excel-calendario');
+
+        // Export PDF
+        Route::get('/export-pdf-calendario', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfCalendario'])->name('export-pdf-calendario');
+        Route::get('/export-pdf-professionisti', [\App\Http\Controllers\Admin\ReportController::class, 'exportPdfProfessionisti'])->name('export-pdf-professionisti');
     });
 
     // ============================================
@@ -306,10 +651,129 @@ Route::middleware(['auth', 'tipo_utente:amministratore,professionista'])->prefix
     // IMPOSTAZIONI (solo amministratori)
     // ============================================
     Route::middleware('tipo_utente:amministratore')->prefix('impostazioni')->name('impostazioni.')->group(function () {
+        // Pagina principale impostazioni (con tutti i tab)
+        Route::get('/', [ImpostazioniController::class, 'index'])->name('index');
+
         // Configurazione SMTP
         Route::get('/smtp', [ImpostazioniController::class, 'smtp'])->name('smtp');
         Route::post('/smtp', [ImpostazioniController::class, 'salvaSmtp'])->name('smtp.salva');
         Route::post('/smtp/test', [ImpostazioniController::class, 'testSmtp'])->name('smtp.test');
+
+        // Configurazione PayPal
+        Route::post('/paypal', [ImpostazioniController::class, 'salvaPaypal'])->name('paypal.salva');
+        Route::post('/paypal/test', [ImpostazioniController::class, 'testPaypal'])->name('paypal.test');
+    });
+
+    // ============================================
+    // SUPER ADMIN (Manutenzione Sistema)
+    // ============================================
+    Route::middleware(['tipo_utente:amministratore', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SuperAdminController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\SuperAdminController::class, 'index'])->name('login'); // POST per login
+        Route::post('/toggle-debug', [\App\Http\Controllers\Admin\SuperAdminController::class, 'toggleDebug'])->name('toggle-debug');
+        Route::post('/clear-all-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearAllCache'])->name('clear-all-cache');
+        Route::post('/clear-config-cache', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearConfigCache'])->name('clear-config-cache');
+        Route::post('/clear-logs', [\App\Http\Controllers\Admin\SuperAdminController::class, 'clearLogs'])->name('clear-logs');
+        Route::get('/view-logs', [\App\Http\Controllers\Admin\SuperAdminController::class, 'viewLogs'])->name('view-logs');
+        Route::get('/database-info', [\App\Http\Controllers\Admin\SuperAdminController::class, 'databaseInfo'])->name('database-info');
+        Route::post('/optimize-database', [\App\Http\Controllers\Admin\SuperAdminController::class, 'optimizeDatabase'])->name('optimize-database');
+        // Migrations
+        Route::get('/migrations/status', [\App\Http\Controllers\Admin\SuperAdminController::class, 'getMigrationsStatus'])->name('migrations.status');
+        Route::post('/run-migrations', [\App\Http\Controllers\Admin\SuperAdminController::class, 'runMigrations'])->name('run-migrations');
+        Route::post('/migrations/rollback', [\App\Http\Controllers\Admin\SuperAdminController::class, 'rollbackMigration'])->name('migrations.rollback');
+        Route::delete('/migrations/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteMigrationFile'])->name('migrations.delete');
+        Route::post('/migrations/sync', [\App\Http\Controllers\Admin\SuperAdminController::class, 'syncMigration'])->name('migrations.sync');
+
+        // Backup Database
+        Route::post('/backup/create', [\App\Http\Controllers\Admin\SuperAdminController::class, 'createBackup'])->name('backup.create');
+        Route::get('/backup/list', [\App\Http\Controllers\Admin\SuperAdminController::class, 'listBackups'])->name('backup.list');
+        Route::get('/backup/download', [\App\Http\Controllers\Admin\SuperAdminController::class, 'downloadBackup'])->name('backup.download');
+        Route::delete('/backup/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteBackup'])->name('backup.delete');
+        Route::post('/backup/clean-old', [\App\Http\Controllers\Admin\SuperAdminController::class, 'cleanOldBackups'])->name('backup.clean-old');
+
+        Route::get('/logout', [\App\Http\Controllers\Admin\SuperAdminController::class, 'logout'])->name('logout');
+    });
+
+});
+
+
+// ============================================
+// AREA PROFESSIONISTI (Protetta - Solo Collaboratori)
+// ============================================
+
+Route::middleware(['auth', 'tipo_utente:professionista'])->prefix('professionista')->name('professionista.')->group(function () {
+
+    // Dashboard Professionista
+    Route::get('/dashboard', [\App\Http\Controllers\Professionista\DashboardController::class, 'index'])->name('dashboard');
+
+    // ============================================
+    // PROFILO
+    // ============================================
+    Route::prefix('profilo')->name('profilo.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Professionista\ProfiloController::class, 'index'])->name('index');
+        Route::post('/aggiorna', [\App\Http\Controllers\Professionista\ProfiloController::class, 'aggiornaProfilo'])->name('aggiorna');
+        Route::get('/cambia-password', [\App\Http\Controllers\Professionista\ProfiloController::class, 'cambiaPassword'])->name('cambia-password');
+        Route::post('/cambia-password', [\App\Http\Controllers\Professionista\ProfiloController::class, 'salvaNuovaPassword'])->name('salva-password');
+    });
+
+    // ============================================
+    // AGENDA PERSONALE (Lezioni filtrate)
+    // ============================================
+    Route::prefix('lezioni')->name('lezioni.')->group(function () {
+        // Lista lezioni (solo proprie)
+        Route::get('/', [\App\Http\Controllers\Professionista\LezioniController::class, 'index'])->name('index');
+
+        // Visualizza lezione
+        Route::get('/{id}', [\App\Http\Controllers\Professionista\LezioniController::class, 'show'])->name('show');
+
+        // Gestione prenotazioni e presenze
+        Route::get('/{id}/presenze', [\App\Http\Controllers\Professionista\LezioniController::class, 'gestionePresenze'])->name('presenze');
+        Route::post('/{lezioneId}/check-in/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezioneId}/check-out/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezioneId}/segna-assente/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezioneId}/annulla-assenza/{clienteId}', [\App\Http\Controllers\Professionista\LezioniController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // CALENDARIO PERSONALE (solo propri corsi)
+    // ============================================
+    Route::prefix('calendario')->name('calendario.')->group(function () {
+        // Vista calendario
+        Route::get('/', [\App\Http\Controllers\Professionista\CalendarioController::class, 'index'])->name('index');
+
+        // API per eventi calendario (filtrati)
+        Route::get('/events', [\App\Http\Controllers\Professionista\CalendarioController::class, 'getEvents'])->name('events');
+
+        // Dettagli lezione
+        Route::get('/{id}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'show'])->name('show');
+
+        // Presenze rapide dal calendario
+        Route::post('/{lezione}/check-in/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'checkIn'])->name('check-in');
+        Route::post('/{lezione}/check-out/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'checkOut'])->name('check-out');
+        Route::post('/{lezione}/segna-assente/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'segnaAssente'])->name('segna-assente');
+        Route::post('/{lezione}/annulla-assenza/{cliente}', [\App\Http\Controllers\Professionista\CalendarioController::class, 'annullaAssenza'])->name('annulla-assenza');
+    });
+
+    // ============================================
+    // COMPENSI E PAGAMENTI
+    // ============================================
+    Route::prefix('compensi')->name('compensi.')->group(function () {
+        // Dashboard compensi
+        Route::get('/', [\App\Http\Controllers\Professionista\CompensiController::class, 'index'])->name('index');
+
+        // Storico pagamenti
+        Route::get('/storico', [\App\Http\Controllers\Professionista\CompensiController::class, 'storico'])->name('storico');
+
+        // Dettaglio periodo
+        Route::get('/periodo/{anno}/{mese}', [\App\Http\Controllers\Professionista\CompensiController::class, 'dettaglioPeriodo'])->name('periodo');
+    });
+
+    // ============================================
+    // DISPONIBILITÀ
+    // ============================================
+    Route::prefix('disponibilita')->name('disponibilita.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Professionista\DisponibilitaController::class, 'index'])->name('index');
+        Route::post('/salva', [\App\Http\Controllers\Professionista\DisponibilitaController::class, 'salva'])->name('salva');
     });
 });
 
@@ -362,5 +826,8 @@ Route::middleware(['auth', 'tipo_utente:cliente'])->prefix('cliente')->name('cli
     Route::get('/profilo', function() {
         return view('cliente.profilo');
     })->name('profilo');
+
+    // Le Mie Pesate
+    Route::get('/pesate', [\App\Http\Controllers\Cliente\PesateController::class, 'index'])->name('pesate');
 });
 

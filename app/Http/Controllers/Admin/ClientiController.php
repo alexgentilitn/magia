@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Hash;
  
 /**
  * Controller: Gestione Clienti
- * DEBUG: Mostra errori dettagliati
  */
 class ClientiController extends Controller
 {
@@ -176,9 +175,6 @@ class ClientiController extends Controller
         DB::beginTransaction();
         
         try {
-            // ⭐ DEBUG: Log dei dati validati
-            \Log::info('UPDATE Cliente ID: ' . $id);
-            \Log::info('Dati validati:', $dati_validati);
 
             if ($cliente->utente_id) {
                 $utente = Utente::find($cliente->utente_id);
@@ -235,19 +231,15 @@ class ClientiController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            // ⭐ MOSTRA L'ERRORE DETTAGLIATO
-            \Log::error('ERRORE UPDATE Cliente:', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+
+            \Log::error('Errore aggiornamento cliente: ' . $e->getMessage(), [
+                'cliente_id' => $id,
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            // Mostra errore dettagliato all'utente (SOLO per debug)
+
             return back()
                 ->withInput()
-                ->with('error', 'ERRORE: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Riga: ' . $e->getLine());
+                ->with('error', 'Errore durante l\'aggiornamento del cliente. Riprova.');
         }
     }
 

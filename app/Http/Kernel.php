@@ -57,5 +57,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'debug' => \App\Http\Middleware\DebugMiddleware::class, // ⭐ ALIAS PER DEBUG
         'tipo_utente' => \App\Http\Middleware\VerificaTipoUtente::class, // ⭐ VERIFICA TIPO UTENTE
+        'super_admin' => \App\Http\Middleware\SuperAdminAuth::class, // ⭐ AUTENTICAZIONE SUPER ADMIN
+        'permesso' => \App\Http\Middleware\VerificaPermesso::class, // ⭐ VERIFICA PERMESSI INDIVIDUALI
     ];
 }

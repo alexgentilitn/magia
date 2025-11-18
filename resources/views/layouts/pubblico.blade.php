@@ -6,31 +6,16 @@
     <meta name="description" content="MA.GIA DONNA - Benessere, energia e bellezza al femminile. La tua energia, la nostra missione.">
     <meta name="keywords" content="benessere donna, fitness femminile, Balla e Snella, wellness, Bolzano">
     <title>@yield('titolo', 'Benessere al Femminile') - MA.GIA DONNA</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Colori Brand -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                        'arancio-magia': '#FF6B35',
-                    }
-                }
-            }
-        }
-    </script>
-    
+
     @stack('styles')
 </head>
 <body class="bg-white">

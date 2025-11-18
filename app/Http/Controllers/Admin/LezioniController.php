@@ -464,45 +464,8 @@ class LezioniController extends Controller
      */
     private function creaLezioniRicorrenti($lezionePadre, $request)
     {
-        $dataInizio = Carbon::parse($request->data);
-        $dataFine = Carbon::parse($request->fine_ricorrenza);
-        $frequenza = $request->frequenza_ricorrenza;
-
-        $dataCorrente = clone $dataInizio;
-        $lezioniCreate = 0;
-        $maxLezioni = 52; // Limite massimo per sicurezza
-
-        while ($dataCorrente->lte($dataFine) && $lezioniCreate < $maxLezioni) {
-            // Salta la prima (è la lezione padre)
-            switch ($frequenza) {
-                case 'giornaliera':
-                    $dataCorrente->addDay();
-                    break;
-                case 'settimanale':
-                    $dataCorrente->addWeek();
-                    break;
-                case 'bisettimanale':
-                    $dataCorrente->addWeeks(2);
-                    break;
-                case 'mensile':
-                    $dataCorrente->addMonth();
-                    break;
-            }
-
-            if ($dataCorrente->lte($dataFine)) {
-                // Crea lezione figlia
-                $nuovaLezione = $lezionePadre->replicate();
-                $nuovaLezione->data = $dataCorrente->toDateString();
-                $nuovaLezione->lezione_padre_id = $lezionePadre->id;
-                $nuovaLezione->posti_occupati = 0;
-                $nuovaLezione->visibile_calendario = true;
-                $nuovaLezione->save();
-
-                $lezioniCreate++;
-            }
-        }
-
-        return $lezioniCreate;
+        // Delega al Model la generazione delle occorrenze
+        return $lezionePadre->generaOccorrenze();
     }
 
     /**

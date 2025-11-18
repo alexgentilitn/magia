@@ -271,4 +271,156 @@ class Lezione extends Model
 
         return null;
     }
+
+    // ===================================================================
+    // GESTIONE RICORRENZE
+    // ===================================================================
+
+    /**
+     * Verifica se questa lezione fa parte di una serie ricorrente
+     */
+    public function isLezioneRicorrente()
+    {
+        return $this->ricorrente || $this->lezione_padre_id !== null;
+    }
+
+    /**
+     * Verifica se questa è la lezione padre (master) di una serie ricorrente
+     */
+    public function isLezionePadre()
+    {
+        return $this->ricorrente && $this->lezione_padre_id === null;
+    }
+
+    /**
+     * Calcola la prossima data in base alla frequenza di ricorrenza
+     */
+    public function calcolaDataProssimaOccorrenza(Carbon $dataCorrente)
+    {
+        switch ($this->frequenza_ricorrenza) {
+            case 'giornaliera':
+                return $dataCorrente->copy()->addDay();
+
+            case 'settimanale':
+                return $dataCorrente->copy()->addWeek();
+
+            case 'bisettimanale':
+                return $dataCorrente->copy()->addWeeks(2);
+
+            case 'mensile':
+                return $dataCorrente->copy()->addMonth();
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Genera tutte le occorrenze ricorrenti di questa lezione
+     * Ritorna il numero di lezioni create
+     */
+    public function generaOccorrenze()
+    {
+        // Solo la lezione padre può generare occorrenze
+        if (!$this->ricorrente || $this->lezione_padre_id !== null) {
+            return 0;
+        }
+
+        // Verifica che ci sia una frequenza e una data di fine
+        if (!$this->frequenza_ricorrenza || !$this->fine_ricorrenza) {
+            return 0;
+        }
+
+        $occorrenzeCreate = 0;
+        $dataCorrente = Carbon::parse($this->data);
+        $dataFine = Carbon::parse($this->fine_ricorrenza);
+
+        // Genera occorrenze fino alla data di fine
+        while (true) {
+            $dataProssima = $this->calcolaDataProssimaOccorrenza($dataCorrente);
+
+            if (!$dataProssima || $dataProssima->gt($dataFine)) {
+                break;
+            }
+
+            // Crea la lezione figlia
+            $this->creaOccorrenzaFiglia($dataProssima);
+            $occorrenzeCreate++;
+
+            $dataCorrente = $dataProssima;
+        }
+
+        return $occorrenzeCreate;
+    }
+
+    /**
+     * Crea una singola occorrenza figlia
+     */
+    protected function creaOccorrenzaFiglia(Carbon $data)
+    {
+        $attributi = $this->toArray();
+
+        // Rimuovi campi che non devono essere duplicati
+        unset($attributi['id']);
+        unset($attributi['created_at']);
+        unset($attributi['updated_at']);
+        unset($attributi['deleted_at']);
+
+        // Imposta la nuova data e collega alla lezione padre
+        $attributi['data'] = $data->toDateString();
+        $attributi['lezione_padre_id'] = $this->id;
+        $attributi['ricorrente'] = false; // Le figlie non sono a loro volta ricorrenti
+        $attributi['posti_occupati'] = 0; // Reset posti
+
+        return static::create($attributi);
+    }
+
+    /**
+     * Elimina tutte le occorrenze future di questa serie ricorrente
+     */
+    public function eliminaOccorrenzeFuture($includiPadre = false)
+    {
+        $lezionePadreId = $this->isLezionePadre() ? $this->id : $this->lezione_padre_id;
+
+        if (!$lezionePadreId) {
+            return 0;
+        }
+
+        $query = static::where('lezione_padre_id', $lezionePadreId)
+            ->where('data', '>=', now()->toDateString());
+
+        $count = $query->count();
+        $query->delete();
+
+        // Se richiesto, elimina anche la lezione padre
+        if ($includiPadre && $this->isLezionePadre()) {
+            $this->delete();
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Aggiorna tutte le occorrenze future di questa serie
+     * Utile per modificare professionista, sede, ecc. su tutta la serie
+     */
+    public function aggiornaOccorrenzeFuture(array $attributi)
+    {
+        $lezionePadreId = $this->isLezionePadre() ? $this->id : $this->lezione_padre_id;
+
+        if (!$lezionePadreId) {
+            return 0;
+        }
+
+        // Non permettere la modifica di alcuni campi critici
+        $campiNonModificabili = ['id', 'data', 'lezione_padre_id', 'posti_occupati', 'created_at', 'updated_at'];
+        foreach ($campiNonModificabili as $campo) {
+            unset($attributi[$campo]);
+        }
+
+        return static::where('lezione_padre_id', $lezionePadreId)
+            ->where('data', '>', now()->toDateString())
+            ->update($attributi);
+    }
 }

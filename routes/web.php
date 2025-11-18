@@ -621,20 +621,6 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     });
 
     // ============================================
-    // MANUTENZIONE DATABASE (solo amministratori)
-    // ============================================
-    Route::middleware('tipo_utente:amministratore')->prefix('maintenance')->name('maintenance.')->group(function () {
-        // Pagina principale manutenzione
-        Route::get('/', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('index');
-
-        // Fix visibilità calendario
-        Route::post('/fix-visibilita', [\App\Http\Controllers\Admin\MaintenanceController::class, 'fixVisibilitaCalendario'])->name('fix-visibilita');
-
-        // Verifica integrità
-        Route::get('/verifica', [\App\Http\Controllers\Admin\MaintenanceController::class, 'verificaIntegrita'])->name('verifica');
-    });
-
-    // ============================================
     // IMPOSTAZIONI SISTEMA (solo amministratori)
     // ============================================
     Route::middleware('tipo_utente:amministratore')->prefix('impostazioni-sistema')->name('impostazioni-sistema.')->group(function () {

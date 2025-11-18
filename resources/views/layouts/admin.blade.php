@@ -280,16 +280,6 @@
                             </a>
                         </li>
 
-                        <!-- Manutenzione (solo amministratori) -->
-                        @if(Auth::user()->tipo_utente === 'amministratore')
-                        <li>
-                            <a href="{{ route('admin.maintenance.index') }}"
-                               class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition @if(request()->routeIs('admin.maintenance.*')) bg-white bg-opacity-20 @endif">
-                                <i class="fas fa-tools w-5"></i>
-                                <span class="ml-3 font-medium">Manutenzione</span>
-                            </a>
-                        </li>
-
                         <!-- Impostazioni (solo amministratori) -->
                         <li>
                             <a href="{{ route('admin.impostazioni.index') }}"

@@ -591,8 +591,15 @@ class PesateController extends Controller
             return null;
         }
 
-        // Rimuovi simboli e converti
-        $numero = str_replace(['%', ','], ['', '.'], $valore);
+        // Converti a stringa e pulisci
+        $valore = trim(strval($valore));
+
+        // Rimuovi unità di misura comuni (kg, g, cm, m, kcal, etc.)
+        $valore = preg_replace('/\s*(kg|g|cm|m|kcal|cal|%)\s*$/i', '', $valore);
+
+        // Rimuovi simboli e converti virgola in punto
+        $numero = str_replace([',', ' '], ['.', ''], $valore);
+
         return is_numeric($numero) ? (float) $numero : null;
     }
 
@@ -605,7 +612,15 @@ class PesateController extends Controller
             return null;
         }
 
-        $numero = str_replace(['%', ','], ['', '.'], $valore);
+        // Converti a stringa e pulisci
+        $valore = trim(strval($valore));
+
+        // Rimuovi simbolo percentuale
+        $valore = str_replace('%', '', $valore);
+
+        // Sostituisci virgola con punto
+        $numero = str_replace([',', ' '], ['.', ''], $valore);
+
         return is_numeric($numero) ? (float) $numero : null;
     }
 }

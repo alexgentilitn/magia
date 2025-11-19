@@ -406,16 +406,24 @@ class PesateController extends Controller
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
                         ? (function() use ($mapping, $worksheet, $row) {
-                            $rawValue = $worksheet->getCell($mapping['bmi'] . $row)->getValue();
+                            $cell = $worksheet->getCell($mapping['bmi'] . $row);
+                            $rawValue = $cell->getValue();
+
+                            // Se il valore grezzo è molto alto (> 1000), probabilmente Excel
+                            // ha formattato la cella come Data invece di Numero.
+                            // In questo caso usiamo getFormattedValue() che legge il valore visibile.
+                            if (is_numeric($rawValue) && $rawValue > 1000) {
+                                $rawValue = $cell->getFormattedValue();
+                                \Log::warning("BMI formattato come Data in Excel - uso getFormattedValue()", [
+                                    'riga' => $row,
+                                    'getValue' => $cell->getValue(),
+                                    'getFormattedValue' => $rawValue
+                                ]);
+                            }
+
                             $pulito = $this->pulisciNumero($rawValue);
                             $validato = $this->validaBMI($pulito);
-                            \Log::info("BMI Debug - Riga {$row}", [
-                                'mapping_column' => $mapping['bmi'],
-                                'cell' => $mapping['bmi'] . $row,
-                                'raw_value' => $rawValue,
-                                'dopo_pulizia' => $pulito,
-                                'dopo_validazione' => $validato
-                            ]);
+
                             return $validato;
                         })()
                         : null,

@@ -19,8 +19,9 @@ return new class extends Migration
     {
         Schema::table('clienti', function (Blueprint $table) {
             // Rendi nullable il codice fiscale (può essere assente)
+            // NOTA: UNIQUE rimosso perché impedisce multipli valori NULL
             if (Schema::hasColumn('clienti', 'codice_fiscale')) {
-                $table->string('codice_fiscale', 16)->nullable()->unique()->change();
+                $table->string('codice_fiscale', 16)->nullable()->change();
             }
 
             // Rendi nullable email (può essere assente durante import)

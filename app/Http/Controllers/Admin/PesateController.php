@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 /**
  * Controller: Gestione Pesate (Admin)
@@ -287,15 +288,8 @@ class PesateController extends Controller
                 $rowData = [];
                 for ($col = 'A'; $col <= $highestColumn; $col++) {
                     $cell = $worksheet->getCell("{$col}{$row}");
-                    $value = $cell->getValue();
-
-                    // Se il valore è un numero molto alto (> 1000), probabilmente è una data Excel
-                    // Usa getFormattedValue() per mostrare il valore visibile nell'anteprima
-                    if (is_numeric($value) && $value > 1000) {
-                        $value = $cell->getFormattedValue();
-                    }
-
-                    $rowData[$col] = $value;
+                    // Usa leggiValoreCella() per gestire automaticamente formati Data
+                    $rowData[$col] = $this->leggiValoreCella($cell);
                 }
                 $sampleRows[] = $rowData;
             }
@@ -393,8 +387,8 @@ class PesateController extends Controller
                     }
                 }
 
-                // Estrai peso - USA getValue() per valore reale invece di getFormattedValue()
-                $pesoRaw = $worksheet->getCell($mapping['peso'] . $row)->getValue();
+                // Estrai peso - usa leggiValoreCella per gestire formati Data
+                $pesoRaw = $this->leggiValoreCella($worksheet->getCell($mapping['peso'] . $row));
                 $peso = $this->pulisciNumero($pesoRaw);
 
                 if (!$peso || $peso < 20 || $peso > 300) {
@@ -414,60 +408,40 @@ class PesateController extends Controller
                     'sede' => $sede,
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
-                        ? (function() use ($mapping, $worksheet, $row) {
-                            $cell = $worksheet->getCell($mapping['bmi'] . $row);
-                            $rawValue = $cell->getValue();
-
-                            // Se il valore grezzo è molto alto (> 1000), probabilmente Excel
-                            // ha formattato la cella come Data invece di Numero.
-                            // In questo caso usiamo getFormattedValue() che legge il valore visibile.
-                            if (is_numeric($rawValue) && $rawValue > 1000) {
-                                $rawValue = $cell->getFormattedValue();
-                                \Log::warning("BMI formattato come Data in Excel - uso getFormattedValue()", [
-                                    'riga' => $row,
-                                    'getValue' => $cell->getValue(),
-                                    'getFormattedValue' => $rawValue
-                                ]);
-                            }
-
-                            $pulito = $this->pulisciNumero($rawValue);
-                            $validato = $this->validaBMI($pulito);
-
-                            return $validato;
-                        })()
+                        ? $this->validaBMI($this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['bmi'] . $row))))
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getValue())
+                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)))
                         : null,
                     'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)->getValue())
+                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)))
                         : null,
                     'grasso_corporeo' => isset($mapping['grasso_corporeo']) && $mapping['grasso_corporeo'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_corporeo'] . $row)->getValue())
+                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['grasso_corporeo'] . $row)))
                         : null,
                     'grasso_sottocutaneo' => isset($mapping['grasso_sottocutaneo']) && $mapping['grasso_sottocutaneo'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)->getValue())
+                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)))
                         : null,
                     'grasso_viscerale' => isset($mapping['grasso_viscerale']) && $mapping['grasso_viscerale'] !== 'skip'
-                        ? $this->validaGrassoViscerale((int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getValue())
+                        ? $this->validaGrassoViscerale((int) $this->leggiValoreCella($worksheet->getCell($mapping['grasso_viscerale'] . $row)))
                         : null,
                     'acqua_corporea' => isset($mapping['acqua_corporea']) && $mapping['acqua_corporea'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['acqua_corporea'] . $row)->getValue())
+                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['acqua_corporea'] . $row)))
                         : null,
                     'massa_muscolare' => isset($mapping['massa_muscolare']) && $mapping['massa_muscolare'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_muscolare'] . $row)->getValue())
+                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['massa_muscolare'] . $row)))
                         : null,
                     'massa_ossea' => isset($mapping['massa_ossea']) && $mapping['massa_ossea'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_ossea'] . $row)->getValue())
+                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['massa_ossea'] . $row)))
                         : null,
                     'proteine' => isset($mapping['proteine']) && $mapping['proteine'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['proteine'] . $row)->getValue())
+                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['proteine'] . $row)))
                         : null,
                     'bmr' => isset($mapping['bmr']) && $mapping['bmr'] !== 'skip'
-                        ? $this->validaBMR((int) $worksheet->getCell($mapping['bmr'] . $row)->getValue())
+                        ? $this->validaBMR((int) $this->leggiValoreCella($worksheet->getCell($mapping['bmr'] . $row)))
                         : null,
                     'eta_metabolica' => isset($mapping['eta_metabolica']) && $mapping['eta_metabolica'] !== 'skip'
-                        ? $this->validaEtaMetabolica((int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getValue())
+                        ? $this->validaEtaMetabolica((int) $this->leggiValoreCella($worksheet->getCell($mapping['eta_metabolica'] . $row)))
                         : null,
                     'data_rilevazione' => $dataRilevazione,
                     'errors' => $rowErrors,
@@ -670,6 +644,45 @@ class PesateController extends Controller
         ];
 
         return view('admin.pesate.import-results', compact('import_results'));
+    }
+
+    /**
+     * Helper: legge valore da cella Excel in modo intelligente
+     * Se la cella è formattata come Data ma contiene un numero,
+     * usa getFormattedValue() per leggere il valore visualizzato
+     */
+    private function leggiValoreCella($cell)
+    {
+        if (!$cell) {
+            return null;
+        }
+
+        $rawValue = $cell->getValue();
+
+        // Se il valore è nullo o vuoto, ritorna subito
+        if (is_null($rawValue) || $rawValue === '') {
+            return null;
+        }
+
+        // Controlla se la cella ha formato Data
+        $isDateFormat = Date::isDateTimeFormat($cell->getStyle()->getNumberFormat());
+
+        // Se è formato Data ma il valore è un numero alto (>1000),
+        // probabilmente è un numero seriale di data Excel applicato per errore
+        // In questo caso usa il valore formattato (quello visualizzato)
+        if ($isDateFormat && is_numeric($rawValue) && $rawValue > 1000) {
+            $formattedValue = $cell->getFormattedValue();
+            \Log::info("Cella con formato Data rilevato - uso valore visualizzato", [
+                'coordinate' => $cell->getCoordinate(),
+                'getValue' => $rawValue,
+                'getFormattedValue' => $formattedValue,
+                'formatCode' => $cell->getStyle()->getNumberFormat()->getFormatCode()
+            ]);
+            return $formattedValue;
+        }
+
+        // Altrimenti usa getValue() per massima precisione
+        return $rawValue;
     }
 
     /**

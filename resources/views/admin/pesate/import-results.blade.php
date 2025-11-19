@@ -75,7 +75,7 @@
                 <i class="fas fa-list mr-2"></i>
                 Vai alla Lista Clienti con Pesate
             </a>
-            <a href="{{ route('pesate.import') }}"
+            <a href="{{ route('admin.pesate.import') }}"
                class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-center">
                 <i class="fas fa-upload mr-2"></i>
                 Importa Altre Pesate

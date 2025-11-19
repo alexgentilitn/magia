@@ -73,7 +73,7 @@
 
     <!-- Form Upload -->
     <div class="bg-white rounded-lg shadow p-6">
-        <form action="{{ route('pesate.process-import') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.pesate.process-import') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <!-- Selezione Sede -->

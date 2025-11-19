@@ -218,7 +218,7 @@
 
     <!-- Form Conferma -->
     @if($valide > 0)
-        <form action="{{ route('pesate.confirm-import') }}" method="POST">
+        <form action="{{ route('admin.pesate.confirm-import') }}" method="POST">
             @csrf
             <input type="hidden" name="preview_data" value="{{ json_encode($preview_data) }}">
             <input type="hidden" name="sede" value="{{ $sede }}">
@@ -229,7 +229,7 @@
                     <i class="fas fa-check-circle mr-2"></i>
                     Conferma Importazione ({{ $valide }} pesate)
                 </button>
-                <a href="{{ route('pesate.import') }}"
+                <a href="{{ route('admin.pesate.import') }}"
                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Torna Indietro
@@ -238,7 +238,7 @@
         </form>
     @else
         <div class="flex gap-4">
-            <a href="{{ route('pesate.import') }}"
+            <a href="{{ route('admin.pesate.import') }}"
                class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 text-center rounded-lg hover:bg-gray-300 transition">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Torna al Form di Upload

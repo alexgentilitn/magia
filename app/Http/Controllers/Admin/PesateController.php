@@ -405,7 +405,19 @@ class PesateController extends Controller
                     'sede' => $sede,
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
-                        ? $this->validaBMI($this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getValue()))
+                        ? (function() use ($mapping, $worksheet, $row) {
+                            $rawValue = $worksheet->getCell($mapping['bmi'] . $row)->getValue();
+                            $pulito = $this->pulisciNumero($rawValue);
+                            $validato = $this->validaBMI($pulito);
+                            \Log::info("BMI Debug - Riga {$row}", [
+                                'mapping_column' => $mapping['bmi'],
+                                'cell' => $mapping['bmi'] . $row,
+                                'raw_value' => $rawValue,
+                                'dopo_pulizia' => $pulito,
+                                'dopo_validazione' => $validato
+                            ]);
+                            return $validato;
+                        })()
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
                         ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getValue())

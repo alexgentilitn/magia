@@ -241,7 +241,7 @@
             <div class="flex items-center space-x-4">
                 <div class="text-sm text-gray-600">
                     <i class="fas fa-database mr-2"></i>
-                    Righe da importare: <strong>{{ $highestRow - $startRow + 1 }}</strong>
+                    Righe da importare: <strong>{{ session('import_highest_row') - session('import_start_row') + 1 }}</strong>
                 </div>
 
                 <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-fucsia-magia to-viola-magia text-white font-semibold rounded-lg hover:shadow-lg transition-all">
@@ -256,7 +256,7 @@
 
 <!-- JavaScript per Preview Dati -->
 <script>
-    const sampleData = @json($sampleData);
+    const sampleData = @json($sampleRows);
 
     document.addEventListener('DOMContentLoaded', function() {
         // Gestione preview per ogni select

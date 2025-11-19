@@ -424,9 +424,6 @@ class PesateController extends Controller
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
                         ? $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row))
                         : null,
-                    'muscolo' => isset($mapping['muscolo']) && $mapping['muscolo'] !== 'skip'
-                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['muscolo'] . $row)))
-                        : null,
                     'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
                         ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)))
                         : null,
@@ -699,9 +696,8 @@ class PesateController extends Controller
                 $bmi = $request->input("bmi_{$index}");
                 $grassoCorporeo = $request->input("grasso_corporeo_{$index}");
                 $grassoViscerale = $request->input("grasso_viscerale_{$index}");
-                $muscolo = $request->input("muscolo_{$index}");
-                $massaMuscolare = $request->input("massa_muscolare_{$index}");
                 $muscoloScheletrico = $request->input("muscolo_scheletrico_{$index}");
+                $massaMuscolare = $request->input("massa_muscolare_{$index}");
                 $bmr = $request->input("bmr_{$index}");
                 $acquaCorporea = $request->input("acqua_corporea_{$index}");
                 $pesoCorporeoSenzaGrassi = $request->input("peso_corporeo_senza_grassi_{$index}");
@@ -723,7 +719,6 @@ class PesateController extends Controller
                     'acqua_corporea' => $acquaCorporea ?: null,
                     'massa_muscolare' => $massaMuscolare ?: null,
                     'massa_ossea' => null, // Non nel form
-                    'muscolo' => $muscolo ?: null,
                     'proteine' => $proteine ?: null,
                     'bmr' => $bmr ?: null,
                     'eta_metabolica' => $etaMetabolica ?: null,

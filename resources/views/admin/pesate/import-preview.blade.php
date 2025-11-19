@@ -184,7 +184,6 @@
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 55px;">BMI</th>
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Grasso<br><span class="text-[9px] text-gray-500">(%)</span></th>
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">G.Visc.<br><span class="text-[9px] text-gray-500">(lv)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Muscolo<br><span class="text-[9px] text-gray-500">(%)</span></th>
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Musc.<br><span class="text-[9px] text-gray-500">(kg)</span></th>
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Schel.<br><span class="text-[9px] text-gray-500">(%)</span></th>
                         <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">BMR<br><span class="text-[9px] text-gray-500">(kcal)</span></th>
@@ -324,10 +323,6 @@
                             </td>
                             <td class="px-1 py-1.5">
                                 <input type="number" name="grasso_viscerale_{{ $index }}" value="{{ $row['grasso_viscerale'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="muscolo_{{ $index }}" value="{{ $row['muscolo'] ?? '' }}" step="0.01"
                                        class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
                             <td class="px-1 py-1.5">

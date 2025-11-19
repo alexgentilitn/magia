@@ -222,6 +222,8 @@
                                     ],
                                     'muscolo_scheletrico' => [
                                         'muscolo scheletrico',
+                                        'muscolo',                     // Generico
+                                        'muscle',                      // Inglese generico
                                         'skeletal muscle',
                                         'musc schel',
                                         'musc skel',

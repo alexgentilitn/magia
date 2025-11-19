@@ -286,7 +286,16 @@ class PesateController extends Controller
             for ($row = $startRow; $row <= min($startRow + 4, $highestRow); $row++) {
                 $rowData = [];
                 for ($col = 'A'; $col <= $highestColumn; $col++) {
-                    $rowData[$col] = $worksheet->getCell("{$col}{$row}")->getValue();
+                    $cell = $worksheet->getCell("{$col}{$row}");
+                    $value = $cell->getValue();
+
+                    // Se il valore è un numero molto alto (> 1000), probabilmente è una data Excel
+                    // Usa getFormattedValue() per mostrare il valore visibile nell'anteprima
+                    if (is_numeric($value) && $value > 1000) {
+                        $value = $cell->getFormattedValue();
+                    }
+
+                    $rowData[$col] = $value;
                 }
                 $sampleRows[] = $rowData;
             }

@@ -271,26 +271,33 @@ class Segnalazione extends Model
 
     /**
      * Invia email di notifica nuova segnalazione
+     * Invia sempre copia BCC a support@agstudio.digital (sviluppatore)
      */
     public function inviaNotificaCreazione()
     {
-        // Verifica che ci sia un'email di notifica
-        if (!$this->email_notifica) {
-            \Log::info("Segnalazione #{$this->id}: Nessuna email di notifica configurata, skip invio");
-            return false;
-        }
-
         try {
             // Applica configurazione SMTP
             if (class_exists(\App\Models\Impostazione::class)) {
                 \App\Models\Impostazione::applySmtpConfig();
             }
 
-            Mail::to($this->email_notifica)->send(
-                new \App\Mail\NuovaSegnalazioneMail($this)
-            );
+            $mail = new \App\Mail\NuovaSegnalazioneMail($this);
 
-            \Log::info("Email notifica nuova segnalazione inviata per #{$this->id} a {$this->email_notifica}");
+            // Se c'è email di notifica, invia a quella + BCC sviluppatore
+            // Altrimenti invia solo allo sviluppatore
+            if ($this->email_notifica) {
+                Mail::to($this->email_notifica)
+                    ->bcc('support@agstudio.digital') // Copia nascosta allo sviluppatore
+                    ->send($mail);
+
+                \Log::info("Email notifica nuova segnalazione inviata per #{$this->id} a {$this->email_notifica} (BCC: support@agstudio.digital)");
+            } else {
+                // Se non c'è email notifica, invia solo allo sviluppatore
+                Mail::to('support@agstudio.digital')
+                    ->send($mail);
+
+                \Log::info("Email notifica nuova segnalazione inviata per #{$this->id} a support@agstudio.digital");
+            }
 
             return true;
 

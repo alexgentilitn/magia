@@ -105,7 +105,7 @@
                             @if($segnalazione->risolutore)
                             <div class="mt-4 pt-4 border-t border-green-200 text-sm text-green-700">
                                 <i class="fas fa-user-check mr-2"></i>
-                                Gestita da: <strong>{{ $segnalazione->risolutore->name ?? 'N/D' }}</strong>
+                                Gestita da: <strong>{{ $segnalazione->risolutore->nome ?? '' }} {{ $segnalazione->risolutore->cognome ?? '' }}</strong>
                                 @if($segnalazione->risolto_il)
                                     il {{ $segnalazione->risolto_il->format('d/m/Y H:i') }}
                                 @endif
@@ -204,15 +204,28 @@
                     </h3>
                 </div>
                 <div class="p-6">
+                    @if($segnalazione->utente)
                     <div class="flex items-center mb-4">
                         <div class="h-12 w-12 bg-gradient-to-br from-viola-magia to-fucsia-magia rounded-full flex items-center justify-center text-white font-bold text-lg">
-                            {{ substr($segnalazione->utente->name ?? 'ND', 0, 2) }}
+                            @php
+                                $nomeCompleto = trim(($segnalazione->utente->nome ?? '') . ' ' . ($segnalazione->utente->cognome ?? ''));
+                                $iniziali = $nomeCompleto ? substr($segnalazione->utente->nome, 0, 1) . substr($segnalazione->utente->cognome ?? '', 0, 1) : 'ND';
+                            @endphp
+                            {{ strtoupper($iniziali) }}
                         </div>
                         <div class="ml-3">
-                            <p class="font-medium text-gray-900">{{ $segnalazione->utente->name ?? 'N/D' }}</p>
-                            <p class="text-sm text-gray-500">{{ ucfirst($segnalazione->utente->tipo_utente ?? 'N/D') }}</p>
+                            <p class="font-medium text-gray-900">
+                                {{ $segnalazione->utente->nome ?? '' }} {{ $segnalazione->utente->cognome ?? '' }}
+                            </p>
+                            <p class="text-sm text-gray-500">{{ ucfirst(str_replace('_', ' ', $segnalazione->utente->tipo_utente ?? 'N/D')) }}</p>
                         </div>
                     </div>
+                    @else
+                    <div class="text-center py-4 text-gray-400">
+                        <i class="fas fa-user-slash text-3xl mb-2"></i>
+                        <p class="text-sm">Utente non disponibile</p>
+                    </div>
+                    @endif
 
                     @if($segnalazione->email_notifica)
                     <div class="pt-4 border-t border-gray-200">

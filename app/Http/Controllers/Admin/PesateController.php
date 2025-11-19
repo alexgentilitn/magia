@@ -649,7 +649,7 @@ class PesateController extends Controller
     /**
      * Helper: legge valore da cella Excel in modo intelligente
      * Se la cella è formattata come Data ma contiene un numero,
-     * usa getFormattedValue() per leggere il valore visualizzato
+     * legge il valore con massima precisione senza arrotondamenti
      */
     private function leggiValoreCella($cell)
     {
@@ -669,15 +669,48 @@ class PesateController extends Controller
 
         // Se è formato Data ma il valore è un numero alto (>1000),
         // probabilmente è un numero seriale di data Excel applicato per errore
-        // In questo caso usa il valore formattato (quello visualizzato)
         if ($isDateFormat && is_numeric($rawValue) && $rawValue > 1000) {
+            // Prova con getCalculatedValue() che non applica formattazione
+            $calculatedValue = $cell->getCalculatedValue();
+
+            // Se calculated value è diverso e sembra corretto, usalo
+            if (is_numeric($calculatedValue) && $calculatedValue != $rawValue && abs($calculatedValue) < 1000) {
+                \Log::info("Cella con formato Data - uso getCalculatedValue()", [
+                    'coordinate' => $cell->getCoordinate(),
+                    'getValue' => $rawValue,
+                    'getCalculatedValue' => $calculatedValue,
+                ]);
+                return $calculatedValue;
+            }
+
+            // Altrimenti usa getFormattedValue() ma puliscilo
             $formattedValue = $cell->getFormattedValue();
-            \Log::info("Cella con formato Data rilevato - uso valore visualizzato", [
+
+            // Rimuovi formattazione e ottieni solo il numero con massima precisione
+            $cleanValue = preg_replace('/[^\d,\.\-]/', '', $formattedValue);
+            $cleanValue = str_replace(',', '.', $cleanValue);
+
+            // Se il valore pulito è valido e diverso dal raw (cioè non è il numero seriale),
+            // significa che getFormattedValue() ha funzionato
+            if (is_numeric($cleanValue) && abs($cleanValue) < 1000) {
+                // Mantieni precisione: usa il valore come stringa per evitare arrotondamenti
+                \Log::info("Cella con formato Data - uso getFormattedValue() pulito", [
+                    'coordinate' => $cell->getCoordinate(),
+                    'getValue' => $rawValue,
+                    'getFormattedValue' => $formattedValue,
+                    'cleanValue' => $cleanValue,
+                    'formatCode' => $cell->getStyle()->getNumberFormat()->getFormatCode()
+                ]);
+                return $cleanValue; // Ritorna stringa per preservare decimali esatti
+            }
+
+            // Fallback: ritorna formatted value
+            \Log::warning("Impossibile decodificare valore da formato Data - uso fallback", [
                 'coordinate' => $cell->getCoordinate(),
-                'getValue' => $rawValue,
-                'getFormattedValue' => $formattedValue,
-                'formatCode' => $cell->getStyle()->getNumberFormat()->getFormatCode()
+                'rawValue' => $rawValue,
+                'formattedValue' => $formattedValue,
             ]);
+
             return $formattedValue;
         }
 

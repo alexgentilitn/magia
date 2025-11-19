@@ -400,7 +400,7 @@ class Utente extends Authenticatable
 
     /**
      * Marca l'email come verificata
-     * 
+     *
      * Funzione: Imposta email_verificata a true e registra la data
      */
     public function markEmailAsVerified()
@@ -408,5 +408,61 @@ class Utente extends Authenticatable
         $this->email_verificata = true;
         $this->email_verificata_il = now();
         $this->save();
+    }
+
+    /**
+     * Boot del model - Protezioni per admin/professionisti
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // PROTEZIONE 1: Impedisci soft-delete di amministratori e professionisti
+        static::deleting(function ($utente) {
+            if (in_array($utente->tipo_utente, ['amministratore', 'professionista'])) {
+                \Log::warning("Tentativo di eliminare admin/professionista bloccato: {$utente->email}");
+
+                // Blocca l'eliminazione
+                throw new \Exception(
+                    "PROTEZIONE ATTIVA: Non è possibile eliminare amministratori o professionisti. " .
+                    "Se necessario, disattiva l'utente impostando 'attivo' a false."
+                );
+            }
+        });
+
+        // PROTEZIONE 2: Impedisci cambio tipo_utente da admin/professionista a cliente
+        static::updating(function ($utente) {
+            if ($utente->isDirty('tipo_utente')) {
+                $vecchioTipo = $utente->getOriginal('tipo_utente');
+                $nuovoTipo = $utente->tipo_utente;
+
+                // Se era admin/professionista e diventa cliente, blocca
+                if (in_array($vecchioTipo, ['amministratore', 'professionista']) && $nuovoTipo === 'cliente') {
+                    \Log::warning("Tentativo cambio tipo_utente admin→cliente bloccato: {$utente->email}");
+
+                    throw new \Exception(
+                        "PROTEZIONE ATTIVA: Non è possibile convertire amministratori/professionisti in clienti."
+                    );
+                }
+            }
+        });
+
+        // PROTEZIONE 3: Log per modifiche critiche agli admin
+        static::updated(function ($utente) {
+            if (in_array($utente->tipo_utente, ['amministratore', 'professionista'])) {
+                $changes = $utente->getChanges();
+
+                // Log modifiche importanti
+                $campiCritici = ['email', 'password', 'attivo', 'ruolo_id'];
+                $modificheCritiche = array_intersect_key($changes, array_flip($campiCritici));
+
+                if (!empty($modificheCritiche)) {
+                    \Log::info("Modifica admin/professionista: {$utente->email}", [
+                        'campi_modificati' => array_keys($modificheCritiche),
+                        'user_id' => auth()->id() ?? 'sistema',
+                    ]);
+                }
+            }
+        });
     }
 }

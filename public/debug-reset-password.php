@@ -38,21 +38,57 @@ try {
     echo "❌ Errore: " . $e->getMessage() . "<br>";
 }
 
-// Test 3: Verifica utente admin
-echo "<h2>3️⃣ Verifica Utente Admin</h2>";
-$email = isset($_GET['email']) ? $_GET['email'] : '';
+// Test 3: Mostra tutti gli utenti admin/professionisti
+echo "<h2>3️⃣ Elenco Utenti Admin/Professionisti</h2>";
+try {
+    $utenti = \App\Models\Utente::whereIn('tipo_utente', ['amministratore', 'professionista'])
+        ->orderBy('email')
+        ->get();
+
+    if ($utenti->count() > 0) {
+        echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%;'>";
+        echo "<tr><th>Email</th><th>Nome</th><th>Tipo</th><th>Attivo</th></tr>";
+        foreach ($utenti as $u) {
+            $attivo = $u->attivo ? '✅' : '❌';
+            echo "<tr>";
+            echo "<td><strong>{$u->email}</strong></td>";
+            echo "<td>{$u->nome} {$u->cognome}</td>";
+            echo "<td>{$u->tipo_utente}</td>";
+            echo "<td>{$attivo}</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+    } else {
+        echo "❌ Nessun utente admin/professionista trovato nel database<br>";
+    }
+} catch (\Exception $e) {
+    echo "❌ Errore: " . $e->getMessage() . "<br>";
+}
+
+// Test 4: Verifica utente admin specifico
+echo "<h2>4️⃣ Verifica Utente Admin Specifico</h2>";
+$email = isset($_GET['email']) ? trim($_GET['email']) : '';
 if ($email) {
     try {
-        $utente = \App\Models\Utente::where('email', $email)
-            ->whereIn('tipo_utente', ['amministratore', 'professionista'])
-            ->first();
+        // Prima cerca l'utente senza filtro tipo_utente per vedere se esiste
+        $utenteQualsiasi = \App\Models\Utente::where('email', $email)->first();
 
-        if ($utente) {
-            echo "✅ Utente trovato: <strong>{$utente->nome} {$utente->cognome}</strong><br>";
-            echo "Email: <strong>{$utente->email}</strong><br>";
-            echo "Tipo: <strong>{$utente->tipo_utente}</strong><br>";
+        if ($utenteQualsiasi) {
+            echo "ℹ️ Utente trovato nel database:<br>";
+            echo "Email: <strong>{$utenteQualsiasi->email}</strong><br>";
+            echo "Nome: <strong>{$utenteQualsiasi->nome} {$utenteQualsiasi->cognome}</strong><br>";
+            echo "Tipo: <strong>{$utenteQualsiasi->tipo_utente}</strong><br>";
+            echo "Attivo: <strong>" . ($utenteQualsiasi->attivo ? 'Sì' : 'No') . "</strong><br><br>";
+
+            // Poi verifica se è admin/professionista
+            if (in_array($utenteQualsiasi->tipo_utente, ['amministratore', 'professionista'])) {
+                echo "✅ <strong style='color: green;'>L'utente è un {$utenteQualsiasi->tipo_utente} - può recuperare la password</strong><br>";
+            } else {
+                echo "❌ <strong style='color: red;'>L'utente è un '{$utenteQualsiasi->tipo_utente}' - solo amministratori e professionisti possono recuperare la password</strong><br>";
+            }
         } else {
-            echo "❌ Nessun admin/professionista trovato con email: {$email}<br>";
+            echo "❌ Nessun utente trovato con email: {$email}<br>";
+            echo "ℹ️ Controlla che l'email sia scritta correttamente<br>";
         }
     } catch (\Exception $e) {
         echo "❌ Errore: " . $e->getMessage() . "<br>";
@@ -61,25 +97,24 @@ if ($email) {
     echo "ℹ️ Aggiungi ?email=tuaemail@domain.com all'URL per verificare un utente specifico<br>";
 }
 
-// Test 4: Test invio email (solo se richiesto esplicitamente)
+// Test 5: Test invio email (solo se richiesto esplicitamente)
 if (isset($_GET['test_send']) && $_GET['test_send'] === 'yes' && $email) {
-    echo "<h2>4️⃣ Test Invio Email</h2>";
+    echo "<h2>5️⃣ Test Invio Email</h2>";
     try {
-        // Applica config SMTP
-        \App\Models\Impostazione::applySmtpConfig();
-        echo "✅ Configurazioni SMTP applicate<br>";
-
-        // Genera token di test
-        $token = \Str::random(64);
-
         // Trova utente
-        $utente = \App\Models\Utente::where('email', $email)
-            ->whereIn('tipo_utente', ['amministratore', 'professionista'])
-            ->first();
+        $utente = \App\Models\Utente::where('email', $email)->first();
 
         if (!$utente) {
-            echo "❌ Utente non trovato<br>";
+            echo "❌ Utente non trovato con email: {$email}<br>";
+        } elseif (!in_array($utente->tipo_utente, ['amministratore', 'professionista'])) {
+            echo "❌ L'utente è un '{$utente->tipo_utente}' - solo amministratori e professionisti possono recuperare la password<br>";
         } else {
+            // Applica config SMTP
+            \App\Models\Impostazione::applySmtpConfig();
+            echo "✅ Configurazioni SMTP applicate<br>";
+
+            // Genera token di test
+            $token = \Str::random(64);
             // Salva token (per test)
             \DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $email],

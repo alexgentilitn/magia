@@ -306,10 +306,29 @@ class Cliente extends Model
      */
     public static function generaCodiceCliente()
     {
-        $ultimo_cliente = self::orderBy('id', 'desc')->first();
-        $prossimo_numero = $ultimo_cliente ? $ultimo_cliente->id + 1 : 1;
-        
-        return 'CL' . str_pad($prossimo_numero, 5, '0', STR_PAD_LEFT);
+        // Trova il codice cliente più alto esistente
+        $ultimoCodice = self::withTrashed()
+            ->where('codice_cliente', 'like', 'CL%')
+            ->orderByRaw('CAST(SUBSTRING(codice_cliente, 3) AS UNSIGNED) DESC')
+            ->value('codice_cliente');
+
+        if ($ultimoCodice) {
+            // Estrai il numero dal codice (es: CL00002 -> 2)
+            $numero = (int) substr($ultimoCodice, 2);
+            $prossimoNumero = $numero + 1;
+        } else {
+            $prossimoNumero = 1;
+        }
+
+        $codiceProposto = 'CL' . str_pad($prossimoNumero, 5, '0', STR_PAD_LEFT);
+
+        // Verifica che non esista già (race condition safety)
+        while (self::withTrashed()->where('codice_cliente', $codiceProposto)->exists()) {
+            $prossimoNumero++;
+            $codiceProposto = 'CL' . str_pad($prossimoNumero, 5, '0', STR_PAD_LEFT);
+        }
+
+        return $codiceProposto;
     }
 
     /**

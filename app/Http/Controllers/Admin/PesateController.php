@@ -564,21 +564,32 @@ class PesateController extends Controller
         $skipped = 0;
         $import_errors = [];
 
-        DB::beginTransaction();
+        // MODIFICA: Non usiamo una singola transazione globale
+        // Ogni pesata è indipendente per evitare rollback di tutto
 
-        try {
-            foreach ($data as $index => $row) {
-                \Log::info("Processando riga #{$index}", $row);
+        foreach ($data as $index => $row) {
+            \Log::info("Processando riga #{$index}", $row);
 
-                // Salta righe con errori
-                if (!empty($row['errors']) || !$row['cliente_id']) {
-                    $skipped++;
-                    $errorMsg = "Riga {$row['row']}: " . implode(', ', $row['errors'] ?? ['Cliente ID mancante']);
-                    $import_errors[] = $errorMsg;
-                    \Log::warning("Riga saltata: {$errorMsg}");
-                    continue;
-                }
+            // Salta righe con errori
+            if (!empty($row['errors']) || !$row['cliente_id']) {
+                $skipped++;
+                $errorMsg = "Riga {$row['row']}: " . implode(', ', $row['errors'] ?? ['Cliente ID mancante']);
+                $import_errors[] = $errorMsg;
+                \Log::warning("Riga saltata: {$errorMsg}");
+                continue;
+            }
 
+            // NUOVO: Verifica che il cliente esista prima di inserire
+            $clienteEsiste = Cliente::where('id', $row['cliente_id'])->exists();
+            if (!$clienteEsiste) {
+                $skipped++;
+                $errorMsg = "Riga {$row['row']}: Cliente ID {$row['cliente_id']} non esiste nel database";
+                $import_errors[] = $errorMsg;
+                \Log::error($errorMsg);
+                continue;
+            }
+
+            try {
                 // Prepara dati pesata
                 $pesataData = [
                     'cliente_id' => $row['cliente_id'],
@@ -607,27 +618,29 @@ class PesateController extends Controller
                 \Log::info("Pesata creata con ID: {$pesata->id}");
 
                 $imported++;
+
+            } catch (\Exception $e) {
+                // Gestisci errore a livello di singola pesata (non rollback globale)
+                $skipped++;
+                $errorMsg = "Riga {$row['row']}: Errore inserimento - " . $e->getMessage();
+                $import_errors[] = $errorMsg;
+                \Log::error("Errore inserimento pesata riga {$row['row']}: " . $e->getMessage());
+                \Log::error("Stack trace: " . $e->getTraceAsString());
+                // Continua con la prossima riga
+                continue;
             }
-
-            DB::commit();
-
-            \Log::info("=== IMPORT COMPLETATO ===");
-            \Log::info("Importate: {$imported}, Saltate: {$skipped}");
-
-            $import_results = [
-                'imported' => $imported,
-                'skipped' => $skipped,
-                'errors' => $import_errors,
-            ];
-
-            return view('admin.pesate.import-results', compact('import_results'));
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error("ERRORE IMPORT PESATE: " . $e->getMessage());
-            \Log::error("Stack trace: " . $e->getTraceAsString());
-            return back()->with('error', 'Errore durante l\'importazione: ' . $e->getMessage());
         }
+
+        \Log::info("=== IMPORT COMPLETATO ===");
+        \Log::info("Importate: {$imported}, Saltate: {$skipped}");
+
+        $import_results = [
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'errors' => $import_errors,
+        ];
+
+        return view('admin.pesate.import-results', compact('import_results'));
     }
 
     /**

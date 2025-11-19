@@ -670,47 +670,62 @@ class PesateController extends Controller
         // Se è formato Data ma il valore è un numero alto (>1000),
         // probabilmente è un numero seriale di data Excel applicato per errore
         if ($isDateFormat && is_numeric($rawValue) && $rawValue > 1000) {
-            // Prova con getCalculatedValue() che non applica formattazione
-            $calculatedValue = $cell->getCalculatedValue();
+            // SOLUZIONE: Excel ha interpretato il valore come Data (es. 19.09 → 19:09)
+            // Converte il numero seriale in DateTime e estrae ore:minuti per ricostruire il valore originale
 
-            // Se calculated value è diverso e sembra corretto, usalo
-            if (is_numeric($calculatedValue) && $calculatedValue != $rawValue && abs($calculatedValue) < 1000) {
-                \Log::info("Cella con formato Data - uso getCalculatedValue()", [
+            try {
+                // Converti numero seriale Excel in DateTime
+                $dateTime = Date::excelToDateTimeObject($rawValue);
+
+                // Estrai ore e minuti
+                $ore = (int) $dateTime->format('H');
+                $minuti = (int) $dateTime->format('i');
+
+                // Ricostruisci valore originale: 19.09 (ore.minuti come decimale)
+                $valoreRicostruito = $ore + ($minuti / 100);
+
+                \Log::info("Cella con formato Data - valore ricostruito da ore:minuti", [
                     'coordinate' => $cell->getCoordinate(),
                     'getValue' => $rawValue,
-                    'getCalculatedValue' => $calculatedValue,
+                    'dateTime' => $dateTime->format('Y-m-d H:i:s'),
+                    'ore' => $ore,
+                    'minuti' => $minuti,
+                    'valoreRicostruito' => $valoreRicostruito,
+                    'formatCode' => $cell->getStyle()->getNumberFormat()->getFormatCode()
                 ]);
-                return $calculatedValue;
+
+                // Verifica che il valore ricostruito sia plausibile (range 5-100 per valori corporei)
+                if ($valoreRicostruito >= 5 && $valoreRicostruito <= 100) {
+                    return $valoreRicostruito;
+                }
+
+                \Log::warning("Valore ricostruito fuori range, uso fallback", [
+                    'valoreRicostruito' => $valoreRicostruito
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error("Errore conversione data Excel", [
+                    'coordinate' => $cell->getCoordinate(),
+                    'rawValue' => $rawValue,
+                    'error' => $e->getMessage()
+                ]);
             }
 
-            // Altrimenti usa getFormattedValue() ma puliscilo
+            // Fallback: prova con getFormattedValue()
             $formattedValue = $cell->getFormattedValue();
-
-            // Rimuovi formattazione e ottieni solo il numero con massima precisione
             $cleanValue = preg_replace('/[^\d,\.\-]/', '', $formattedValue);
             $cleanValue = str_replace(',', '.', $cleanValue);
 
-            // Se il valore pulito è valido e diverso dal raw (cioè non è il numero seriale),
-            // significa che getFormattedValue() ha funzionato
             if (is_numeric($cleanValue) && abs($cleanValue) < 1000) {
-                // Mantieni precisione: usa il valore come stringa per evitare arrotondamenti
-                \Log::info("Cella con formato Data - uso getFormattedValue() pulito", [
+                \Log::info("Cella con formato Data - uso getFormattedValue() pulito (fallback)", [
                     'coordinate' => $cell->getCoordinate(),
-                    'getValue' => $rawValue,
-                    'getFormattedValue' => $formattedValue,
+                    'formattedValue' => $formattedValue,
                     'cleanValue' => $cleanValue,
-                    'formatCode' => $cell->getStyle()->getNumberFormat()->getFormatCode()
                 ]);
-                return $cleanValue; // Ritorna stringa per preservare decimali esatti
+                return $cleanValue;
             }
 
-            // Fallback: ritorna formatted value
-            \Log::warning("Impossibile decodificare valore da formato Data - uso fallback", [
-                'coordinate' => $cell->getCoordinate(),
-                'rawValue' => $rawValue,
-                'formattedValue' => $formattedValue,
-            ]);
-
+            // Ultimo fallback
             return $formattedValue;
         }
 

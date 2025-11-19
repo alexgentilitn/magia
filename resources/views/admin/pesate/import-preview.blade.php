@@ -3,15 +3,8 @@
 @section('titolo', 'Anteprima Importazione Pesate')
 
 @section('contenuto')
-<div class="p-6">
+<div class="p-6 max-w-[1800px] mx-auto">
 
-    <!-- Header -->
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Anteprima Importazione Pesate</h2>
-        <p class="text-gray-600 mt-1">Controlla i dati prima di confermare l'importazione</p>
-    </div>
-
-    <!-- Statistiche -->
     @php
         $totale = count($preview_data);
         $valide = count(array_filter($preview_data, fn($r) => empty($r['errors'])));
@@ -19,137 +12,150 @@
         $dataOggi = now()->format('d/m/Y');
     @endphp
 
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
-            <p class="text-sm text-gray-600 font-medium">Totale Righe</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $totale }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-            <p class="text-sm text-gray-600 font-medium">Righe Valide</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $valide }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
-            <p class="text-sm text-gray-600 font-medium">Righe con Errori</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $errori }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-fucsia-magia">
-            <p class="text-sm text-gray-600 font-medium">Sede</p>
-            <p class="text-xl font-bold text-gray-800">{{ $sede }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
-            <p class="text-sm text-gray-600 font-medium">Data Rilevazione</p>
-            <p class="text-lg font-bold text-gray-800">{{ $dataOggi }}</p>
+    <!-- Header Compatto con Statistiche Inline -->
+    <div class="bg-white rounded-lg shadow mb-6 p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 mb-1">Anteprima Importazione Pesate</h2>
+                <p class="text-xs text-gray-500">Verifica i dati e conferma l'importazione</p>
+            </div>
+
+            <!-- Statistiche Inline -->
+            <div class="flex items-center gap-3">
+                <div class="px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-[10px] text-blue-600 font-medium uppercase tracking-wide">Righe</p>
+                    <p class="text-lg font-bold text-blue-900">{{ $totale }}</p>
+                </div>
+                <div class="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-[10px] text-green-600 font-medium uppercase tracking-wide">Valide</p>
+                    <p class="text-lg font-bold text-green-900">{{ $valide }}</p>
+                </div>
+                @if($errori > 0)
+                <div class="px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-[10px] text-red-600 font-medium uppercase tracking-wide">Errori</p>
+                    <p class="text-lg font-bold text-red-900">{{ $errori }}</p>
+                </div>
+                @endif
+                <div class="px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">
+                    <p class="text-[10px] text-purple-600 font-medium uppercase tracking-wide">Sede</p>
+                    <p class="text-sm font-bold text-purple-900">{{ $sede }}</p>
+                </div>
+                <div class="px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p class="text-[10px] text-orange-600 font-medium uppercase tracking-wide">Data</p>
+                    <p class="text-xs font-bold text-orange-900">{{ $dataOggi }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Riepilogo Clienti -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Clienti Esistenti Trovati -->
+    <!-- Riepilogo Clienti Compatto -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Clienti Esistenti -->
         <div class="bg-white rounded-lg shadow">
-            <div class="p-4 bg-blue-50 border-b border-blue-200">
-                <h3 class="font-bold text-blue-900 flex items-center">
-                    <i class="fas fa-users text-blue-600 mr-2"></i>
-                    Clienti Esistenti Trovati
-                    <span class="ml-2 px-2 py-0.5 bg-blue-200 text-blue-800 text-xs rounded-full font-bold">
-                        {{ count($clientiTrovati) }}
-                    </span>
+            <div class="px-3 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-blue-900 flex items-center">
+                    <i class="fas fa-users text-blue-600 mr-1.5 text-xs"></i>
+                    Clienti Esistenti
                 </h3>
+                <span class="px-2 py-0.5 bg-blue-200 text-blue-800 text-xs rounded-full font-bold">
+                    {{ count($clientiTrovati) }}
+                </span>
             </div>
-            <div class="p-4">
+            <div class="p-3">
                 @if(count($clientiTrovati) > 0)
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <div class="space-y-1.5 max-h-52 overflow-y-auto">
                         @foreach($clientiTrovati as $cliente)
-                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            <div class="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200 hover:bg-blue-100 transition">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <div class="h-7 w-7 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0">
                                         {{ strtoupper(substr($cliente['nome'], 0, 1) . substr($cliente['cognome'], 0, 1)) }}
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $cliente['cognome'] }} {{ $cliente['nome'] }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-semibold text-gray-900 truncate">{{ $cliente['cognome'] }} {{ $cliente['nome'] }}</p>
                                         @if($cliente['codice_fiscale'])
-                                            <p class="text-xs text-gray-500">CF: {{ $cliente['codice_fiscale'] }}</p>
+                                            <p class="text-[10px] text-gray-500">CF: {{ Str::limit($cliente['codice_fiscale'], 16) }}</p>
                                         @endif
                                     </div>
                                 </div>
-                                <span class="px-3 py-1 bg-blue-200 text-blue-800 text-xs font-semibold rounded-full">
-                                    {{ $cliente['pesate_count'] }} {{ $cliente['pesate_count'] == 1 ? 'pesata' : 'pesate' }}
+                                <span class="px-2 py-0.5 bg-blue-200 text-blue-800 text-[10px] font-semibold rounded-full ml-2 flex-shrink-0">
+                                    {{ $cliente['pesate_count'] }}
                                 </span>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div class="text-center py-8 text-gray-400">
-                        <i class="fas fa-user-slash text-4xl mb-3"></i>
-                        <p class="text-sm">Nessun cliente esistente trovato</p>
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fas fa-user-slash text-2xl mb-2"></i>
+                        <p class="text-xs">Nessuno</p>
                     </div>
                 @endif
             </div>
         </div>
 
-        <!-- Clienti Nuovi Creati -->
+        <!-- Clienti Nuovi -->
         <div class="bg-white rounded-lg shadow">
-            <div class="p-4 bg-green-50 border-b border-green-200">
-                <h3 class="font-bold text-green-900 flex items-center">
-                    <i class="fas fa-user-plus text-green-600 mr-2"></i>
-                    Clienti Nuovi Creati
-                    <span class="ml-2 px-2 py-0.5 bg-green-200 text-green-800 text-xs rounded-full font-bold">
-                        {{ count($clientiCreati) }}
-                    </span>
+            <div class="px-3 py-2 bg-green-50 border-b border-green-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-green-900 flex items-center">
+                    <i class="fas fa-user-plus text-green-600 mr-1.5 text-xs"></i>
+                    Nuovi Clienti
                 </h3>
+                <span class="px-2 py-0.5 bg-green-200 text-green-800 text-xs rounded-full font-bold">
+                    {{ count($clientiCreati) }}
+                </span>
             </div>
-            <div class="p-4">
+            <div class="p-3">
                 @if(count($clientiCreati) > 0)
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <div class="space-y-1.5 max-h-52 overflow-y-auto">
                         @foreach($clientiCreati as $cliente)
-                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            <div class="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200 hover:bg-green-100 transition">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <div class="h-7 w-7 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0">
                                         {{ strtoupper(substr($cliente['nome'], 0, 1) . substr($cliente['cognome'], 0, 1)) }}
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $cliente['cognome'] }} {{ $cliente['nome'] }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-semibold text-gray-900 truncate">{{ $cliente['cognome'] }} {{ $cliente['nome'] }}</p>
                                         @if($cliente['codice_fiscale'])
-                                            <p class="text-xs text-gray-500">CF: {{ $cliente['codice_fiscale'] }}</p>
+                                            <p class="text-[10px] text-gray-500">CF: {{ Str::limit($cliente['codice_fiscale'], 16) }}</p>
                                         @else
-                                            <p class="text-xs text-gray-400 italic">Senza CF</p>
+                                            <p class="text-[10px] text-gray-400 italic">Senza CF</p>
                                         @endif
                                     </div>
                                 </div>
-                                <span class="px-3 py-1 bg-green-200 text-green-800 text-xs font-semibold rounded-full">
-                                    <i class="fas fa-star mr-1"></i>Nuovo
+                                <span class="px-2 py-0.5 bg-green-200 text-green-800 text-[10px] font-semibold rounded-full ml-2 flex-shrink-0">
+                                    <i class="fas fa-star mr-0.5"></i>Nuovo
                                 </span>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div class="text-center py-8 text-gray-400">
-                        <i class="fas fa-check-circle text-4xl mb-3"></i>
-                        <p class="text-sm">Tutti i clienti esistono già</p>
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fas fa-check-circle text-2xl mb-2"></i>
+                        <p class="text-xs">Tutti esistenti</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <!-- Info -->
+    <!-- Alert Compatto -->
     @if($valide > 0)
-        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
+        <div class="bg-green-50 border-l-4 border-green-500 px-4 py-2.5 mb-4 rounded-lg">
             <div class="flex items-center">
-                <i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
-                <p class="text-green-800">
-                    <strong>{{ $valide }}</strong> pesate verranno importate.
+                <i class="fas fa-check-circle text-green-600 text-sm mr-2"></i>
+                <p class="text-sm text-green-800">
+                    <strong>{{ $valide }}</strong> pesate pronte per importazione.
                     @if($errori > 0)
-                        <strong>{{ $errori }}</strong> righe verranno saltate a causa di errori.
+                        <span class="text-red-700">{{ $errori }} righe con errori verranno saltate.</span>
                     @endif
                 </p>
             </div>
         </div>
     @else
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+        <div class="bg-red-50 border-l-4 border-red-500 px-4 py-2.5 mb-4 rounded-lg">
             <div class="flex items-center">
-                <i class="fas fa-exclamation-circle text-red-600 text-xl mr-3"></i>
-                <p class="text-red-800 font-medium">
-                    Impossibile procedere: tutte le righe contengono errori. Correggi il file e riprova.
+                <i class="fas fa-exclamation-circle text-red-600 text-sm mr-2"></i>
+                <p class="text-sm text-red-800 font-medium">
+                    Impossibile procedere: tutte le righe contengono errori.
                 </p>
             </div>
         </div>
@@ -163,16 +169,18 @@
     @endif
 
     <!-- Tabella Anteprima Dettagliata -->
-    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-        <div class="px-3 py-2 bg-gray-50 border-b border-gray-200">
-            <h3 class="text-sm font-bold text-gray-900 flex items-center">
-                <i class="fas fa-table text-gray-600 mr-2 text-xs"></i>
-                Anteprima Dettagliata Dati
-                <span class="ml-3 text-xs text-gray-500 font-normal">
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-4">
+        <div class="px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-table text-fucsia-magia mr-2 text-xs"></i>
+                    Anteprima Dettagliata
+                </h3>
+                <span class="text-[10px] text-gray-500 flex items-center">
                     <i class="fas fa-info-circle mr-1"></i>
-                    Valori modificabili - In caso di omonimia, scegli l'azione
+                    Valori modificabili • Gestione omonimie
                 </span>
-            </h3>
+            </div>
         </div>
         <div class="overflow-x-auto" style="max-height: 700px;">
             <table class="min-w-full divide-y divide-gray-200" style="font-size: 11px;">
@@ -399,27 +407,27 @@
         </div>
     </div>
 
-    <!-- Pulsanti Conferma -->
+    <!-- Pulsanti Azione -->
     @if($valide > 0)
             <input type="hidden" name="total_rows" value="{{ count($preview_data) }}">
 
-            <div class="flex gap-4">
+            <div class="flex items-center justify-between bg-white rounded-lg shadow px-5 py-3">
+                <a href="{{ route('admin.pesate.import') }}"
+                   class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Indietro
+                </a>
                 <button type="submit"
-                        class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:shadow-lg transition transform hover:-translate-y-0.5">
+                        class="px-8 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:shadow-lg transition text-sm">
                     <i class="fas fa-check-circle mr-2"></i>
                     Conferma Importazione ({{ $valide }} pesate)
                 </button>
-                <a href="{{ route('admin.pesate.import') }}"
-                   class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Torna Indietro
-                </a>
             </div>
         </form>
     @else
-        <div class="flex gap-4">
+        <div class="bg-white rounded-lg shadow px-5 py-3">
             <a href="{{ route('admin.pesate.import') }}"
-               class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 text-center rounded-lg hover:bg-gray-300 transition">
+               class="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 text-center rounded-lg hover:bg-gray-300 transition text-sm font-medium">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Torna al Form di Upload
             </a>

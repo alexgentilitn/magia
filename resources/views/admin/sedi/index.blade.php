@@ -103,10 +103,10 @@
                     <a href="{{ route('admin.sedi.edit', $sede->id) }}" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 text-center">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <form method="POST" action="{{ route('admin.sedi.destroy', $sede->id) }}" class="flex-1" onsubmit="return confirm('Eliminare la sede {{ $sede->nome }}?')">
+                    <form method="POST" action="{{ route('admin.sedi.destroy', $sede->id) }}" class="flex-1" id="delete-form-{{ $sede->id }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                        <button type="button" onclick="confermaEliminazione('delete-form-{{ $sede->id }}', 'Eliminare la sede?', 'La sede {{ $sede->nome }} sarà eliminata definitivamente. Le lezioni esistenti non saranno eliminate.')" class="w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

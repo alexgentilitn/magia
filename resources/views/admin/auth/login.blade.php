@@ -5,23 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Login Amministratore - MA.GIA DONNA</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'viola-magia': '#7B2869',
-                        'fucsia-magia': '#E91E8C',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-gray-100">
     
@@ -41,9 +30,19 @@
                 </p>
             </div>
 
+            <!-- Messaggi di Successo -->
+            @if (session('success'))
+                <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
+                        <p class="text-green-700">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+
             <!-- Card Login -->
             <div class="bg-white rounded-2xl shadow-xl p-8">
-                
+
                 <!-- Form Login -->
                 <form method="POST" action="{{ route('admin.login.post') }}" class="space-y-6">
                     @csrf
@@ -105,18 +104,23 @@
                         @enderror
                     </div>
 
-                    <!-- Ricordami -->
+                    <!-- Ricordami e Password Dimenticata -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <input 
-                                id="remember" 
-                                name="remember" 
+                            <input
+                                id="remember"
+                                name="remember"
                                 type="checkbox"
                                 class="h-4 w-4 text-viola-magia focus:ring-viola-magia border-gray-300 rounded cursor-pointer"
                             >
                             <label for="remember" class="ml-2 block text-sm text-gray-700 cursor-pointer">
                                 Ricordami su questo dispositivo
                             </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="{{ route('admin.password.request') }}" class="font-medium text-fucsia-magia hover:text-viola-magia transition">
+                                Password dimenticata?
+                            </a>
                         </div>
                     </div>
 

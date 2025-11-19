@@ -48,6 +48,7 @@ class ProfessionistiController extends Controller
         // Statistiche
         $statistiche = [
             'totale' => Professionista::count(),
+            'pending' => Professionista::where('stato', 'pending')->count(),
             'attivi' => Professionista::where('stato', 'attivo')->count(),
             'visibili' => Professionista::where('visibile_pubblico', true)->count(),
             'con_certificazioni' => Professionista::whereNotNull('certificazioni')->count(),
@@ -69,60 +70,123 @@ class ProfessionistiController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nome' => 'required|string|max:100',
-            'cognome' => 'required|string|max:100',
-            'email' => 'required|email|unique:utenti,email',
-            'telefono_mobile' => 'nullable|string|max:20',
-            'titolo_professionale' => 'nullable|string|max:100',
-            'bio' => 'nullable|string',
-            'anni_esperienza' => 'nullable|integer|min:0',
-            'tariffa_oraria' => 'nullable|numeric|min:0',
-            'stato' => 'required|in:attivo,sospeso,inattivo',
-        ]);
-
-        // Genera password temporanea
-        $passwordTemporanea = 'temp' . rand(1000, 9999);
-        $scadenza = now()->addHours(24);
-
-        // Crea utente base
-        $utente = Utente::create([
-            'nome' => $validated['nome'],
-            'cognome' => $validated['cognome'],
-            'email' => $validated['email'],
-            'password' => Hash::make($passwordTemporanea),
-            'password_temp_expires_at' => $scadenza,
-            'deve_cambiare_password' => true,
-            'tipo_utente' => 'professionista',
-            'telefono' => $validated['telefono_mobile'] ?? null,
-            'attivo' => true,
-        ]);
-
-        // Crea profilo professionista
-        $dataProfessionista = $validated;
-        unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
-        $dataProfessionista['utente_id'] = $utente->id;
-        $dataProfessionista['codice_professionista'] = Professionista::generaCodiceProfessionista();
-
-        $professionista = Professionista::create($dataProfessionista);
-
-        // Invia email con credenziali
         try {
-            // Applica configurazioni SMTP dal database
-            \App\Models\Impostazione::applySmtpConfig();
+            \Log::info('Inizio creazione professionista', $request->all());
 
-            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
-                $professionista,
-                $passwordTemporanea,
-                $scadenza
-            ));
-            $emailMessage = ' Email inviata con successo!';
+            $validated = $request->validate([
+                // Dati anagrafici
+                'nome' => 'required|string|max:100',
+                'cognome' => 'required|string|max:100',
+                'codice_fiscale' => 'nullable|string|max:16|unique:professionisti,codice_fiscale',
+                'data_nascita' => 'nullable|date|before:today',
+                'sesso' => 'nullable|in:F,M,Altro',
+
+                // Contatti e indirizzo
+                'email' => 'required|email|unique:utenti,email',
+                'telefono_mobile' => 'nullable|string|max:20',
+                'indirizzo' => 'nullable|string|max:200',
+                'citta' => 'nullable|string|max:100',
+                'provincia' => 'nullable|string|max:2',
+                'cap' => 'nullable|string|max:5',
+
+                // Dati professionali
+                'titolo_professionale' => 'nullable|string|max:100',
+                'bio' => 'nullable|string',
+                'anni_esperienza' => 'nullable|integer|min:0',
+                'partita_iva' => 'nullable|string|max:20',
+                'tipo_contratto' => 'nullable|in:dipendente,collaboratore,freelance,altro',
+                'data_assunzione' => 'nullable|date',
+
+                // Tariffe
+                'tariffa_oraria' => 'nullable|numeric|min:0',
+                'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
+                'tariffa_lezione_privata' => 'nullable|numeric|min:0',
+
+                // Disponibilità temporale
+                'disponibile_da' => 'nullable|date',
+                'disponibile_fino' => 'nullable|date|after:disponibile_da',
+
+                // Social media
+                'sito_web' => 'nullable|url|max:255',
+                'instagram' => 'nullable|string|max:100',
+                'facebook' => 'nullable|url|max:255',
+                'linkedin' => 'nullable|url|max:255',
+                'tiktok' => 'nullable|string|max:100',
+                'video_presentazione' => 'nullable|url|max:255',
+
+                // Stato e configurazioni
+                'stato' => 'required|in:pending,attivo,sospeso,inattivo',
+                'note_interne' => 'nullable|string',
+            ]);
+
+            \Log::info('Validazione OK', $validated);
+
+            // Genera password temporanea
+            $passwordTemporanea = 'temp' . rand(1000, 9999);
+            $scadenza = now()->addHours(24);
+
+            // Crea utente base
+            $utente = Utente::create([
+                'nome' => $validated['nome'],
+                'cognome' => $validated['cognome'],
+                'email' => $validated['email'],
+                'password' => Hash::make($passwordTemporanea),
+                'password_temp_expires_at' => $scadenza,
+                'deve_cambiare_password' => true,
+                'tipo_utente' => 'professionista',
+                'telefono' => $validated['telefono_mobile'] ?? null,
+                'attivo' => true,
+            ]);
+
+            \Log::info('Utente creato', ['id' => $utente->id]);
+
+            // Crea profilo professionista
+            $dataProfessionista = $validated;
+            unset($dataProfessionista['email']); // Email è solo in utenti, non in professionisti
+            $dataProfessionista['utente_id'] = $utente->id;
+            $dataProfessionista['codice_professionista'] = Professionista::generaCodiceProfessionista();
+
+            \Log::info('Dati professionista preparati', $dataProfessionista);
+
+            $professionista = Professionista::create($dataProfessionista);
+
+            \Log::info('Professionista creato', ['id' => $professionista->id]);
+
+            // Invia email con credenziali
+            try {
+                // Applica configurazioni SMTP dal database
+                \App\Models\Impostazione::applySmtpConfig();
+
+                Mail::to($utente->email)->send(new PasswordTemporaneaMail(
+                    $professionista,
+                    $passwordTemporanea,
+                    $scadenza
+                ));
+                $emailMessage = ' Email inviata con successo a ' . $utente->email;
+                \Log::info('Email inviata', ['email' => $utente->email]);
+            } catch (\Exception $e) {
+                $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea . ' - Errore: ' . $e->getMessage();
+                \Log::error('Errore invio email', ['error' => $e->getMessage()]);
+            }
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Professionista creato con successo! Password temporanea: ' . $passwordTemporanea . '. ' . $emailMessage);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Errori di validazione - Laravel li gestisce automaticamente
+            \Log::warning('Errore validazione', ['errors' => $e->errors()]);
+            throw $e;
         } catch (\Exception $e) {
-            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente: ' . $passwordTemporanea;
-        }
+            // Errore generico
+            \Log::error('Errore creazione professionista', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-        return redirect()->route('admin.professionisti.show', $professionista->id)
-            ->with('success', 'Professionista creato con successo! Password temporanea: ' . $passwordTemporanea . $emailMessage);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Errore durante la creazione del professionista: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -173,18 +237,58 @@ class ProfessionistiController extends Controller
         $professionista = Professionista::findOrFail($id);
 
         $validated = $request->validate([
+            // Dati anagrafici
             'nome' => 'required|string|max:100',
             'cognome' => 'required|string|max:100',
+            'codice_fiscale' => 'nullable|string|max:16|unique:professionisti,codice_fiscale,' . $id,
+            'data_nascita' => 'nullable|date|before:today',
+            'sesso' => 'nullable|in:F,M,Altro',
+
+            // Contatti e indirizzo
             'email' => 'required|email|unique:utenti,email,' . $professionista->utente_id,
             'telefono_mobile' => 'nullable|string|max:20',
+            'indirizzo' => 'nullable|string|max:200',
+            'citta' => 'nullable|string|max:100',
+            'provincia' => 'nullable|string|max:2',
+            'cap' => 'nullable|string|max:5',
+
+            // Dati professionali
             'titolo_professionale' => 'nullable|string|max:100',
             'bio' => 'nullable|string',
             'anni_esperienza' => 'nullable|integer|min:0',
+            'partita_iva' => 'nullable|string|max:20',
+            'tipo_contratto' => 'nullable|in:dipendente,collaboratore,freelance,altro',
+            'data_assunzione' => 'nullable|date',
+
+            // Tariffe
             'tariffa_oraria' => 'nullable|numeric|min:0',
             'tariffa_lezione_gruppo' => 'nullable|numeric|min:0',
             'tariffa_lezione_privata' => 'nullable|numeric|min:0',
-            'stato' => 'required|in:attivo,sospeso,inattivo',
+
+            // Disponibilità temporale
+            'disponibile_da' => 'nullable|date',
+            'disponibile_fino' => 'nullable|date|after:disponibile_da',
+
+            // Social media
+            'sito_web' => 'nullable|url|max:255',
+            'instagram' => 'nullable|string|max:100',
+            'facebook' => 'nullable|url|max:255',
+            'linkedin' => 'nullable|url|max:255',
+            'tiktok' => 'nullable|string|max:100',
+            'video_presentazione' => 'nullable|url|max:255',
+
+            // Stato e configurazioni
+            'stato' => 'required|in:pending,attivo,sospeso,inattivo',
             'visibile_pubblico' => 'boolean',
+            'note_interne' => 'nullable|string',
+
+            // Array dinamici
+            'specializzazioni' => 'nullable|array',
+            'specializzazioni.*' => 'string|max:100',
+            'qualifiche' => 'nullable|array',
+            'qualifiche.*' => 'string|max:200',
+            'lingue_parlate' => 'nullable|array',
+            'lingue_parlate.*' => 'string|max:50',
         ]);
 
         // Aggiorna utente base
@@ -236,13 +340,74 @@ class ProfessionistiController extends Controller
         $professionista = Professionista::findOrFail($id);
 
         $validated = $request->validate([
-            'stato' => 'required|in:attivo,sospeso,inattivo',
+            'stato' => 'required|in:pending,attivo,sospeso,inattivo',
         ]);
 
         $professionista->update(['stato' => $validated['stato']]);
 
         return redirect()->route('admin.professionisti.show', $professionista->id)
             ->with('success', 'Stato professionista aggiornato!');
+    }
+
+    /**
+     * Approva un professionista in stato pending
+     */
+    public function approva($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        if ($professionista->stato !== 'pending') {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Solo i professionisti in stato pending possono essere approvati.');
+        }
+
+        $professionista->update(['stato' => 'attivo']);
+
+        // Invia email di approvazione
+        try {
+            \App\Models\Impostazione::applySmtpConfig();
+            Mail::to($professionista->utente->email)->send(new \App\Mail\ProfessionistaApprovatoMail($professionista));
+            $emailMessage = 'Email di notifica inviata.';
+        } catch (\Exception $e) {
+            $emailMessage = 'Email non inviata: ' . $e->getMessage();
+        }
+
+        return redirect()->route('admin.professionisti.show', $professionista->id)
+            ->with('success', "Professionista approvato con successo! {$emailMessage}");
+    }
+
+    /**
+     * Rifiuta un professionista in stato pending
+     */
+    public function rifiuta(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        if ($professionista->stato !== 'pending') {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Solo i professionisti in stato pending possono essere rifiutati.');
+        }
+
+        $validated = $request->validate([
+            'motivo_rifiuto' => 'nullable|string|max:500',
+        ]);
+
+        // Cambia stato a inattivo
+        $professionista->update(['stato' => 'inattivo']);
+
+        // Invia email di rifiuto con motivo
+        try {
+            \App\Models\Impostazione::applySmtpConfig();
+            Mail::to($professionista->utente->email)->send(
+                new \App\Mail\ProfessionistaRifiutatoMail($professionista, $validated['motivo_rifiuto'] ?? null)
+            );
+            $emailMessage = 'Email di notifica inviata.';
+        } catch (\Exception $e) {
+            $emailMessage = 'Email non inviata: ' . $e->getMessage();
+        }
+
+        return redirect()->route('admin.professionisti.index')
+            ->with('success', "Professionista rifiutato. {$emailMessage}");
     }
 
     /**
@@ -330,6 +495,59 @@ class ProfessionistiController extends Controller
     }
 
     /**
+     * Upload foto profilo
+     */
+    public function uploadFoto(Request $request, $id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        $request->validate([
+            'foto_profilo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        try {
+            // Elimina foto vecchia se esiste
+            if ($professionista->foto_profilo && \Storage::disk('public')->exists($professionista->foto_profilo)) {
+                \Storage::disk('public')->delete($professionista->foto_profilo);
+            }
+
+            // Salva nuova foto
+            $fileName = 'professionisti/' . time() . '_' . $professionista->id . '.' . $request->foto_profilo->extension();
+            $path = $request->foto_profilo->storeAs('professionisti', basename($fileName), 'public');
+
+            $professionista->update(['foto_profilo' => $path]);
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Foto profilo caricata con successo!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Errore durante il caricamento della foto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Elimina foto profilo
+     */
+    public function eliminaFoto($id)
+    {
+        $professionista = Professionista::findOrFail($id);
+
+        try {
+            if ($professionista->foto_profilo && \Storage::disk('public')->exists($professionista->foto_profilo)) {
+                \Storage::disk('public')->delete($professionista->foto_profilo);
+            }
+
+            $professionista->update(['foto_profilo' => null]);
+
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('success', 'Foto profilo eliminata con successo!');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.professionisti.show', $professionista->id)
+                ->with('error', 'Errore durante l\'eliminazione della foto: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Reset password professionista
      */
     public function resetPassword($id)
@@ -351,14 +569,14 @@ class ProfessionistiController extends Controller
             // Applica configurazioni SMTP dal database
             \App\Models\Impostazione::applySmtpConfig();
 
-            Mail::to($professionista->email)->send(new PasswordTemporaneaMail(
+            Mail::to($professionista->utente->email)->send(new PasswordTemporaneaMail(
                 $professionista,
                 $nuovaPassword,
                 $scadenza
             ));
-            $emailMessage = ' Email inviata con successo a ' . $professionista->email;
+            $emailMessage = ' Email inviata con successo a ' . $professionista->utente->email;
         } catch (\Exception $e) {
-            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente la password: ' . $nuovaPassword;
+            $emailMessage = ' ATTENZIONE: Email non inviata. Comunica manualmente la password: ' . $nuovaPassword . ' - Errore: ' . $e->getMessage();
         }
 
         return redirect()->route('admin.professionisti.show', $professionista->id)

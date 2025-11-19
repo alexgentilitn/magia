@@ -122,8 +122,11 @@ class SedeController extends Controller
             'programmi_attivi' => $sede->programmi()->where('attivo', true)->count(),
             'lezioni_totali' => $sede->lezioni_count,
             'lezioni_future' => $sede->lezioni()->where('data', '>=', now())->count(),
-            'professionisti_assegnati' => 0, // TODO: implementare quando esiste tabella pivot
-            'capienza_utilizzata' => 0, // TODO: calcolare in base a iscrizioni
+            'professionisti_assegnati' => $sede->lezioni()
+                ->distinct('professionista_id')
+                ->whereNotNull('professionista_id')
+                ->count('professionista_id'),
+            'capienza_utilizzata' => $this->calcolaCapienzaUtilizzata($sede),
         ];
 
         // Prossime lezioni in questa sede
@@ -292,5 +295,39 @@ class SedeController extends Controller
 
         return redirect()->route('admin.sedi.show', $sede->id)
             ->with('success', 'Orari di apertura aggiornati!');
+    }
+
+    /**
+     * Calcola la percentuale di utilizzo della sede nel mese corrente
+     *
+     * @param Sede $sede
+     * @return float
+     */
+    private function calcolaCapienzaUtilizzata($sede)
+    {
+        // Conta lezioni nel mese corrente
+        $lezioniMeseCorrente = $sede->lezioni()
+            ->whereMonth('data', now()->month)
+            ->whereYear('data', now()->year)
+            ->count();
+
+        // Se non ci sono lezioni, ritorna 0
+        if ($lezioniMeseCorrente === 0) {
+            return 0;
+        }
+
+        // Calcola giorni lavorativi del mese (approssimazione: 22 giorni)
+        $giorniLavorativi = 22;
+
+        // Stima lezioni potenziali giornaliere
+        // Assumendo orario 8:00-20:00 = 12 ore, slot da 1 ora = max 12 lezioni/giorno
+        $lezioniPotenziali = $sede->capacita_giornaliera ?? 12;
+        $lezioniMensiliPotenziali = $giorniLavorativi * $lezioniPotenziali;
+
+        // Calcola percentuale
+        $percentuale = ($lezioniMeseCorrente / $lezioniMensiliPotenziali) * 100;
+
+        // Arrotonda a 1 decimale e limita a 100%
+        return min(round($percentuale, 1), 100);
     }
 }

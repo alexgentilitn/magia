@@ -1,0 +1,18 @@
+[
+    {
+        "id": 1,
+        "cliente_id": 2,
+        "importo": 100,
+        "importo_pagato": 100,
+        "importo_residuo": 0,
+        "tipo": "lezione",
+        "metodo": "bonifico",
+        "stato": "completato",
+        "data_emissione": "2025-11-13",
+        "data_pagamento": "2025-11-13",
+        "fatturato": false,
+        "inviato_promemoria": false,
+        "created_at": "2025-11-13 08:26:38",
+        "updated_at": "2025-11-13 08:26:58"
+    }
+]

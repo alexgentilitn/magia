@@ -64,6 +64,7 @@ class Cliente extends Model
         'consenso_foto',
         'note_interne',
         'stato_cliente',
+        'tipo_cliente', // 🆕 prova | effettiva
         'codice_cliente',
         'codice_referral',
         'invitato_da_cliente_id',
@@ -102,6 +103,14 @@ class Cliente extends Model
     }
 
     /**
+     * Relazione: Sede preferita del cliente
+     */
+    public function sedePreferita()
+    {
+        return $this->belongsTo(Sede::class, 'sede_preferita_id');
+    }
+
+    /**
      * Relazione: Cliente invitato da altro Cliente (Referral)
      */
     public function invitatoDa()
@@ -115,6 +124,68 @@ class Cliente extends Model
     public function amicheInvitate()
     {
         return $this->hasMany(Cliente::class, 'invitato_da_cliente_id');
+    }
+
+    /**
+     * Relazione: Documenti del Cliente
+     */
+    public function documenti()
+    {
+        return $this->hasMany(Documento::class);
+    }
+
+    /**
+     * Relazione: Pagamenti del Cliente
+     */
+    public function pagamenti()
+    {
+        return $this->hasMany(Pagamento::class);
+    }
+
+    /**
+     * Relazione: Programmi iscritti
+     */
+    public function programmi()
+    {
+        return $this->belongsToMany(Programma::class, 'cliente_programma')
+                    ->withPivot('data_iscrizione', 'data_scadenza', 'stato')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relazione: Lezioni prenotate
+     * NOTA: cliente_lezione.cliente_id riferisce utenti.id, non clienti.id
+     * Questa relazione funziona solo se clienti.id == utenti.id (1:1)
+     */
+    public function lezioni()
+    {
+        return $this->belongsToMany(Lezione::class, 'cliente_lezione')
+                    ->withPivot('stato', 'data_prenotazione', 'check_in', 'check_out', 'valutazione', 'feedback')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relazione: Storico parametri corporei
+     */
+    public function parametriCorporei()
+    {
+        return $this->hasMany(ParametroCorporeo::class)->orderBy('data_rilevazione', 'desc');
+    }
+
+    /**
+     * Relazione: Storico pesate
+     */
+    public function pesate()
+    {
+        return $this->hasMany(Pesata::class, 'cliente_id')->orderBy('data_rilevazione', 'desc');
+    }
+
+    /**
+     * Relazione: Ultimo parametro corporeo rilevato
+     */
+    public function ultimoParametro()
+    {
+        return $this->hasOne(ParametroCorporeo::class)->latestOfMany('data_rilevazione');
     }
 
     /**
@@ -243,10 +314,29 @@ class Cliente extends Model
      */
     public static function generaCodiceCliente()
     {
-        $ultimo_cliente = self::orderBy('id', 'desc')->first();
-        $prossimo_numero = $ultimo_cliente ? $ultimo_cliente->id + 1 : 1;
-        
-        return 'CL' . str_pad($prossimo_numero, 5, '0', STR_PAD_LEFT);
+        // Trova il codice cliente più alto esistente
+        $ultimoCodice = self::withTrashed()
+            ->where('codice_cliente', 'like', 'CL%')
+            ->orderByRaw('CAST(SUBSTRING(codice_cliente, 3) AS UNSIGNED) DESC')
+            ->value('codice_cliente');
+
+        if ($ultimoCodice) {
+            // Estrai il numero dal codice (es: CL00002 -> 2)
+            $numero = (int) substr($ultimoCodice, 2);
+            $prossimoNumero = $numero + 1;
+        } else {
+            $prossimoNumero = 1;
+        }
+
+        $codiceProposto = 'CL' . str_pad($prossimoNumero, 5, '0', STR_PAD_LEFT);
+
+        // Verifica che non esista già (race condition safety)
+        while (self::withTrashed()->where('codice_cliente', $codiceProposto)->exists()) {
+            $prossimoNumero++;
+            $codiceProposto = 'CL' . str_pad($prossimoNumero, 5, '0', STR_PAD_LEFT);
+        }
+
+        return $codiceProposto;
     }
 
     /**

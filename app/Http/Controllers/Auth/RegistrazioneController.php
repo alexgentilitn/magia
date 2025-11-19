@@ -168,6 +168,7 @@ class RegistrazioneController extends Controller
                 'consenso_marketing' => $request->boolean('consenso_marketing'),
                 'consenso_foto' => $request->boolean('consenso_foto'),
                 'stato_cliente' => 'attivo',
+                'tipo_cliente' => 'effettiva',
                 'data_iscrizione' => now(),
                 'invitato_da_cliente_id' => $invitato_da_cliente_id,
                 // codice_cliente e codice_referral vengono generati automaticamente dal Model

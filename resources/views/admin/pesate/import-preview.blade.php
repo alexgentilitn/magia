@@ -201,8 +201,56 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($preview_data as $index => $row)
+                        @php
+                            // Calcola warnings per campi vuoti o valori anomali
+                            $warnings = [];
+
+                            // Campi vuoti importanti
+                            if (empty($row['grasso_corporeo'])) $warnings[] = 'Grasso corporeo mancante';
+                            if (empty($row['massa_muscolare'])) $warnings[] = 'Massa muscolare mancante';
+                            if (empty($row['muscolo_scheletrico'])) $warnings[] = 'Muscolo scheletrico mancante';
+                            if (empty($row['acqua_corporea'])) $warnings[] = 'Acqua corporea mancante';
+                            if (empty($row['bmr'])) $warnings[] = 'BMR mancante';
+
+                            // Valori anomali
+                            if (!empty($row['peso']) && ($row['peso'] < 30 || $row['peso'] > 200)) {
+                                $warnings[] = 'Peso anomalo: ' . $row['peso'] . ' kg (normale: 30-200)';
+                            }
+                            if (!empty($row['bmi']) && ($row['bmi'] < 15 || $row['bmi'] > 50)) {
+                                $warnings[] = 'BMI anomalo: ' . $row['bmi'] . ' (normale: 15-50)';
+                            }
+                            if (!empty($row['grasso_corporeo']) && ($row['grasso_corporeo'] < 5 || $row['grasso_corporeo'] > 60)) {
+                                $warnings[] = 'Grasso corporeo anomalo: ' . $row['grasso_corporeo'] . '% (normale: 5-60)';
+                            }
+                            if (!empty($row['grasso_viscerale']) && ($row['grasso_viscerale'] < 1 || $row['grasso_viscerale'] > 30)) {
+                                $warnings[] = 'Grasso viscerale anomalo: ' . $row['grasso_viscerale'] . ' (normale: 1-30)';
+                            }
+                            if (!empty($row['acqua_corporea']) && ($row['acqua_corporea'] < 30 || $row['acqua_corporea'] > 80)) {
+                                $warnings[] = 'Acqua corporea anomala: ' . $row['acqua_corporea'] . '% (normale: 30-80)';
+                            }
+                            if (!empty($row['bmr']) && ($row['bmr'] < 800 || $row['bmr'] > 3500)) {
+                                $warnings[] = 'BMR anomalo: ' . $row['bmr'] . ' kcal (normale: 800-3500)';
+                            }
+                            if (!empty($row['eta_metabolica']) && ($row['eta_metabolica'] < 10 || $row['eta_metabolica'] > 100)) {
+                                $warnings[] = 'Età metabolica anomala: ' . $row['eta_metabolica'] . ' (normale: 10-100)';
+                            }
+
+                            $hasWarnings = count($warnings) > 0;
+
+                            // Determina colore riga: errore > warning > omonimia > normale
+                            if (!empty($row['errors'])) {
+                                $rowClass = 'bg-red-50';
+                            } elseif ($hasWarnings) {
+                                $rowClass = 'bg-orange-50';
+                            } elseif (!empty($row['has_omonimia'])) {
+                                $rowClass = 'bg-yellow-50';
+                            } else {
+                                $rowClass = 'hover:bg-gray-50';
+                            }
+                        @endphp
+
                         <!-- Riga Principale -->
-                        <tr class="{{ !empty($row['errors']) ? 'bg-red-50' : (!empty($row['has_omonimia']) ? 'bg-yellow-50' : 'hover:bg-gray-50') }} cursor-pointer"
+                        <tr class="{{ $rowClass }} cursor-pointer"
                             @click="expandedRows[{{ $index }}] = !expandedRows[{{ $index }}]">
 
                             <!-- Hidden fields -->
@@ -246,10 +294,14 @@
                             </td>
 
                             <!-- Peso -->
-                            <td class="px-3 py-3 text-sm text-gray-900 font-medium">{{ $row['peso'] ?? '-' }}</td>
+                            <td class="px-3 py-3 text-sm font-medium {{ !empty($row['peso']) && ($row['peso'] < 30 || $row['peso'] > 200) ? 'text-orange-600' : 'text-gray-900' }}">
+                                {{ $row['peso'] ?? '-' }}
+                            </td>
 
                             <!-- BMI -->
-                            <td class="px-3 py-3 text-sm text-gray-900">{{ $row['bmi'] ?? '-' }}</td>
+                            <td class="px-3 py-3 text-sm {{ !empty($row['bmi']) && ($row['bmi'] < 15 || $row['bmi'] > 50) ? 'text-orange-600' : 'text-gray-900' }}">
+                                {{ $row['bmi'] ?? '-' }}
+                            </td>
 
                             <!-- Data -->
                             <td class="px-3 py-3 text-sm text-gray-900">
@@ -258,13 +310,17 @@
 
                             <!-- Stato -->
                             <td class="px-3 py-3 text-center">
-                                @if(empty($row['errors']))
-                                    <span class="inline-flex px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                                        <i class="fas fa-check mr-1"></i>OK
-                                    </span>
-                                @else
+                                @if(!empty($row['errors']))
                                     <span class="inline-flex px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
                                         <i class="fas fa-times mr-1"></i>Errore
+                                    </span>
+                                @elseif($hasWarnings)
+                                    <span class="inline-flex px-2 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-exclamation mr-1"></i>{{ count($warnings) }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-check mr-1"></i>OK
                                     </span>
                                 @endif
                             </td>
@@ -288,10 +344,22 @@
                                     @if(!empty($row['errors']))
                                         <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                                             <div class="text-sm font-semibold text-red-800 mb-1">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>Errori:
+                                                <i class="fas fa-times-circle mr-1"></i>Errori:
                                             </div>
                                             @foreach($row['errors'] as $error)
                                                 <div class="text-xs text-red-700">• {{ $error }}</div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <!-- Warnings in evidenza -->
+                                    @if($hasWarnings)
+                                        <div class="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                            <div class="text-sm font-semibold text-orange-800 mb-1">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>Attenzione ({{ count($warnings) }}):
+                                            </div>
+                                            @foreach($warnings as $warning)
+                                                <div class="text-xs text-orange-700">• {{ $warning }}</div>
                                             @endforeach
                                         </div>
                                     @endif

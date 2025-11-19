@@ -28,7 +28,7 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-// Valori attesi da Excel
+// Valori attesi da Excel (Giulia Gentili)
 $valoriAttesi = [
     'peso' => 57.50,
     'bmi' => 19.09,
@@ -40,6 +40,9 @@ $valoriAttesi = [
     'acqua_corporea' => 49.80,
     'massa_muscolare' => 39.16,
     'massa_ossea' => 2.53,
+    'proteine' => 17.00,
+    'bmr' => 1280,
+    'eta_metabolica' => 51,
 ];
 
 echo "<div class='box'>";

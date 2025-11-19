@@ -682,6 +682,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::delete('/backup/delete', [\App\Http\Controllers\Admin\SuperAdminController::class, 'deleteBackup'])->name('backup.delete');
         Route::post('/backup/clean-old', [\App\Http\Controllers\Admin\SuperAdminController::class, 'cleanOldBackups'])->name('backup.clean-old');
 
+        // Gestione Segnalazioni
+        Route::get('/segnalazioni', [\App\Http\Controllers\Admin\SuperAdminController::class, 'segnalazioni'])->name('segnalazioni');
+
         Route::get('/logout', [\App\Http\Controllers\Admin\SuperAdminController::class, 'logout'])->name('logout');
     });
 

@@ -853,6 +853,54 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Gestione Segnalazioni (Super Admin)
+     * Lista tutte le segnalazioni con filtri
+     */
+    public function segnalazioni(Request $request)
+    {
+        $query = \App\Models\Segnalazione::with(['utente', 'risolutore'])->orderBy('created_at', 'desc');
+
+        // Filtro per stato
+        if ($request->filled('stato')) {
+            $query->where('stato', $request->stato);
+        }
+
+        // Filtro per tipo
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        // Filtro per priorità
+        if ($request->filled('priorita')) {
+            $query->where('priorita', $request->priorita);
+        }
+
+        // Filtro per ricerca testo
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('titolo', 'like', "%{$search}%")
+                  ->orWhere('descrizione', 'like', "%{$search}%");
+            });
+        }
+
+        $segnalazioni = $query->paginate(20);
+
+        // Statistiche riepilogo
+        $stats = [
+            'totale' => \App\Models\Segnalazione::count(),
+            'aperte' => \App\Models\Segnalazione::where('stato', 'aperta')->count(),
+            'in_lavorazione' => \App\Models\Segnalazione::where('stato', 'in_lavorazione')->count(),
+            'risolte' => \App\Models\Segnalazione::where('stato', 'risolta')->count(),
+            'bug' => \App\Models\Segnalazione::where('tipo', 'bug')->count(),
+            'suggerimenti' => \App\Models\Segnalazione::where('tipo', 'suggerimento')->count(),
+            'alta_priorita' => \App\Models\Segnalazione::where('priorita', 'alta')->count(),
+        ];
+
+        return view('admin.super-admin.segnalazioni', compact('segnalazioni', 'stats'));
+    }
+
+    /**
      * Logout Super Admin
      */
     public function logout(Request $request)

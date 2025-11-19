@@ -17,6 +17,9 @@
             <span class="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-medium">
                 <i class="fas fa-clock mr-2"></i>Sessione attiva
             </span>
+            <a href="{{ route('admin.super-admin.segnalazioni') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-flag mr-2"></i>Segnalazioni
+            </a>
             <a href="{{ route('admin.super-admin.logout') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition">
                 <i class="fas fa-sign-out-alt mr-2"></i>Logout
             </a>

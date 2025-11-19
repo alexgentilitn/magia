@@ -77,26 +77,29 @@ class SegnalazioniController extends Controller
      */
     public function show(Segnalazione $segnalazione)
     {
-        // Controlla permessi: solo super admin o proprietario
-        if (Auth::user()->tipo_utente !== 'super_admin' && $segnalazione->utente_id !== Auth::id()) {
+        // Controlla permessi: solo amministratori (super admin) o proprietario
+        $isAdmin = Auth::user()->tipo_utente === 'amministratore';
+        $isOwner = $segnalazione->utente_id === Auth::id();
+
+        if (!$isAdmin && !$isOwner) {
             abort(403, 'Non hai i permessi per visualizzare questa segnalazione');
         }
 
         $segnalazione->load(['utente', 'risolutore']);
 
-        $isSuperAdmin = Auth::user()->tipo_utente === 'super_admin';
+        $isSuperAdmin = $isAdmin; // Gli amministratori possono gestire le segnalazioni
 
         return view('admin.segnalazioni.show', compact('segnalazione', 'isSuperAdmin'));
     }
 
     /**
-     * Aggiorna stato e risposta segnalazione (solo Super Admin)
+     * Aggiorna stato e risposta segnalazione (solo Amministratori)
      */
     public function update(Request $request, Segnalazione $segnalazione)
     {
-        // Solo super admin può aggiornare
-        if (Auth::user()->tipo_utente !== 'super_admin') {
-            abort(403, 'Solo il Super Admin può aggiornare le segnalazioni');
+        // Solo amministratori possono aggiornare
+        if (Auth::user()->tipo_utente !== 'amministratore') {
+            abort(403, 'Solo gli Amministratori possono aggiornare le segnalazioni');
         }
 
         $validator = Validator::make($request->all(), [
@@ -140,13 +143,13 @@ class SegnalazioniController extends Controller
     }
 
     /**
-     * Elimina segnalazione (solo Super Admin)
+     * Elimina segnalazione (solo Amministratori)
      */
     public function destroy(Segnalazione $segnalazione)
     {
-        // Solo super admin può eliminare
-        if (Auth::user()->tipo_utente !== 'super_admin') {
-            abort(403, 'Solo il Super Admin può eliminare le segnalazioni');
+        // Solo amministratori possono eliminare
+        if (Auth::user()->tipo_utente !== 'amministratore') {
+            abort(403, 'Solo gli Amministratori possono eliminare le segnalazioni');
         }
 
         try {

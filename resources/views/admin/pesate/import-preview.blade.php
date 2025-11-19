@@ -168,45 +168,44 @@
             <input type="hidden" name="sede" value="{{ $sede }}">
     @endif
 
-    <!-- Tabella Anteprima Dettagliata -->
-    <div class="bg-white rounded-lg shadow overflow-hidden mb-4">
-        <div class="px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+    <!-- Tabella Anteprima con Righe Espandibili -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-4" x-data="{ expandedRows: {} }">
+        <div class="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-table text-fucsia-magia mr-2 text-xs"></i>
-                    Anteprima Dettagliata
+                    <i class="fas fa-table text-fucsia-magia mr-2"></i>
+                    Anteprima Dati
                 </h3>
-                <span class="text-[10px] text-gray-500 flex items-center">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Valori modificabili • Gestione omonimie
-                </span>
+                <div class="flex items-center gap-3">
+                    <button type="button" @click="Object.keys(expandedRows).length ? expandedRows = {} : expandedRows = Object.fromEntries([...Array({{ count($preview_data) }})].map((_, i) => [i, true]))"
+                            class="text-xs text-gray-600 hover:text-fucsia-magia">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>
+                        Espandi/Comprimi Tutti
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="overflow-x-auto" style="max-height: 700px;">
-            <table class="min-w-full divide-y divide-gray-200" style="font-size: 11px;">
-                <thead class="bg-gray-50 sticky top-0 z-10">
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 35px;">#</th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 180px;">Cliente</th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Peso<br><span class="text-[9px] text-gray-500">(kg)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 55px;">BMI</th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Grasso<br><span class="text-[9px] text-gray-500">(%)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">G.Visc.<br><span class="text-[9px] text-gray-500">(lv)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Musc.<br><span class="text-[9px] text-gray-500">(kg)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Schel.<br><span class="text-[9px] text-gray-500">(%)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">BMR<br><span class="text-[9px] text-gray-500">(kcal)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Acqua<br><span class="text-[9px] text-gray-500">(%)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">FFM<br><span class="text-[9px] text-gray-500">(kg)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Proteine<br><span class="text-[9px] text-gray-500">(%)</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 55px;">Età<br><span class="text-[9px] text-gray-500">Met.</span></th>
-                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 90px;">Data</th>
-                        <th class="px-1 py-1.5 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 70px;">Stato</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide w-12">#</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Cliente</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide w-24">Peso (kg)</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide w-20">BMI</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide w-28">Data</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-20">Stato</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-16"></th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($preview_data as $index => $row)
-                        <tr class="{{ !empty($row['errors']) ? 'bg-red-50' : (!empty($row['has_omonimia']) ? 'bg-yellow-50' : 'hover:bg-gray-50') }}">
-                            <!-- Hidden fields per questa riga -->
+                        <!-- Riga Principale -->
+                        <tr class="{{ !empty($row['errors']) ? 'bg-red-50' : (!empty($row['has_omonimia']) ? 'bg-yellow-50' : 'hover:bg-gray-50') }} cursor-pointer"
+                            @click="expandedRows[{{ $index }}] = !expandedRows[{{ $index }}]">
+
+                            <!-- Hidden fields -->
                             <td style="display:none;">
                                 <input type="hidden" name="row_number_{{ $index }}" value="{{ $row['row'] }}">
                                 <input type="hidden" name="nome_{{ $index }}" value="{{ $row['nome'] }}">
@@ -214,191 +213,207 @@
                                 <input type="hidden" name="codice_fiscale_{{ $index }}" value="{{ $row['codice_fiscale'] ?? '' }}">
                                 <input type="hidden" name="has_errors_{{ $index }}" value="{{ !empty($row['errors']) ? '1' : '0' }}">
                                 <input type="hidden" name="has_omonimia_{{ $index }}" value="{{ !empty($row['has_omonimia']) ? '1' : '0' }}">
-
                                 @if(empty($row['has_omonimia']))
-                                    {{-- Per clienti senza omonimia: invia "new" se cliente nuovo, altrimenti ID cliente esistente --}}
                                     <input type="hidden" name="cliente_id_{{ $index }}" value="{{ !empty($row['cliente_creato']) ? 'new' : ($row['cliente_id'] ?? '') }}">
                                 @endif
                             </td>
 
-                            <!-- Riga -->
-                            <td class="px-1 py-1.5 font-bold text-gray-900">{{ $row['row'] }}</td>
+                            <!-- # Riga -->
+                            <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ $row['row'] }}</td>
 
-                            <!-- Cliente con Dati Anagrafici -->
-                            <td class="px-1 py-1.5">
-                                <div class="space-y-0.5">
-                                    <div class="font-bold text-gray-900 text-[11px] leading-tight">
-                                        {{ $row['cognome'] }} {{ $row['nome'] }}
-                                    </div>
-
-                                    <!-- Badges Status -->
-                                    <div class="flex flex-wrap gap-0.5">
-                                        @if(!empty($row['cliente_creato']))
-                                            <span class="px-1.5 py-0 bg-green-100 text-green-700 text-[9px] rounded-full font-semibold">
-                                                <i class="fas fa-user-plus mr-0.5"></i>Nuovo
-                                            </span>
+                            <!-- Cliente -->
+                            <td class="px-3 py-3">
+                                <div class="flex items-center">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-gray-900">{{ $row['cognome'] }} {{ $row['nome'] }}</div>
+                                        @if(!empty($row['codice_fiscale']))
+                                            <div class="text-xs text-gray-500">CF: {{ $row['codice_fiscale'] }}</div>
                                         @endif
-
+                                    </div>
+                                    <div class="flex gap-1 ml-2">
+                                        @if(!empty($row['cliente_creato']))
+                                            <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Nuovo</span>
+                                        @endif
                                         @if(!empty($row['has_omonimia']))
                                             @if(!empty($row['possibili_clienti']) && count($row['possibili_clienti']) === 1)
-                                                <span class="px-1.5 py-0 bg-blue-100 text-blue-800 text-[9px] rounded-full font-semibold">
-                                                    <i class="fas fa-user-check mr-0.5"></i>Esistente
-                                                </span>
+                                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Esistente</span>
                                             @else
-                                                <span class="px-1.5 py-0 bg-yellow-100 text-yellow-800 text-[9px] rounded-full font-semibold">
-                                                    <i class="fas fa-exclamation-triangle mr-0.5"></i>OMONIMIA
-                                                </span>
+                                                <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Omonimia</span>
                                             @endif
                                         @endif
                                     </div>
+                                </div>
+                            </td>
 
-                                    <!-- Dati Identificativi -->
-                                    <div class="text-[9px] text-gray-600 space-y-0">
-                                        @if(!empty($row['codice_fiscale']))
-                                            <div class="leading-tight"><strong>CF:</strong> {{ $row['codice_fiscale'] }}</div>
-                                        @endif
-                                    </div>
+                            <!-- Peso -->
+                            <td class="px-3 py-3 text-sm text-gray-900 font-medium">{{ $row['peso'] ?? '-' }}</td>
 
-                                    <!-- Gestione Omonimia / Cliente Esistente -->
+                            <!-- BMI -->
+                            <td class="px-3 py-3 text-sm text-gray-900">{{ $row['bmi'] ?? '-' }}</td>
+
+                            <!-- Data -->
+                            <td class="px-3 py-3 text-sm text-gray-900">
+                                {{ $row['data_rilevazione'] ? \Carbon\Carbon::parse($row['data_rilevazione'])->format('d/m/Y') : '-' }}
+                            </td>
+
+                            <!-- Stato -->
+                            <td class="px-3 py-3 text-center">
+                                @if(empty($row['errors']))
+                                    <span class="inline-flex px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-check mr-1"></i>OK
+                                    </span>
+                                @else
+                                    <span class="inline-flex px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-times mr-1"></i>Errore
+                                    </span>
+                                @endif
+                            </td>
+
+                            <!-- Toggle -->
+                            <td class="px-3 py-3 text-center" @click.stop>
+                                <button type="button" @click="expandedRows[{{ $index }}] = !expandedRows[{{ $index }}]"
+                                        class="text-gray-400 hover:text-fucsia-magia transition-transform"
+                                        :class="expandedRows[{{ $index }}] ? 'rotate-180' : ''">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Riga Espandibile con Dettagli -->
+                        <tr x-show="expandedRows[{{ $index }}]" x-collapse class="bg-gray-50">
+                            <td colspan="7" class="px-4 py-4">
+                                <div class="bg-white rounded-lg border border-gray-200 p-4">
+
+                                    <!-- Errori in evidenza -->
+                                    @if(!empty($row['errors']))
+                                        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                            <div class="text-sm font-semibold text-red-800 mb-1">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>Errori:
+                                            </div>
+                                            @foreach($row['errors'] as $error)
+                                                <div class="text-xs text-red-700">• {{ $error }}</div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <!-- Gestione Omonimia -->
                                     @if(!empty($row['has_omonimia']) && !empty($row['possibili_clienti']))
                                         @php
                                             $numClienti = count($row['possibili_clienti']);
                                             $isOmonimia = $numClienti > 1;
-                                            $bgColor = $isOmonimia ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200';
-                                            $textColor = $isOmonimia ? 'text-yellow-900' : 'text-blue-900';
                                         @endphp
-                                        <div class="mt-1 p-1.5 {{ $bgColor }} border rounded">
-                                            <div class="font-semibold {{ $textColor }} text-[9px] mb-1 leading-tight">
+                                        <div class="mb-4 p-3 {{ $isOmonimia ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200' }} border rounded-lg">
+                                            <div class="text-sm font-semibold {{ $isOmonimia ? 'text-yellow-800' : 'text-blue-800' }} mb-2">
                                                 @if($isOmonimia)
-                                                    <i class="fas fa-users mr-0.5"></i>
-                                                    {{ $numClienti }} clienti con stesso nome - Scegli azione:
+                                                    <i class="fas fa-users mr-1"></i>{{ $numClienti }} clienti con stesso nome - Scegli:
                                                 @else
-                                                    <i class="fas fa-user-check mr-0.5"></i>
-                                                    Cliente trovato - Conferma o crea nuovo:
+                                                    <i class="fas fa-user-check mr-1"></i>Cliente trovato - Conferma o crea nuovo:
                                                 @endif
                                             </div>
-                                            <div class="space-y-0.5">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                                 @foreach($row['possibili_clienti'] as $pIndex => $possibileCliente)
-                                                    <label class="flex items-start p-1 bg-white border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
-                                                        <input type="radio"
-                                                               name="cliente_id_{{ $index }}"
-                                                               value="{{ $possibileCliente['id'] }}"
-                                                               {{ $pIndex === 0 ? 'checked' : '' }}
-                                                               class="mt-0.5 mr-1 text-[9px]">
-                                                        <div class="flex-1 text-[9px] leading-tight">
-                                                            <div class="font-semibold text-gray-900">
-                                                                {{ $possibileCliente['cognome'] }} {{ $possibileCliente['nome'] }}
-                                                            </div>
+                                                    <label class="flex items-start p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                                        <input type="radio" name="cliente_id_{{ $index }}" value="{{ $possibileCliente['id'] }}"
+                                                               {{ $pIndex === 0 ? 'checked' : '' }} class="mt-1 mr-2">
+                                                        <div class="text-xs">
+                                                            <div class="font-semibold text-gray-900">{{ $possibileCliente['cognome'] }} {{ $possibileCliente['nome'] }}</div>
                                                             @if(!empty($possibileCliente['codice_fiscale']))
                                                                 <div class="text-gray-600">CF: {{ $possibileCliente['codice_fiscale'] }}</div>
                                                             @endif
                                                             @if(!empty($possibileCliente['email']))
                                                                 <div class="text-gray-600">{{ $possibileCliente['email'] }}</div>
                                                             @endif
-                                                            @if(!empty($possibileCliente['telefono']))
-                                                                <div class="text-gray-600">{{ $possibileCliente['telefono'] }}</div>
-                                                            @endif
-                                                            @if(!empty($possibileCliente['data_iscrizione']))
-                                                                <div class="text-gray-500">Iscr: {{ \Carbon\Carbon::parse($possibileCliente['data_iscrizione'])->format('d/m/Y') }}</div>
-                                                            @endif
                                                         </div>
                                                     </label>
                                                 @endforeach
-
                                                 <!-- Opzione Crea Nuovo -->
-                                                <label class="flex items-start p-1 bg-green-50 border border-green-300 rounded hover:bg-green-100 cursor-pointer">
-                                                    <input type="radio"
-                                                           name="cliente_id_{{ $index }}"
-                                                           value="new"
-                                                           class="mt-0.5 mr-1">
-                                                    <div class="flex-1 text-[9px] leading-tight">
-                                                        <div class="font-bold text-green-900">
-                                                            <i class="fas fa-user-plus mr-0.5"></i>
-                                                            Crea Nuovo
-                                                        </div>
-                                                        <div class="text-green-700">
-                                                            Nuovo profilo stesso nome
-                                                        </div>
+                                                <label class="flex items-start p-2 bg-green-50 border border-green-300 rounded-lg hover:bg-green-100 cursor-pointer">
+                                                    <input type="radio" name="cliente_id_{{ $index }}" value="new" class="mt-1 mr-2">
+                                                    <div class="text-xs">
+                                                        <div class="font-bold text-green-800"><i class="fas fa-user-plus mr-1"></i>Crea Nuovo Cliente</div>
+                                                        <div class="text-green-700">Nuovo profilo con stesso nome</div>
                                                     </div>
                                                 </label>
                                             </div>
                                         </div>
                                     @endif
 
-                                    <!-- Errori -->
-                                    @if(!empty($row['errors']))
-                                        <div class="mt-1 p-1 bg-red-50 border border-red-200 rounded">
-                                            @foreach($row['errors'] as $error)
-                                                <div class="text-[9px] text-red-600 leading-tight">
-                                                    <i class="fas fa-exclamation-triangle mr-0.5"></i>{{ $error }}
-                                                </div>
-                                            @endforeach
+                                    <!-- Griglia Campi Modificabili -->
+                                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                        <!-- Peso -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Peso (kg) *</label>
+                                            <input type="number" name="peso_{{ $index }}" value="{{ $row['peso'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
                                         </div>
-                                    @endif
+                                        <!-- BMI -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">BMI</label>
+                                            <input type="number" name="bmi_{{ $index }}" value="{{ $row['bmi'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Grasso Corporeo -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Grasso (%)</label>
+                                            <input type="number" name="grasso_corporeo_{{ $index }}" value="{{ $row['grasso_corporeo'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Grasso Viscerale -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">G. Viscerale</label>
+                                            <input type="number" name="grasso_viscerale_{{ $index }}" value="{{ $row['grasso_viscerale'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Massa Muscolare -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">M. Muscolare (kg)</label>
+                                            <input type="number" name="massa_muscolare_{{ $index }}" value="{{ $row['massa_muscolare'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Muscolo Scheletrico -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">M. Scheletrico (%)</label>
+                                            <input type="number" name="muscolo_scheletrico_{{ $index }}" value="{{ $row['muscolo_scheletrico'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- BMR -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">BMR (kcal)</label>
+                                            <input type="number" name="bmr_{{ $index }}" value="{{ $row['bmr'] ?? '' }}" step="1"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Acqua Corporea -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Acqua (%)</label>
+                                            <input type="number" name="acqua_corporea_{{ $index }}" value="{{ $row['acqua_corporea'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Peso senza Grassi -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">FFM (kg)</label>
+                                            <input type="number" name="peso_corporeo_senza_grassi_{{ $index }}" value="{{ $row['peso_corporeo_senza_grassi'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Proteine -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Proteine (%)</label>
+                                            <input type="number" name="proteine_{{ $index }}" value="{{ $row['proteine'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Età Metabolica -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Età Met.</label>
+                                            <input type="number" name="eta_metabolica_{{ $index }}" value="{{ $row['eta_metabolica'] ?? '' }}" step="1"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Data Rilevazione -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Data *</label>
+                                            <input type="date" name="data_rilevazione_{{ $index }}" value="{{ $row['data_rilevazione'] ?? '' }}"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                    </div>
                                 </div>
-                            </td>
-
-                            <!-- Campi Misurazione Editabili -->
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="peso_{{ $index }}" value="{{ $row['peso'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="bmi_{{ $index }}" value="{{ $row['bmi'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="grasso_corporeo_{{ $index }}" value="{{ $row['grasso_corporeo'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="grasso_viscerale_{{ $index }}" value="{{ $row['grasso_viscerale'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="massa_muscolare_{{ $index }}" value="{{ $row['massa_muscolare'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="muscolo_scheletrico_{{ $index }}" value="{{ $row['muscolo_scheletrico'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="bmr_{{ $index }}" value="{{ $row['bmr'] ?? '' }}" step="1"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="acqua_corporea_{{ $index }}" value="{{ $row['acqua_corporea'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="peso_corporeo_senza_grassi_{{ $index }}" value="{{ $row['peso_corporeo_senza_grassi'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="proteine_{{ $index }}" value="{{ $row['proteine'] ?? '' }}" step="0.01"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="number" name="eta_metabolica_{{ $index }}" value="{{ $row['eta_metabolica'] ?? '' }}" step="1"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-                            <td class="px-1 py-1.5">
-                                <input type="date" name="data_rilevazione_{{ $index }}" value="{{ $row['data_rilevazione'] ?? '' }}"
-                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
-                            </td>
-
-                            <!-- Azioni -->
-                            <td class="px-1 py-1.5 text-center">
-                                @if(empty($row['errors']))
-                                    <span class="inline-block px-1.5 py-0.5 bg-green-100 text-green-800 text-[9px] font-semibold rounded-full">
-                                        <i class="fas fa-check mr-0.5"></i>OK
-                                    </span>
-                                @else
-                                    <span class="inline-block px-1.5 py-0.5 bg-red-100 text-red-800 text-[9px] font-semibold rounded-full">
-                                        <i class="fas fa-times mr-0.5"></i>Errore
-                                    </span>
-                                @endif
                             </td>
                         </tr>
                     @endforeach

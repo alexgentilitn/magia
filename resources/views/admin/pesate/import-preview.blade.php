@@ -316,7 +316,12 @@
                                                         <input type="radio" name="cliente_id_{{ $index }}" value="{{ $possibileCliente['id'] }}"
                                                                {{ $pIndex === 0 ? 'checked' : '' }} class="mt-1 mr-2">
                                                         <div class="text-xs">
-                                                            <div class="font-semibold text-gray-900">{{ $possibileCliente['cognome'] }} {{ $possibileCliente['nome'] }}</div>
+                                                            <div class="font-semibold text-gray-900">
+                                                                {{ $possibileCliente['cognome'] }} {{ $possibileCliente['nome'] }}
+                                                                @if(!empty($possibileCliente['data_iscrizione']))
+                                                                    <span class="text-gray-500 font-normal ml-1">({{ \Carbon\Carbon::parse($possibileCliente['data_iscrizione'])->format('d/m/Y') }})</span>
+                                                                @endif
+                                                            </div>
                                                             @if(!empty($possibileCliente['codice_fiscale']))
                                                                 <div class="text-gray-600">CF: {{ $possibileCliente['codice_fiscale'] }}</div>
                                                             @endif

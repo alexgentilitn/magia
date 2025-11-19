@@ -93,9 +93,8 @@ try {
     }
     echo "\n";
 
-    // Avvia transazione
-    echo "🔄 Avvio transazione...\n";
-    $pdo->beginTransaction();
+    // Nota: ALTER TABLE in MySQL fa autocommit, quindi non usiamo transazioni
+    echo "🔄 Inizio applicazione modifiche...\n";
 
     $modificheApplicate = 0;
     $modificheSkippate = 0;
@@ -136,21 +135,22 @@ try {
     // Verifica risultati
     if (count($errori) > 0) {
         echo "⚠️  Trovati errori durante l'aggiornamento\n";
-        echo "🔙 Rollback delle modifiche...\n";
-        $pdo->rollBack();
-        echo "❌ Operazione annullata\n\n";
+        echo "❌ Alcune modifiche potrebbero non essere state applicate\n\n";
 
         echo "ERRORI RILEVATI:\n";
         echo "-----------------------------------------------------------\n";
         foreach ($errori as $errore) {
             echo "• " . $errore . "\n";
         }
+        echo "\n";
+        echo "Nota: Le modifiche ALTER TABLE fanno autocommit, quindi alcune\n";
+        echo "      potrebbero essere state salvate prima dell'errore.\n";
+        echo "      Verifica manualmente lo stato del database.\n\n";
         exit(1);
     }
 
-    // Commit transazione
-    echo "💾 Commit modifiche al database...\n";
-    $pdo->commit();
+    // Nota: Non serve commit perché ALTER TABLE fa autocommit
+    echo "💾 Modifiche salvate automaticamente\n";
 
     echo "\n";
     echo "=============================================================\n";

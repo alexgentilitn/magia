@@ -206,6 +206,11 @@
                                 <input type="hidden" name="codice_fiscale_{{ $index }}" value="{{ $row['codice_fiscale'] ?? '' }}">
                                 <input type="hidden" name="has_errors_{{ $index }}" value="{{ !empty($row['errors']) ? '1' : '0' }}">
                                 <input type="hidden" name="has_omonimia_{{ $index }}" value="{{ !empty($row['has_omonimia']) ? '1' : '0' }}">
+
+                                @if(empty($row['has_omonimia']))
+                                    {{-- Per clienti senza omonimia: invia "new" se cliente nuovo, altrimenti ID cliente esistente --}}
+                                    <input type="hidden" name="cliente_id_{{ $index }}" value="{{ !empty($row['cliente_creato']) ? 'new' : ($row['cliente_id'] ?? '') }}">
+                                @endif
                             </td>
 
                             <!-- Riga -->

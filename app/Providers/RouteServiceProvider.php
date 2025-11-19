@@ -35,6 +35,12 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
+
+            // Carica routes debug solo in ambiente local/development
+            if (app()->environment('local', 'development')) {
+                Route::middleware('web')
+                    ->group(base_path('routes/debug.php'));
+            }
         });
     }
 }

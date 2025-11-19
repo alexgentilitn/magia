@@ -132,6 +132,25 @@ class DashboardController extends Controller
             }
 
             // ==========================================
+            // GRAFICO PRESENZE ULTIMI 6 MESI
+            // ==========================================
+            $presenzeMesi = collect();
+            for ($i = 5; $i >= 0; $i--) {
+                $data = now()->subMonths($i);
+                $totale = DB::table('cliente_lezione')
+                    ->join('lezioni', 'cliente_lezione.lezione_id', '=', 'lezioni.id')
+                    ->whereMonth('lezioni.data', $data->month)
+                    ->whereYear('lezioni.data', $data->year)
+                    ->where('cliente_lezione.stato', 'presente')
+                    ->count();
+
+                $presenzeMesi->push([
+                    'mese' => $data->format('M Y'),
+                    'totale' => $totale
+                ]);
+            }
+
+            // ==========================================
             // ALERT E NOTIFICHE
             // ==========================================
             $certificatiScadenza = Utente::where('tipo_utente', 'cliente')
@@ -163,6 +182,7 @@ class DashboardController extends Controller
                 'pagamentiScadenza',
                 'incassiMesi',
                 'clientiMesi',
+                'presenzeMesi',
                 'certificatiScadenza'
             ));
 
@@ -190,6 +210,7 @@ class DashboardController extends Controller
                 'pagamentiScadenza' => collect([]),
                 'incassiMesi' => collect([]),
                 'clientiMesi' => collect([]),
+                'presenzeMesi' => collect([]),
                 'certificatiScadenza' => 0
             ]);
         }

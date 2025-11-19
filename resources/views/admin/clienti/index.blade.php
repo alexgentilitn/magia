@@ -188,19 +188,23 @@
                             {{ $cliente->created_at->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
-                            <a href="{{ route('admin.clienti.show', $cliente->id) }}" 
+                            <a href="{{ route('admin.clienti.show', $cliente->id) }}"
                                class="text-blue-600 hover:text-blue-900" title="Visualizza">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.clienti.edit', $cliente->id) }}" 
+                            <a href="{{ route('admin.clienti.pesate.index', $cliente->id) }}"
+                               class="text-green-600 hover:text-green-900" title="Pesate">
+                                <i class="fas fa-weight"></i>
+                            </a>
+                            <a href="{{ route('admin.clienti.edit', $cliente->id) }}"
                                class="text-fucsia-magia hover:text-viola-magia" title="Modifica">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline" id="delete-form-{{ $cliente->id }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        onclick="return confirm('Sei sicuro di voler eliminare questa cliente?')"
+                                <button type="button"
+                                        onclick="confermaEliminazione('delete-form-{{ $cliente->id }}', 'Eliminare la cliente?', 'Tutti i dati della cliente {{ $cliente->nome }} {{ $cliente->cognome }} saranno eliminati definitivamente.')"
                                         class="text-red-600 hover:text-red-900" title="Elimina">
                                     <i class="fas fa-trash"></i>
                                 </button>

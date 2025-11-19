@@ -14,15 +14,19 @@
             <h2 class="text-2xl font-bold text-gray-800">{{ $cliente->nomeCompleto }}</h2>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('admin.clienti.edit', $cliente->id) }}" 
+            <a href="{{ route('admin.clienti.pesate.index', $cliente->id) }}"
+               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-weight mr-2"></i> Vedi Pesate
+            </a>
+            <a href="{{ route('admin.clienti.edit', $cliente->id) }}"
                class="px-4 py-2 bg-fucsia-magia text-white rounded-lg hover:bg-viola-magia transition">
                 <i class="fas fa-edit mr-2"></i> Modifica
             </a>
-            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline">
+            <form method="POST" action="{{ route('admin.clienti.destroy', $cliente->id) }}" class="inline" id="delete-cliente-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" 
-                        onclick="return confirm('Sei sicuro di voler eliminare questa cliente?')"
+                <button type="button"
+                        onclick="confermaEliminazione('delete-cliente-form', 'Eliminare la cliente?', 'Tutti i dati della cliente {{ $cliente->nome }} {{ $cliente->cognome }} saranno eliminati definitivamente, incluse tutte le prenotazioni e pagamenti associati.')"
                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                     <i class="fas fa-trash mr-2"></i> Elimina
                 </button>

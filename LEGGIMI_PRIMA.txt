@@ -1,0 +1,59 @@
+═══════════════════════════════════════════════════════════════════
+  🎯 BRANCH UFFICIALE DEL PROGETTO "MA.GIA DONNA"
+═══════════════════════════════════════════════════════════════════
+
+BRANCH PRINCIPALE (da usare SEMPRE):
+
+    claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 COME LAVORARE:
+
+1. Clone (prima volta):
+   git clone https://github.com/alexgentilitn/magia.git
+   cd magia
+
+2. Checkout branch corretto:
+   git checkout claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+
+3. Prima di ogni modifica:
+   git pull origin claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+
+4. Dopo le modifiche:
+   git add .
+   git commit -m "Descrizione"
+   git push origin claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+
+5. Deploy automatico parte (5-10 minuti)
+
+═══════════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANTE:
+
+- NON usare il branch "main" (è vecchio)
+- SEMPRE lavorare su claude/fix-github-ftp-push-01QcEnaTAL1KMQVP9iPVzptc
+- Ogni push = deploy automatico
+
+═══════════════════════════════════════════════════════════════════
+
+📋 LINK UTILI:
+
+Repository:  https://github.com/alexgentilitn/magia
+Deploy:      https://github.com/alexgentilitn/magia/actions
+Dashboard:   https://www.agstudio.digital/magia/public/admin/dashboard
+
+═══════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAZIONE COMPLETA:
+
+- BRANCH_UFFICIALE.md        → Dettagli branch e configurazione
+- BRANCH_PROTECTION_RULES.md → Regole di sicurezza
+- IMPORTANTE_LEGGERE.md      → Guida completa setup
+
+═══════════════════════════════════════════════════════════════════
+
+✅ STATO: CONFIGURAZIONE PROTETTA ATTIVA
+   Il tuo lavoro è al sicuro. Deploy automatico funzionante.
+
+═══════════════════════════════════════════════════════════════════

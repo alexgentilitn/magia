@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "nome": "Nuovo programma 1 test",
+        "slug": "aa",
+        "tipologia": "fitness",
+        "livello": "tutti",
+        "durata_giorni": 30,
+        "durata_mesi": 3,
+        "lezioni_totali": 24,
+        "lezioni_settimana": 2,
+        "durata_singola_lezione": 30,
+        "prezzo_base": 99,
+        "prezzo_promo": 79,
+        "promo_valida_da": "2000-01-01",
+        "promo_valida_a": "2000-01-01",
+        "prezzo_su_richiesta": false,
+        "posti_disponibili": 20,
+        "posti_occupati": 0,
+        "min_partecipanti": 5,
+        "max_partecipanti": 20,
+        "data_inizio": "2000-02-20",
+        "data_fine": "2025-02-20",
+        "sempre_disponibile": false,
+        "attivo": true,
+        "visibile_pubblico": false,
+        "in_evidenza": false,
+        "ordine": 0,
+        "created_at": "2025-11-13 08:13:52",
+        "updated_at": "2025-11-13 08:14:10"
+    }
+]

@@ -28,11 +28,11 @@
                     <i class="fas fa-copy mr-2"></i> Duplica
                 </button>
             </form>
-            <form method="POST" action="{{ route('admin.programmi.destroy', $programma->id) }}" class="inline">
+            <form method="POST" action="{{ route('admin.programmi.destroy', $programma->id) }}" class="inline" id="delete-programma-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit"
-                        onclick="return confirm('Sei sicuro di voler eliminare questo programma?')"
+                <button type="button"
+                        onclick="confermaEliminazione('delete-programma-form', 'Eliminare il programma?', 'Il programma {{ $programma->nome }} sarà eliminato definitivamente. Le lezioni esistenti non saranno eliminate.')"
                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                     <i class="fas fa-trash mr-2"></i> Elimina
                 </button>

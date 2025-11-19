@@ -113,6 +113,53 @@ class Utente extends Authenticatable
     }
 
     /**
+     * Relazione: Permessi individuali assegnati all'utente (many-to-many)
+     *
+     * Funzione: Permessi specifici assegnati direttamente all'utente
+     * (oltre a quelli del ruolo). Usato per collaboratori con permessi personalizzati.
+     * Ritorna: Collection di Permessi
+     */
+    public function permessiIndividuali()
+    {
+        return $this->belongsToMany(
+            Permesso::class,
+            'utente_permesso',
+            'utente_id',
+            'permesso_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Relazione: Conversazioni chat dell'utente (many-to-many)
+     *
+     * Funzione: Conversazioni di cui l'utente fa parte
+     * Ritorna: Collection di Conversazione
+     */
+    public function conversazioni()
+    {
+        return $this->belongsToMany(
+            Conversazione::class,
+            'conversazione_utente',
+            'utente_id',
+            'conversazione_id'
+        )->withPivot(['ultimo_accesso', 'messaggi_non_letti'])
+          ->withTimestamps()
+          ->orderBy('ultimo_messaggio_at', 'desc');
+    }
+
+    /**
+     * Relazione: Notifiche dell'utente
+     *
+     * Funzione: Notifiche ricevute dall'utente
+     * Ritorna: Collection di Notifica
+     */
+    public function notifiche()
+    {
+        return $this->hasMany(Notifica::class, 'utente_id')
+            ->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Scope: Solo utenti attivi
      * 
      * Funzione: Filtra query per ottenere solo utenti attivi
@@ -147,14 +194,28 @@ class Utente extends Authenticatable
 
     /**
      * Verifica se l'utente ha un permesso specifico
-     * 
-     * Funzione: Controlla se il ruolo dell'utente ha il permesso richiesto
+     *
+     * Funzione: Controlla se l'utente ha il permesso tramite:
+     * 1. Permessi individuali assegnati direttamente (priorità massima)
+     * 2. Permessi del ruolo (se non ha permessi individuali)
+     *
      * Parametri:
-     *   - $permesso_slug: slug del permesso (es: 'gestione-clienti')
+     *   - $permesso_slug: slug del permesso (es: 'gestione-presenze')
      * Ritorna: true se ha il permesso, false altrimenti
      */
     public function haPermesso($permesso_slug)
     {
+        // 1. Controlla permessi individuali (priorità)
+        $haPermessoIndividuale = $this->permessiIndividuali()
+            ->where('slug', $permesso_slug)
+            ->where('attivo', true)
+            ->exists();
+
+        if ($haPermessoIndividuale) {
+            return true;
+        }
+
+        // 2. Controlla permessi del ruolo
         if (!$this->ruolo) {
             return false;
         }
@@ -163,6 +224,69 @@ class Utente extends Authenticatable
             ->where('slug', $permesso_slug)
             ->where('attivo', true)
             ->exists();
+    }
+
+    /**
+     * Assegna un permesso individuale all'utente
+     *
+     * Funzione: Aggiunge un permesso direttamente all'utente (non tramite ruolo)
+     * Parametri:
+     *   - $permesso_id: ID del permesso o oggetto Permesso
+     * Ritorna: void
+     */
+    public function assegnaPermessoIndividuale($permesso_id)
+    {
+        if (is_object($permesso_id)) {
+            $permesso_id = $permesso_id->id;
+        }
+
+        if (!$this->permessiIndividuali()->where('permesso_id', $permesso_id)->exists()) {
+            $this->permessiIndividuali()->attach($permesso_id);
+        }
+    }
+
+    /**
+     * Rimuove un permesso individuale dall'utente
+     *
+     * Funzione: Rimuove un permesso assegnato direttamente all'utente
+     * Parametri:
+     *   - $permesso_id: ID del permesso o oggetto Permesso
+     * Ritorna: void
+     */
+    public function rimuoviPermessoIndividuale($permesso_id)
+    {
+        if (is_object($permesso_id)) {
+            $permesso_id = $permesso_id->id;
+        }
+
+        $this->permessiIndividuali()->detach($permesso_id);
+    }
+
+    /**
+     * Sincronizza i permessi individuali dell'utente
+     *
+     * Funzione: Sostituisce tutti i permessi individuali con una nuova lista
+     * Parametri:
+     *   - $permessi: array di ID permessi
+     * Ritorna: void
+     */
+    public function sincronizzaPermessiIndividuali(array $permessi)
+    {
+        $this->permessiIndividuali()->sync($permessi);
+    }
+
+    /**
+     * Ottiene tutti i permessi dell'utente (ruolo + individuali)
+     *
+     * Funzione: Ritorna l'unione di permessi del ruolo e permessi individuali
+     * Ritorna: Collection di Permessi (senza duplicati)
+     */
+    public function tuttiIPermessi()
+    {
+        $permessiRuolo = $this->ruolo ? $this->ruolo->permessi()->where('attivo', true)->get() : collect([]);
+        $permessiIndividuali = $this->permessiIndividuali()->where('attivo', true)->get();
+
+        return $permessiRuolo->merge($permessiIndividuali)->unique('id');
     }
 
     /**
@@ -276,7 +400,7 @@ class Utente extends Authenticatable
 
     /**
      * Marca l'email come verificata
-     * 
+     *
      * Funzione: Imposta email_verificata a true e registra la data
      */
     public function markEmailAsVerified()
@@ -284,5 +408,61 @@ class Utente extends Authenticatable
         $this->email_verificata = true;
         $this->email_verificata_il = now();
         $this->save();
+    }
+
+    /**
+     * Boot del model - Protezioni per admin/professionisti
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // PROTEZIONE 1: Impedisci soft-delete di amministratori e professionisti
+        static::deleting(function ($utente) {
+            if (in_array($utente->tipo_utente, ['amministratore', 'professionista'])) {
+                \Log::warning("Tentativo di eliminare admin/professionista bloccato: {$utente->email}");
+
+                // Blocca l'eliminazione
+                throw new \Exception(
+                    "PROTEZIONE ATTIVA: Non è possibile eliminare amministratori o professionisti. " .
+                    "Se necessario, disattiva l'utente impostando 'attivo' a false."
+                );
+            }
+        });
+
+        // PROTEZIONE 2: Impedisci cambio tipo_utente da admin/professionista a cliente
+        static::updating(function ($utente) {
+            if ($utente->isDirty('tipo_utente')) {
+                $vecchioTipo = $utente->getOriginal('tipo_utente');
+                $nuovoTipo = $utente->tipo_utente;
+
+                // Se era admin/professionista e diventa cliente, blocca
+                if (in_array($vecchioTipo, ['amministratore', 'professionista']) && $nuovoTipo === 'cliente') {
+                    \Log::warning("Tentativo cambio tipo_utente admin→cliente bloccato: {$utente->email}");
+
+                    throw new \Exception(
+                        "PROTEZIONE ATTIVA: Non è possibile convertire amministratori/professionisti in clienti."
+                    );
+                }
+            }
+        });
+
+        // PROTEZIONE 3: Log per modifiche critiche agli admin
+        static::updated(function ($utente) {
+            if (in_array($utente->tipo_utente, ['amministratore', 'professionista'])) {
+                $changes = $utente->getChanges();
+
+                // Log modifiche importanti
+                $campiCritici = ['email', 'password', 'attivo', 'ruolo_id'];
+                $modificheCritiche = array_intersect_key($changes, array_flip($campiCritici));
+
+                if (!empty($modificheCritiche)) {
+                    \Log::info("Modifica admin/professionista: {$utente->email}", [
+                        'campi_modificati' => array_keys($modificheCritiche),
+                        'user_id' => auth()->id() ?? 'sistema',
+                    ]);
+                }
+            }
+        });
     }
 }

@@ -384,8 +384,8 @@ class PesateController extends Controller
                     }
                 }
 
-                // Estrai peso
-                $pesoRaw = $worksheet->getCell($mapping['peso'] . $row)->getFormattedValue();
+                // Estrai peso - USA getValue() per valore reale invece di getFormattedValue()
+                $pesoRaw = $worksheet->getCell($mapping['peso'] . $row)->getValue();
                 $peso = $this->pulisciNumero($pesoRaw);
 
                 if (!$peso || $peso < 20 || $peso > 300) {
@@ -405,40 +405,40 @@ class PesateController extends Controller
                     'sede' => $sede,
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
-                        ? $this->validaBMI($this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getFormattedValue()))
+                        ? $this->validaBMI($this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getValue()))
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getFormattedValue())
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getValue())
                         : null,
                     'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)->getFormattedValue())
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)->getValue())
                         : null,
                     'grasso_corporeo' => isset($mapping['grasso_corporeo']) && $mapping['grasso_corporeo'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_corporeo'] . $row)->getFormattedValue())
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_corporeo'] . $row)->getValue())
                         : null,
                     'grasso_sottocutaneo' => isset($mapping['grasso_sottocutaneo']) && $mapping['grasso_sottocutaneo'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)->getFormattedValue())
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)->getValue())
                         : null,
                     'grasso_viscerale' => isset($mapping['grasso_viscerale']) && $mapping['grasso_viscerale'] !== 'skip'
-                        ? $this->validaGrassoViscerale((int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getFormattedValue())
+                        ? $this->validaGrassoViscerale((int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getValue())
                         : null,
                     'acqua_corporea' => isset($mapping['acqua_corporea']) && $mapping['acqua_corporea'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['acqua_corporea'] . $row)->getFormattedValue())
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['acqua_corporea'] . $row)->getValue())
                         : null,
                     'massa_muscolare' => isset($mapping['massa_muscolare']) && $mapping['massa_muscolare'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_muscolare'] . $row)->getFormattedValue())
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_muscolare'] . $row)->getValue())
                         : null,
                     'massa_ossea' => isset($mapping['massa_ossea']) && $mapping['massa_ossea'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_ossea'] . $row)->getFormattedValue())
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_ossea'] . $row)->getValue())
                         : null,
                     'proteine' => isset($mapping['proteine']) && $mapping['proteine'] !== 'skip'
-                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['proteine'] . $row)->getFormattedValue())
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['proteine'] . $row)->getValue())
                         : null,
                     'bmr' => isset($mapping['bmr']) && $mapping['bmr'] !== 'skip'
-                        ? $this->validaBMR((int) $worksheet->getCell($mapping['bmr'] . $row)->getFormattedValue())
+                        ? $this->validaBMR((int) $worksheet->getCell($mapping['bmr'] . $row)->getValue())
                         : null,
                     'eta_metabolica' => isset($mapping['eta_metabolica']) && $mapping['eta_metabolica'] !== 'skip'
-                        ? $this->validaEtaMetabolica((int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getFormattedValue())
+                        ? $this->validaEtaMetabolica((int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getValue())
                         : null,
                     'data_rilevazione' => $dataRilevazione,
                     'errors' => $rowErrors,

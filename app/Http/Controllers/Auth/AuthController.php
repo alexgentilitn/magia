@@ -210,7 +210,8 @@ class AuthController extends Controller
         ]);
 
         // Verifica che l'utente esista e sia admin/professionista
-        $utente = Utente::where('email', $request->email)
+        // Confronto case-insensitive per l'email
+        $utente = Utente::whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->whereIn('tipo_utente', ['amministratore', 'professionista'])
             ->first();
 
@@ -222,11 +223,11 @@ class AuthController extends Controller
         // Genera token univoco
         $token = \Str::random(64);
 
-        // Salva o aggiorna token nel database
+        // Salva o aggiorna token nel database (usa email dal database per mantenere il case originale)
         \DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
+            ['email' => $utente->email],
             [
-                'email' => $request->email,
+                'email' => $utente->email,
                 'token' => \Hash::make($token),
                 'created_at' => now(),
             ]
@@ -239,7 +240,7 @@ class AuthController extends Controller
                 \App\Models\Impostazione::applySmtpConfig();
             }
 
-            \Mail::to($request->email)->send(new \App\Mail\ResetPasswordMail($utente, $token));
+            \Mail::to($utente->email)->send(new \App\Mail\ResetPasswordMail($utente, $token));
         } catch (\Exception $e) {
             \Log::error('Errore invio email reset password: ' . $e->getMessage());
             return back()->withErrors(['email' => 'Errore nell\'invio dell\'email. Riprova più tardi.']);
@@ -273,9 +274,9 @@ class AuthController extends Controller
             'password.confirmed' => 'Le password non corrispondono',
         ]);
 
-        // Verifica token
+        // Verifica token (confronto case-insensitive per email)
         $resetRecord = \DB::table('password_reset_tokens')
-            ->where('email', $request->email)
+            ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->first();
 
         if (!$resetRecord) {
@@ -289,12 +290,12 @@ class AuthController extends Controller
 
         // Verifica che il token non sia scaduto (24 ore)
         if (now()->diffInHours($resetRecord->created_at) > 24) {
-            \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            \DB::table('password_reset_tokens')->whereRaw('LOWER(email) = ?', [strtolower($request->email)])->delete();
             return back()->withErrors(['email' => 'Il link è scaduto. Richiedi un nuovo link di reset.']);
         }
 
-        // Trova utente
-        $utente = Utente::where('email', $request->email)
+        // Trova utente (confronto case-insensitive per email)
+        $utente = Utente::whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->whereIn('tipo_utente', ['amministratore', 'professionista'])
             ->first();
 
@@ -307,7 +308,7 @@ class AuthController extends Controller
         $utente->save();
 
         // Elimina token usato
-        \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        \DB::table('password_reset_tokens')->whereRaw('LOWER(email) = ?', [strtolower($request->email)])->delete();
 
         // Redirect al login con messaggio di successo
         return redirect()->route('admin.login')

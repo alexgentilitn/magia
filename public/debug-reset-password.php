@@ -70,8 +70,8 @@ echo "<h2>4️⃣ Verifica Utente Admin Specifico</h2>";
 $email = isset($_GET['email']) ? trim($_GET['email']) : '';
 if ($email) {
     try {
-        // Prima cerca l'utente senza filtro tipo_utente per vedere se esiste
-        $utenteQualsiasi = \App\Models\Utente::where('email', $email)->first();
+        // Prima cerca l'utente senza filtro tipo_utente per vedere se esiste (case-insensitive)
+        $utenteQualsiasi = \App\Models\Utente::whereRaw('LOWER(email) = ?', [strtolower($email)])->first();
 
         if ($utenteQualsiasi) {
             echo "ℹ️ Utente trovato nel database:<br>";
@@ -101,8 +101,8 @@ if ($email) {
 if (isset($_GET['test_send']) && $_GET['test_send'] === 'yes' && $email) {
     echo "<h2>5️⃣ Test Invio Email</h2>";
     try {
-        // Trova utente
-        $utente = \App\Models\Utente::where('email', $email)->first();
+        // Trova utente (case-insensitive)
+        $utente = \App\Models\Utente::whereRaw('LOWER(email) = ?', [strtolower($email)])->first();
 
         if (!$utente) {
             echo "❌ Utente non trovato con email: {$email}<br>";
@@ -115,21 +115,21 @@ if (isset($_GET['test_send']) && $_GET['test_send'] === 'yes' && $email) {
 
             // Genera token di test
             $token = \Str::random(64);
-            // Salva token (per test)
+            // Salva token (per test) - usa email dal database per mantenere il case originale
             \DB::table('password_reset_tokens')->updateOrInsert(
-                ['email' => $email],
+                ['email' => $utente->email],
                 [
-                    'email' => $email,
+                    'email' => $utente->email,
                     'token' => \Hash::make($token),
                     'created_at' => now(),
                 ]
             );
             echo "✅ Token generato e salvato<br>";
 
-            // Invia email
-            \Mail::to($email)->send(new \App\Mail\ResetPasswordMail($utente, $token));
+            // Invia email - usa email dal database
+            \Mail::to($utente->email)->send(new \App\Mail\ResetPasswordMail($utente, $token));
             echo "✅ <strong style='color: green;'>EMAIL INVIATA CON SUCCESSO!</strong><br>";
-            echo "Controlla la casella di posta di: <strong>{$email}</strong><br>";
+            echo "Controlla la casella di posta di: <strong>{$utente->email}</strong><br>";
         }
     } catch (\Exception $e) {
         echo "❌ <strong style='color: red;'>ERRORE INVIO EMAIL:</strong><br>";

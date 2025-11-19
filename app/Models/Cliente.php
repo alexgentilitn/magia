@@ -173,6 +173,14 @@ class Cliente extends Model
     }
 
     /**
+     * Relazione: Storico pesate
+     */
+    public function pesate()
+    {
+        return $this->hasMany(Pesata::class, 'cliente_id')->orderBy('data_rilevazione', 'desc');
+    }
+
+    /**
      * Relazione: Ultimo parametro corporeo rilevato
      */
     public function ultimoParametro()

@@ -294,51 +294,42 @@
                     </form>
                 </div>
 
-                <!-- Box Configurazione Corrente -->
-                <div class="bg-gray-50 rounded-lg shadow mb-6">
-                    <div class="p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-800 mb-1">
-                            <i class="fas fa-eye text-fucsia-magia mr-2"></i>
-                            Configurazione Corrente
-                        </h2>
-                        <p class="text-sm text-gray-600">Verifica i parametri salvati</p>
+                <!-- Box Configurazione Corrente - Compatto -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-800">
+                            <i class="fas fa-cog text-fucsia-magia mr-2"></i>
+                            Configurazione Attiva
+                        </h3>
                     </div>
 
-                    <div class="p-6">
-                        <dl class="space-y-3 text-sm">
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">Host SMTP:</dt>
-                                <dd class="text-gray-900 font-mono">{{ $impostazioniSmtp['smtp_host']['valore'] ?? 'Non configurato' }}</dd>
+                    <div class="p-4">
+                        <dl class="space-y-2 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-gray-100">
+                                <dt class="font-medium text-gray-600">Host:</dt>
+                                <dd class="text-gray-900 font-mono">{{ Str::limit($impostazioniSmtp['smtp_host']['valore'] ?? 'Non configurato', 25) }}</dd>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">Porta:</dt>
-                                <dd class="text-gray-900 font-mono">{{ $impostazioniSmtp['smtp_porta']['valore'] ?? 'Non configurato' }}</dd>
+                            <div class="flex justify-between py-1.5 border-b border-gray-100">
+                                <dt class="font-medium text-gray-600">Porta:</dt>
+                                <dd class="text-gray-900 font-mono">{{ $impostazioniSmtp['smtp_porta']['valore'] ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">Encryption:</dt>
-                                <dd class="text-gray-900 font-mono uppercase">{{ $impostazioniSmtp['smtp_encryption']['valore'] ?? 'Non configurato' }}</dd>
+                            <div class="flex justify-between py-1.5 border-b border-gray-100">
+                                <dt class="font-medium text-gray-600">Encryption:</dt>
+                                <dd class="text-gray-900 font-mono uppercase">{{ $impostazioniSmtp['smtp_encryption']['valore'] ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">Username:</dt>
-                                <dd class="text-gray-900 font-mono text-xs break-all">{{ $impostazioniSmtp['smtp_username']['valore'] ?? 'Non configurato' }}</dd>
+                            <div class="flex justify-between py-1.5 border-b border-gray-100">
+                                <dt class="font-medium text-gray-600">Username:</dt>
+                                <dd class="text-gray-900 font-mono text-[10px] truncate max-w-[140px]">{{ $impostazioniSmtp['smtp_username']['valore'] ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">Password:</dt>
-                                <dd class="text-gray-500 font-mono">
+                            <div class="flex justify-between py-1.5">
+                                <dt class="font-medium text-gray-600">Password:</dt>
+                                <dd class="text-gray-500">
                                     @if(!empty($impostazioniSmtp['smtp_password']['valore']))
-                                        <i class="fas fa-lock mr-1"></i>••••••••
+                                        <i class="fas fa-check-circle text-green-600"></i>
                                     @else
-                                        <span class="text-red-600">Non configurata</span>
+                                        <i class="fas fa-times-circle text-red-600"></i>
                                     @endif
                                 </dd>
-                            </div>
-                            <div class="flex justify-between py-2 border-b border-gray-200">
-                                <dt class="font-medium text-gray-700">From Address:</dt>
-                                <dd class="text-gray-900 font-mono text-xs break-all">{{ $impostazioniSmtp['mail_from_address']['valore'] ?? 'Non configurato' }}</dd>
-                            </div>
-                            <div class="flex justify-between py-2">
-                                <dt class="font-medium text-gray-700">From Name:</dt>
-                                <dd class="text-gray-900">{{ $impostazioniSmtp['mail_from_name']['valore'] ?? 'Non configurato' }}</dd>
                             </div>
                         </dl>
 
@@ -349,37 +340,22 @@
                             $isConfigured = $hasPassword && $hasUsername && $hasHost;
                         @endphp
 
-                        @if(!$isConfigured)
-                        <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                            <p class="text-sm text-yellow-800">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <strong>Attenzione:</strong> Configurazione incompleta. Assicurati di compilare tutti i campi obbligatori.
-                            </p>
-                        </div>
+                        @if($isConfigured)
+                            <div class="mt-3 px-3 py-2 bg-green-50 border border-green-200 rounded">
+                                <p class="text-xs text-green-800 text-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    <strong>Configurato</strong>
+                                </p>
+                            </div>
+                        @else
+                            <div class="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded">
+                                <p class="text-xs text-red-800 text-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>
+                                    <strong>Incompleto</strong>
+                                </p>
+                            </div>
                         @endif
                     </div>
-                </div>
-
-                <!-- Box Info -->
-                <div class="bg-blue-50 rounded-lg p-6">
-                    <h3 class="font-bold text-blue-900 mb-3">
-                        <i class="fas fa-lightbulb mr-2"></i>
-                        Suggerimenti
-                    </h3>
-                    <ul class="text-sm text-blue-800 space-y-2">
-                        <li class="flex items-start">
-                            <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
-                            <span><strong>Gmail:</strong> Usa porta 587 (TLS) o 465 (SSL). Abilita "App meno sicure" o usa password app.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
-                            <span><strong>Office365:</strong> Host smtp.office365.com, porta 587 (TLS)</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check text-blue-600 mr-2 mt-1"></i>
-                            <span><strong>SendGrid/Mailgun:</strong> Usa le credenziali API fornite nel pannello di controllo</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>

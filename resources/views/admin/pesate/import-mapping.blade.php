@@ -174,9 +174,11 @@
                         @php
                             $campiOpzionali = [
                                 'bmi' => ['label' => 'BMI', 'terms' => ['bmi', 'body mass index', 'indice']],
-                                'grasso_corporeo' => ['label' => 'Grasso %', 'terms' => ['grasso', 'fat', 'bf']],
+                                'grasso_corporeo' => ['label' => 'Grasso %', 'terms' => ['grasso corporeo', 'fat', 'bf']],
+                                'grasso_sottocutaneo' => ['label' => 'G. Sottoc.', 'terms' => ['sottocutaneo', 'subcutaneous', 'grasso sottoc']],
                                 'grasso_viscerale' => ['label' => 'Grasso Visc.', 'terms' => ['viscerale', 'visceral']],
                                 'massa_muscolare' => ['label' => 'Massa Musc.', 'terms' => ['massa muscolare', 'muscle mass']],
+                                'massa_ossea' => ['label' => 'M. Ossea', 'terms' => ['ossea', 'bone', 'massa ossea']],
                                 'muscolo_scheletrico' => ['label' => 'M. Scheletrico', 'terms' => ['muscolo', 'skeletal', 'smm']],
                                 'bmr' => ['label' => 'BMR', 'terms' => ['bmr', 'metabolismo', 'basal']],
                                 'acqua_corporea' => ['label' => 'Acqua %', 'terms' => ['acqua', 'water', 'tbw']],

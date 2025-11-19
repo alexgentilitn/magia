@@ -346,46 +346,53 @@ class PesateController extends Controller
                     continue;
                 }
 
-                // Cerca cliente con logica migliorata - LIMITATO ALLA SEDE SELEZIONATA
-                $cliente = $this->findOrCreateCliente($nome, $cognome, $codiceFiscale, $sede);
+                // Cerca possibili clienti - RILEVA OMONIMI
+                $risultatoRicerca = $this->findPossibiliClienti($nome, $cognome, $codiceFiscale, $sede);
 
                 $rowErrors = [];
                 $clienteCreato = false;
+                $cliente = null;
+                $hasOmonimia = $risultatoRicerca['is_duplicato'];
+                $possibiliClienti = [];
 
-                if (!$cliente) {
-                    // Recupera errore dettagliato dalla sessione
-                    $detailedErrors = session('import_errors_detail', []);
-                    $clienteKey = "{$cognome} {$nome}";
-                    $errorDetail = collect($detailedErrors)->firstWhere('cliente', $clienteKey);
+                if ($risultatoRicerca['match_type'] === 'nessuno') {
+                    // Nuovo cliente
+                    $clienteCreato = true;
+                    $clientiCreati["new_{$row}"] = [
+                        'nome' => $nome,
+                        'cognome' => $cognome,
+                        'codice_fiscale' => $codiceFiscale,
+                    ];
+                } elseif ($risultatoRicerca['match_type'] === 'unico' || $risultatoRicerca['match_type'] === 'codice_fiscale') {
+                    // Un solo match - usiamo questo
+                    $cliente = $risultatoRicerca['clienti'][0];
 
-                    if ($errorDetail) {
-                        $rowErrors[] = 'Impossibile trovare o creare il cliente: ' . $errorDetail['errore'];
-                    } else {
-                        $rowErrors[] = 'Impossibile trovare o creare il cliente (dettagli non disponibili - verifica log)';
-                    }
-                } else {
-                    // Traccia se è stato appena creato o trovato
-                    if ($cliente->wasRecentlyCreated) {
-                        $clienteCreato = true;
-                        $clientiCreati[$cliente->id] = [
+                    if (!isset($clientiTrovati[$cliente->id])) {
+                        $clientiTrovati[$cliente->id] = [
                             'id' => $cliente->id,
                             'nome' => $cliente->nome,
                             'cognome' => $cliente->cognome,
                             'codice_fiscale' => $cliente->codice_fiscale,
+                            'pesate_count' => 0,
                         ];
-                    } else {
-                        // Cliente esistente trovato
-                        if (!isset($clientiTrovati[$cliente->id])) {
-                            $clientiTrovati[$cliente->id] = [
-                                'id' => $cliente->id,
-                                'nome' => $cliente->nome,
-                                'cognome' => $cliente->cognome,
-                                'codice_fiscale' => $cliente->codice_fiscale,
-                                'pesate_count' => 0,
-                            ];
-                        }
-                        $clientiTrovati[$cliente->id]['pesate_count']++;
                     }
+                    $clientiTrovati[$cliente->id]['pesate_count']++;
+                } elseif ($risultatoRicerca['match_type'] === 'multiplo') {
+                    // OMONIMIA! Prepara dati per scelta utente
+                    $possibiliClienti = collect($risultatoRicerca['clienti'])->map(function($c) {
+                        return [
+                            'id' => $c->id,
+                            'nome' => $c->nome,
+                            'cognome' => $c->cognome,
+                            'codice_fiscale' => $c->codice_fiscale,
+                            'data_iscrizione' => $c->data_iscrizione,
+                            'email' => $c->email,
+                            'telefono' => $c->telefono,
+                        ];
+                    })->toArray();
+
+                    // Usa il primo come default ma segnala omonimia
+                    $cliente = $risultatoRicerca['clienti'][0];
                 }
 
                 // Estrai peso - usa leggiValoreCella per gestire formati Data
@@ -463,87 +470,110 @@ class PesateController extends Controller
     }
 
     /**
-     * Trova cliente esistente o crea nuovo cliente
-     * LIMITATO ALLA SEDE SELEZIONATA per evitare confusione tra omonimi
+     * Cerca TUTTI i clienti che matchano nome/cognome nella sede
+     * Ritorna array di possibili match per gestione omonimi
      */
-    private function findOrCreateCliente($nome, $cognome, $codiceFiscale = null, $nomeSede = null)
+    private function findPossibiliClienti($nome, $cognome, $codiceFiscale = null, $nomeSede = null)
     {
         // Trova ID della sede dal nome
         $sedeId = null;
         if ($nomeSede) {
             $sede = Sede::where('nome', $nomeSede)->first();
             $sedeId = $sede ? $sede->id : null;
-
-            \Log::info("Ricerca cliente limitata alla sede", [
-                'nome_sede' => $nomeSede,
-                'sede_id' => $sedeId,
-                'cliente_cercato' => "{$cognome} {$nome}"
-            ]);
         }
 
-        // Prima cerca per nome e cognome NELLA SEDE SELEZIONATA
+        $possibiliMatch = [];
+
+        // Cerca per codice fiscale (match più preciso)
+        if ($codiceFiscale) {
+            $query = Cliente::whereRaw('LOWER(TRIM(codice_fiscale)) = ?', [strtolower(trim($codiceFiscale))]);
+
+            if ($sedeId) {
+                $query->where('sede_preferita_id', $sedeId);
+            }
+
+            $clienteCF = $query->first();
+
+            if ($clienteCF) {
+                return [
+                    'match_type' => 'codice_fiscale',
+                    'clienti' => [$clienteCF],
+                    'is_duplicato' => false
+                ];
+            }
+        }
+
+        // Cerca per nome e cognome NELLA SEDE
         $query = Cliente::where(function($q) use ($nome, $cognome) {
             $q->whereRaw('LOWER(TRIM(nome)) = ?', [strtolower(trim($nome))])
               ->whereRaw('LOWER(TRIM(cognome)) = ?', [strtolower(trim($cognome))]);
         });
 
-        // Filtra per sede se presente
         if ($sedeId) {
             $query->where('sede_preferita_id', $sedeId);
         }
 
-        $cliente = $query->first();
+        $clienti = $query->get();
 
-        // Se non trovato e c'è codice fiscale, cerca per quello NELLA STESSA SEDE
-        if (!$cliente && $codiceFiscale) {
-            $query = Cliente::whereRaw('LOWER(TRIM(codice_fiscale)) = ?', [strtolower(trim($codiceFiscale))]);
+        if ($clienti->count() === 0) {
+            // Nessun match - nuovo cliente
+            return [
+                'match_type' => 'nessuno',
+                'clienti' => [],
+                'is_duplicato' => false
+            ];
+        } elseif ($clienti->count() === 1) {
+            // Un solo match - sicuro
+            return [
+                'match_type' => 'unico',
+                'clienti' => $clienti->all(),
+                'is_duplicato' => false
+            ];
+        } else {
+            // Multipli match - OMONIMIA!
+            return [
+                'match_type' => 'multiplo',
+                'clienti' => $clienti->all(),
+                'is_duplicato' => true
+            ];
+        }
+    }
 
-            // Filtra per sede anche qui
-            if ($sedeId) {
-                $query->where('sede_preferita_id', $sedeId);
-            }
-
-            $cliente = $query->first();
+    /**
+     * Crea nuovo cliente (usato in confirmImport dopo scelta utente)
+     */
+    private function creaCliente($nome, $cognome, $codiceFiscale = null, $nomeSede = null)
+    {
+        // Trova ID della sede dal nome
+        $sedeId = null;
+        if ($nomeSede) {
+            $sede = Sede::where('nome', $nomeSede)->first();
+            $sedeId = $sede ? $sede->id : null;
         }
 
-        // Se ancora non trovato, crea nuovo cliente
-        if (!$cliente) {
-            try {
-                $datiCliente = [
-                    'nome' => ucwords(strtolower(trim($nome))),
-                    'cognome' => ucwords(strtolower(trim($cognome))),
-                    'codice_fiscale' => $codiceFiscale ? strtoupper(trim($codiceFiscale)) : null,
-                    'stato_cliente' => 'attivo',
-                    'tipo_cliente' => 'effettiva',
-                    'data_iscrizione' => now(),
-                    'utente_id' => auth()->id(),
-                    'sede_preferita_id' => $sedeId, // Imposta sede preferita
-                ];
+        try {
+            $datiCliente = [
+                'nome' => ucwords(strtolower(trim($nome))),
+                'cognome' => ucwords(strtolower(trim($cognome))),
+                'codice_fiscale' => $codiceFiscale ? strtoupper(trim($codiceFiscale)) : null,
+                'stato_cliente' => 'attivo',
+                'tipo_cliente' => 'effettiva',
+                'data_iscrizione' => now(),
+                'utente_id' => auth()->id(),
+                'sede_preferita_id' => $sedeId,
+            ];
 
-                \Log::info("Tentativo creazione cliente con dati: " . json_encode($datiCliente));
+            \Log::info("Creazione nuovo cliente", $datiCliente);
 
-                $cliente = Cliente::create($datiCliente);
+            $cliente = Cliente::create($datiCliente);
 
-                \Log::info("Nuovo cliente creato durante import: {$cognome} {$nome} (ID: {$cliente->id}, Sede: {$nomeSede})");
-            } catch (\Exception $e) {
-                $errorMessage = "Errore SQL: " . $e->getMessage();
-                if ($e instanceof \Illuminate\Database\QueryException) {
-                    $errorMessage .= " | SQL State: " . $e->errorInfo[0] . " | Error Code: " . $e->errorInfo[1];
-                }
-                \Log::error("Errore creazione cliente {$cognome} {$nome}: " . $errorMessage);
-                \Log::error("Stack trace: " . $e->getTraceAsString());
+            \Log::info("Nuovo cliente creato: ID {$cliente->id}");
 
-                // Salva l'errore dettagliato in sessione per mostrarlo all'utente
-                session()->push('import_errors_detail', [
-                    'cliente' => "{$cognome} {$nome}",
-                    'errore' => $errorMessage
-                ]);
-
-                return null;
-            }
+            return $cliente;
+        } catch (\Exception $e) {
+            \Log::error("Errore creazione cliente: " . $e->getMessage());
+            return null;
         }
-
-        return $cliente;
     }
 
     /**
@@ -585,78 +615,131 @@ class PesateController extends Controller
      */
     public function confirmImport(Request $request)
     {
-        $data = json_decode($request->preview_data, true);
         $sede = $request->sede;
+        $totalRows = $request->total_rows;
 
-        \Log::info("=== INIZIO IMPORT PESATE ===");
+        \Log::info("=== INIZIO IMPORT PESATE (NUOVA VERSIONE CON RISOLUZIONE OMONIMI) ===");
         \Log::info("Sede: {$sede}");
-        \Log::info("Numero righe da importare: " . count($data));
+        \Log::info("Numero righe da importare: {$totalRows}");
 
         $imported = 0;
         $skipped = 0;
         $import_errors = [];
 
-        // MODIFICA: Non usiamo una singola transazione globale
         // Ogni pesata è indipendente per evitare rollback di tutto
 
-        foreach ($data as $index => $row) {
-            \Log::info("Processando riga #{$index}", $row);
+        for ($index = 0; $index < $totalRows; $index++) {
+            $rowNumber = $request->input("row_number_{$index}");
+
+            \Log::info("Processando riga #{$rowNumber} (index {$index})");
 
             // Salta righe con errori
-            if (!empty($row['errors']) || !$row['cliente_id']) {
+            $hasErrors = $request->input("has_errors_{$index}") === '1';
+            if ($hasErrors) {
                 $skipped++;
-                $errorMsg = "Riga {$row['row']}: " . implode(', ', $row['errors'] ?? ['Cliente ID mancante']);
+                $errorMsg = "Riga {$rowNumber}: Contiene errori di validazione";
                 $import_errors[] = $errorMsg;
                 \Log::warning("Riga saltata: {$errorMsg}");
                 continue;
             }
 
-            // NUOVO: Verifica che il cliente esista prima di inserire
-            $clienteEsiste = Cliente::where('id', $row['cliente_id'])->exists();
-            if (!$clienteEsiste) {
-                $skipped++;
-                $errorMsg = "Riga {$row['row']}: Cliente ID {$row['cliente_id']} non esiste nel database";
-                $import_errors[] = $errorMsg;
-                \Log::error($errorMsg);
-                continue;
-            }
+            // Leggi dati cliente
+            $nome = $request->input("nome_{$index}");
+            $cognome = $request->input("cognome_{$index}");
+            $codiceFiscale = $request->input("codice_fiscale_{$index}");
+            $hasOmonimia = $request->input("has_omonimia_{$index}") === '1';
+
+            // Determina cliente_id
+            $clienteIdInput = $request->input("cliente_id_{$index}");
 
             try {
+                $clienteId = null;
+
+                // Se utente ha scelto "new" (crea nuovo cliente)
+                if ($clienteIdInput === 'new') {
+                    \Log::info("Riga {$rowNumber}: Creazione nuovo cliente '{$cognome} {$nome}' in sede {$sede}");
+
+                    $nuovoCliente = $this->creaCliente($nome, $cognome, $codiceFiscale, $sede);
+                    $clienteId = $nuovoCliente->id;
+
+                    \Log::info("Riga {$rowNumber}: Nuovo cliente creato con ID {$clienteId}");
+                }
+                // Altrimenti usa l'ID esistente selezionato
+                elseif ($clienteIdInput) {
+                    $clienteId = (int) $clienteIdInput;
+
+                    // Verifica che il cliente esista
+                    $clienteEsiste = Cliente::where('id', $clienteId)->exists();
+                    if (!$clienteEsiste) {
+                        $skipped++;
+                        $errorMsg = "Riga {$rowNumber}: Cliente ID {$clienteId} non esiste nel database";
+                        $import_errors[] = $errorMsg;
+                        \Log::error($errorMsg);
+                        continue;
+                    }
+
+                    \Log::info("Riga {$rowNumber}: Usando cliente esistente ID {$clienteId}");
+                }
+                else {
+                    // Nessun cliente selezionato
+                    $skipped++;
+                    $errorMsg = "Riga {$rowNumber}: Nessun cliente selezionato";
+                    $import_errors[] = $errorMsg;
+                    \Log::warning($errorMsg);
+                    continue;
+                }
+
+                // Leggi tutti i campi misurazione (modificabili dall'utente)
+                $peso = $request->input("peso_{$index}");
+                $bmi = $request->input("bmi_{$index}");
+                $grassoCorporeo = $request->input("grasso_corporeo_{$index}");
+                $grassoViscerale = $request->input("grasso_viscerale_{$index}");
+                $muscolo = $request->input("muscolo_{$index}");
+                $massaMuscolare = $request->input("massa_muscolare_{$index}");
+                $muscoloScheletrico = $request->input("muscolo_scheletrico_{$index}");
+                $bmr = $request->input("bmr_{$index}");
+                $acquaCorporea = $request->input("acqua_corporea_{$index}");
+                $pesoCorporeoSenzaGrassi = $request->input("peso_corporeo_senza_grassi_{$index}");
+                $proteine = $request->input("proteine_{$index}");
+                $etaMetabolica = $request->input("eta_metabolica_{$index}");
+                $dataRilevazione = $request->input("data_rilevazione_{$index}");
+
                 // Prepara dati pesata
                 $pesataData = [
-                    'cliente_id' => $row['cliente_id'],
+                    'cliente_id' => $clienteId,
                     'sede' => $sede,
-                    'peso' => $row['peso'],
-                    'bmi' => $row['bmi'],
-                    'peso_corporeo_senza_grassi' => $row['peso_corporeo_senza_grassi'],
-                    'muscolo_scheletrico' => $row['muscolo_scheletrico'],
-                    'grasso_corporeo' => $row['grasso_corporeo'],
-                    'grasso_sottocutaneo' => $row['grasso_sottocutaneo'],
-                    'grasso_viscerale' => $row['grasso_viscerale'],
-                    'acqua_corporea' => $row['acqua_corporea'],
-                    'massa_muscolare' => $row['massa_muscolare'],
-                    'massa_ossea' => $row['massa_ossea'],
-                    'proteine' => $row['proteine'],
-                    'bmr' => $row['bmr'],
-                    'eta_metabolica' => $row['eta_metabolica'],
-                    'data_rilevazione' => $row['data_rilevazione'],
+                    'peso' => $peso ?: null,
+                    'bmi' => $bmi ?: null,
+                    'peso_corporeo_senza_grassi' => $pesoCorporeoSenzaGrassi ?: null,
+                    'muscolo_scheletrico' => $muscoloScheletrico ?: null,
+                    'grasso_corporeo' => $grassoCorporeo ?: null,
+                    'grasso_sottocutaneo' => null, // Non nel form
+                    'grasso_viscerale' => $grassoViscerale ?: null,
+                    'acqua_corporea' => $acquaCorporea ?: null,
+                    'massa_muscolare' => $massaMuscolare ?: null,
+                    'massa_ossea' => null, // Non nel form
+                    'muscolo' => $muscolo ?: null,
+                    'proteine' => $proteine ?: null,
+                    'bmr' => $bmr ?: null,
+                    'eta_metabolica' => $etaMetabolica ?: null,
+                    'data_rilevazione' => $dataRilevazione ?: now()->format('Y-m-d'),
                 ];
 
-                \Log::info("Tentativo creazione pesata con dati:", $pesataData);
+                \Log::info("Riga {$rowNumber}: Tentativo creazione pesata con dati:", $pesataData);
 
                 // Crea pesata
                 $pesata = Pesata::create($pesataData);
 
-                \Log::info("Pesata creata con ID: {$pesata->id}");
+                \Log::info("Riga {$rowNumber}: Pesata creata con ID: {$pesata->id}");
 
                 $imported++;
 
             } catch (\Exception $e) {
                 // Gestisci errore a livello di singola pesata (non rollback globale)
                 $skipped++;
-                $errorMsg = "Riga {$row['row']}: Errore inserimento - " . $e->getMessage();
+                $errorMsg = "Riga {$rowNumber}: Errore inserimento - " . $e->getMessage();
                 $import_errors[] = $errorMsg;
-                \Log::error("Errore inserimento pesata riga {$row['row']}: " . $e->getMessage());
+                \Log::error("Errore inserimento pesata riga {$rowNumber}: " . $e->getMessage());
                 \Log::error("Stack trace: " . $e->getTraceAsString());
                 // Continua con la prossima riga
                 continue;

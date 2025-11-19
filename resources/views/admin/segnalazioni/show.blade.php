@@ -164,14 +164,10 @@
                     <div class="flex justify-between items-center">
                         <!-- Elimina (solo se non risolta) -->
                         @if($segnalazione->stato !== 'risolta')
-                        <form method="POST" action="{{ route('admin.impostazioni.segnalazioni.destroy', $segnalazione) }}" class="inline" id="delete-form">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" onclick="confermaEliminazione()" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors">
-                                <i class="fas fa-trash mr-2"></i>
-                                Elimina
-                            </button>
-                        </form>
+                        <button type="button" onclick="confermaEliminazione()" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors">
+                            <i class="fas fa-trash mr-2"></i>
+                            Elimina
+                        </button>
                         @else
                         <div></div>
                         @endif
@@ -183,6 +179,14 @@
                         </button>
                     </div>
                 </form>
+
+                <!-- Form Eliminazione (separato) -->
+                @if($segnalazione->stato !== 'risolta')
+                <form method="POST" action="{{ route('admin.impostazioni.segnalazioni.destroy', $segnalazione) }}" id="delete-form" style="display: none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
+                @endif
             </div>
             @endif
 

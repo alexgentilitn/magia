@@ -129,14 +129,14 @@ class SegnalazioniController extends Controller
 
             \Log::info("Segnalazione #{$segnalazione->id} aggiornata a stato: {$nuovoStato}");
 
-            return redirect()->back()
+            return redirect()->route('admin.impostazioni.segnalazioni.show', $segnalazione)
                 ->with('success', 'Segnalazione aggiornata con successo!' .
                     ($segnalazione->email_notifica ? ' Email di notifica inviata.' : ''));
 
         } catch (\Exception $e) {
             \Log::error('Errore aggiornamento segnalazione: ' . $e->getMessage());
 
-            return redirect()->back()
+            return redirect()->route('admin.impostazioni.segnalazioni.show', $segnalazione)
                 ->withInput()
                 ->with('error', 'Errore durante l\'aggiornamento: ' . $e->getMessage());
         }

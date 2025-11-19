@@ -218,94 +218,66 @@
             </form>
         </div>
 
-        <!-- Sidebar Informativa e Test -->
-        <div class="space-y-6">
+        <!-- Sidebar Compatta -->
+        <div class="space-y-4">
             <!-- Card Test Connessione PayPal -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    <i class="fas fa-vial text-fucsia-magia mr-2"></i>
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-vial text-fucsia-magia mr-2 text-xs"></i>
                     Test Connessione PayPal
                 </h3>
 
-                <p class="text-sm text-gray-600 mb-4">
-                    Verifica che le credenziali PayPal siano corrette e funzionanti.
+                <p class="text-xs text-gray-600 mb-3">
+                    Verifica credenziali PayPal
                 </p>
 
-                <div id="paypal-test-result" class="mb-4 hidden"></div>
+                <div id="paypal-test-result" class="mb-3 hidden"></div>
 
                 <button
                     type="button"
                     onclick="testPayPal()"
-                    class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <i class="fas fa-play-circle mr-2"></i>
                     Testa Connessione
                 </button>
 
-                <p class="mt-3 text-xs text-gray-500">
+                <p class="mt-2 text-[10px] text-gray-500">
                     <i class="fas fa-info-circle mr-1"></i>
-                    Salva prima la configurazione, poi testa la connessione.
+                    Salva prima, poi testa
                 </p>
             </div>
 
-            <!-- Card Guida Rapida -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded">
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                    <i class="fas fa-book-open mr-2"></i>
-                    Guida Rapida
-                </h3>
-
-                <ol class="text-sm text-gray-700 space-y-2 list-decimal list-inside">
-                    <li>Vai su <a href="https://developer.paypal.com/dashboard/" target="_blank" class="text-blue-600 hover:underline">PayPal Developer</a></li>
-                    <li>Crea un'app Sandbox per test</li>
-                    <li>Copia Client ID e Secret</li>
-                    <li>Incollali nei campi sopra</li>
-                    <li>Salva e testa la connessione</li>
-                </ol>
-
-                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                    <p class="text-xs text-yellow-800">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        <strong>Importante:</strong> Usa modalità Sandbox per test. Passa a Live solo quando sei pronto per ricevere pagamenti reali.
-                    </p>
-                </div>
-            </div>
-
             <!-- Card Stato Metodi Pagamento -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    <i class="fas fa-toggle-on text-fucsia-magia mr-2"></i>
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-toggle-on text-fucsia-magia mr-2 text-xs"></i>
                     Metodi Attivi
                 </h3>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <!-- PayPal Status -->
-                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded">
+                    <div class="flex items-center justify-between p-2 bg-blue-50 rounded">
                         <div class="flex items-center">
-                            <i class="fab fa-paypal text-blue-600 mr-2"></i>
-                            <span class="text-sm font-medium">PayPal</span>
+                            <i class="fab fa-paypal text-blue-600 mr-2 text-xs"></i>
+                            <span class="text-xs font-medium">PayPal</span>
                         </div>
-                        <span class="text-xs px-2 py-1 rounded {{ (old('paypal_attivo', $impostazioniPaypal['paypal_attivo']['valore'] ?? '1') == '1') ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600' }}">
-                            {{ (old('paypal_attivo', $impostazioniPaypal['paypal_attivo']['valore'] ?? '1') == '1') ? 'Attivo' : 'Disattivato' }}
+                        <span class="text-[10px] px-2 py-0.5 rounded font-semibold {{ (old('paypal_attivo', $impostazioniPaypal['paypal_attivo']['valore'] ?? '1') == '1') ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600' }}">
+                            {{ (old('paypal_attivo', $impostazioniPaypal['paypal_attivo']['valore'] ?? '1') == '1') ? 'Attivo' : 'Off' }}
                         </span>
                     </div>
 
                     <!-- Bonifico Status -->
-                    <div class="flex items-center justify-between p-3 bg-green-50 rounded">
+                    <div class="flex items-center justify-between p-2 bg-green-50 rounded">
                         <div class="flex items-center">
-                            <i class="fas fa-money-check text-green-600 mr-2"></i>
-                            <span class="text-sm font-medium">Bonifico</span>
+                            <i class="fas fa-money-check text-green-600 mr-2 text-xs"></i>
+                            <span class="text-xs font-medium">Bonifico</span>
                         </div>
-                        <span class="text-xs px-2 py-1 rounded {{ (old('bonifico_attivo', $impostazioniPagamento['bonifico_attivo']['valore'] ?? '1') == '1') ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600' }}">
-                            {{ (old('bonifico_attivo', $impostazioniPagamento['bonifico_attivo']['valore'] ?? '1') == '1') ? 'Attivo' : 'Disattivato' }}
+                        <span class="text-[10px] px-2 py-0.5 rounded font-semibold {{ (old('bonifico_attivo', $impostazioniPagamento['bonifico_attivo']['valore'] ?? '1') == '1') ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600' }}">
+                            {{ (old('bonifico_attivo', $impostazioniPagamento['bonifico_attivo']['valore'] ?? '1') == '1') ? 'Attivo' : 'Off' }}
                         </span>
                     </div>
                 </div>
-
-                <p class="mt-3 text-xs text-gray-500">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Almeno un metodo deve essere attivo
-                </p>
             </div>
         </div>
     </div>

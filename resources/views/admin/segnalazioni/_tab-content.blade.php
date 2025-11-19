@@ -6,69 +6,69 @@
 <div x-show="activeTab === 'segnalazioni'" x-cloak>
     <div class="max-w-7xl mx-auto">
 
-        <!-- Header e Statistiche -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Statistiche Compatte -->
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
             <!-- Stat: Totali -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Totali</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ $statsSegnalazioni['totali'] }}</p>
+                        <p class="text-xs font-medium text-gray-600">Totali</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $statsSegnalazioni['totali'] }}</p>
                     </div>
-                    <div class="p-3 bg-gray-100 rounded-full">
-                        <i class="fas fa-exclamation-circle text-2xl text-gray-600"></i>
+                    <div class="p-2 bg-gray-100 rounded-full">
+                        <i class="fas fa-exclamation-circle text-lg text-gray-600"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Stat: Aperte -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Aperte</p>
-                        <p class="text-3xl font-bold text-red-600">{{ $statsSegnalazioni['aperte'] }}</p>
+                        <p class="text-xs font-medium text-gray-600">Aperte</p>
+                        <p class="text-2xl font-bold text-red-600">{{ $statsSegnalazioni['aperte'] }}</p>
                     </div>
-                    <div class="p-3 bg-red-100 rounded-full">
-                        <i class="fas fa-folder-open text-2xl text-red-600"></i>
+                    <div class="p-2 bg-red-100 rounded-full">
+                        <i class="fas fa-folder-open text-lg text-red-600"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Stat: In Lavorazione -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">In Lavorazione</p>
-                        <p class="text-3xl font-bold text-yellow-600">{{ $statsSegnalazioni['in_lavorazione'] }}</p>
+                        <p class="text-xs font-medium text-gray-600">In Lavoro</p>
+                        <p class="text-2xl font-bold text-yellow-600">{{ $statsSegnalazioni['in_lavorazione'] }}</p>
                     </div>
-                    <div class="p-3 bg-yellow-100 rounded-full">
-                        <i class="fas fa-cog text-2xl text-yellow-600"></i>
+                    <div class="p-2 bg-yellow-100 rounded-full">
+                        <i class="fas fa-cog text-lg text-yellow-600"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Stat: Risolte -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Risolte</p>
-                        <p class="text-3xl font-bold text-green-600">{{ $statsSegnalazioni['risolte'] }}</p>
+                        <p class="text-xs font-medium text-gray-600">Risolte</p>
+                        <p class="text-2xl font-bold text-green-600">{{ $statsSegnalazioni['risolte'] }}</p>
                     </div>
-                    <div class="p-3 bg-green-100 rounded-full">
-                        <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                    <div class="p-2 bg-green-100 rounded-full">
+                        <i class="fas fa-check-circle text-lg text-green-600"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Form Nuova Segnalazione -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-plus-circle text-fucsia-magia mr-3"></i>
+        <div class="bg-white rounded-lg shadow mb-4">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-plus-circle text-fucsia-magia mr-2"></i>
                     Nuova Segnalazione
                 </h2>
-                <p class="text-sm text-gray-600 mt-1">Segnala un bug, proponi un miglioramento o richiedi assistenza</p>
+                <p class="text-xs text-gray-500 mt-1">Segnala bug, proponi miglioramenti o richiedi assistenza</p>
             </div>
 
             <form method="POST" action="{{ route('admin.impostazioni.segnalazioni.store') }}" class="p-6">
@@ -164,9 +164,9 @@
 
         <!-- Elenco Segnalazioni -->
         <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-list text-fucsia-magia mr-3"></i>
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-list text-fucsia-magia mr-2"></i>
                     {{ $isSuperAdmin ? 'Tutte le Segnalazioni' : 'Le Mie Segnalazioni' }}
                 </h2>
             </div>

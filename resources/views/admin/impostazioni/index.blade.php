@@ -5,41 +5,41 @@
 @section('contenuto')
 <div class="p-6" x-data="{ activeTab: '{{ session('active_tab', 'email') }}' }">
 
-    <!-- Header -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">
-            <i class="fas fa-cog text-fucsia-magia mr-3"></i>
+    <!-- Header Compatto -->
+    <div class="mb-4">
+        <h1 class="text-2xl font-bold text-gray-800 mb-1">
+            <i class="fas fa-cog text-fucsia-magia mr-2"></i>
             Impostazioni
         </h1>
-        <p class="text-gray-600">Gestisci le configurazioni del sistema</p>
+        <p class="text-sm text-gray-500">Gestisci le configurazioni del sistema</p>
     </div>
 
-    <!-- Messaggi di successo/errore -->
+    <!-- Alert Compatti -->
     @if(session('success'))
-        <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
+        <div class="mb-4 px-4 py-2.5 bg-green-50 border-l-4 border-green-500 rounded-lg">
             <div class="flex items-center">
-                <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
-                <p class="text-green-800 font-medium">{{ session('success') }}</p>
+                <i class="fas fa-check-circle text-green-600 text-sm mr-2"></i>
+                <p class="text-sm text-green-800 font-medium">{{ session('success') }}</p>
             </div>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+        <div class="mb-4 px-4 py-2.5 bg-red-50 border-l-4 border-red-500 rounded-lg">
             <div class="flex items-center">
-                <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3"></i>
-                <p class="text-red-800 font-medium">{{ session('error') }}</p>
+                <i class="fas fa-exclamation-circle text-red-600 text-sm mr-2"></i>
+                <p class="text-sm text-red-800 font-medium">{{ session('error') }}</p>
             </div>
         </div>
     @endif
 
     @if($errors->any())
-        <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+        <div class="mb-4 px-4 py-2.5 bg-red-50 border-l-4 border-red-500 rounded-lg">
             <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle text-red-500 text-xl mr-3 mt-1"></i>
-                <div>
-                    <p class="text-red-800 font-medium mb-2">Errori di validazione:</p>
-                    <ul class="list-disc list-inside text-red-700">
+                <i class="fas fa-exclamation-triangle text-red-600 text-sm mr-2 mt-0.5"></i>
+                <div class="flex-1">
+                    <p class="text-sm text-red-800 font-medium mb-1">Errori di validazione:</p>
+                    <ul class="list-disc list-inside text-xs text-red-700 space-y-0.5">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach

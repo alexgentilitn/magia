@@ -555,6 +555,10 @@ class PesateController extends Controller
         $data = json_decode($request->preview_data, true);
         $sede = $request->sede;
 
+        \Log::info("=== INIZIO IMPORT PESATE ===");
+        \Log::info("Sede: {$sede}");
+        \Log::info("Numero righe da importare: " . count($data));
+
         $imported = 0;
         $skipped = 0;
         $import_errors = [];
@@ -562,16 +566,20 @@ class PesateController extends Controller
         DB::beginTransaction();
 
         try {
-            foreach ($data as $row) {
+            foreach ($data as $index => $row) {
+                \Log::info("Processando riga #{$index}", $row);
+
                 // Salta righe con errori
                 if (!empty($row['errors']) || !$row['cliente_id']) {
                     $skipped++;
-                    $import_errors[] = "Riga {$row['row']}: " . implode(', ', $row['errors']);
+                    $errorMsg = "Riga {$row['row']}: " . implode(', ', $row['errors'] ?? ['Cliente ID mancante']);
+                    $import_errors[] = $errorMsg;
+                    \Log::warning("Riga saltata: {$errorMsg}");
                     continue;
                 }
 
-                // Crea pesata
-                Pesata::create([
+                // Prepara dati pesata
+                $pesataData = [
                     'cliente_id' => $row['cliente_id'],
                     'sede' => $sede,
                     'peso' => $row['peso'],
@@ -588,12 +596,22 @@ class PesateController extends Controller
                     'bmr' => $row['bmr'],
                     'eta_metabolica' => $row['eta_metabolica'],
                     'data_rilevazione' => $row['data_rilevazione'],
-                ]);
+                ];
+
+                \Log::info("Tentativo creazione pesata con dati:", $pesataData);
+
+                // Crea pesata
+                $pesata = Pesata::create($pesataData);
+
+                \Log::info("Pesata creata con ID: {$pesata->id}");
 
                 $imported++;
             }
 
             DB::commit();
+
+            \Log::info("=== IMPORT COMPLETATO ===");
+            \Log::info("Importate: {$imported}, Saltate: {$skipped}");
 
             $import_results = [
                 'imported' => $imported,
@@ -605,6 +623,8 @@ class PesateController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error("ERRORE IMPORT PESATE: " . $e->getMessage());
+            \Log::error("Stack trace: " . $e->getTraceAsString());
             return back()->with('error', 'Errore durante l\'importazione: ' . $e->getMessage());
         }
     }

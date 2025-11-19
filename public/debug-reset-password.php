@@ -41,12 +41,14 @@ try {
 // Test 3: Mostra tutti gli utenti admin/professionisti
 echo "<h2>3️⃣ Elenco Utenti Admin/Professionisti</h2>";
 try {
+    // Mostra utenti ATTIVI (non soft-deleted)
     $utenti = \App\Models\Utente::whereIn('tipo_utente', ['amministratore', 'professionista'])
         ->orderBy('email')
         ->get();
 
     if ($utenti->count() > 0) {
-        echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%;'>";
+        echo "<h3>✅ Utenti Attivi:</h3>";
+        echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%; margin-bottom: 20px;'>";
         echo "<tr><th>Email</th><th>Nome</th><th>Tipo</th><th>Attivo</th></tr>";
         foreach ($utenti as $u) {
             $attivo = $u->attivo ? '✅' : '❌';
@@ -59,7 +61,32 @@ try {
         }
         echo "</table>";
     } else {
-        echo "❌ Nessun utente admin/professionista trovato nel database<br>";
+        echo "❌ Nessun utente admin/professionista attivo trovato<br>";
+    }
+
+    // Mostra utenti CANCELLATI (soft-deleted)
+    $utentiCancellati = \App\Models\Utente::onlyTrashed()
+        ->whereIn('tipo_utente', ['amministratore', 'professionista'])
+        ->orderBy('email')
+        ->get();
+
+    if ($utentiCancellati->count() > 0) {
+        echo "<h3 style='color: orange;'>⚠️ Utenti Cancellati (Soft-Deleted):</h3>";
+        echo "<p style='color: orange;'>Questi utenti sono stati cancellati logicamente ma esistono ancora nel database.</p>";
+        echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%; background: #fff3cd;'>";
+        echo "<tr><th>Email</th><th>Nome</th><th>Tipo</th><th>Cancellato il</th></tr>";
+        foreach ($utentiCancellati as $u) {
+            echo "<tr>";
+            echo "<td><strong>{$u->email}</strong></td>";
+            echo "<td>{$u->nome} {$u->cognome}</td>";
+            echo "<td>{$u->tipo_utente}</td>";
+            echo "<td>" . ($u->deleted_at ? $u->deleted_at->format('d/m/Y H:i') : 'N/A') . "</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+        echo "<p style='color: red; font-weight: bold;'>❌ Gli utenti cancellati NON possono recuperare la password!</p>";
+        echo "<p>Per riattivare un utente cancellato, esegui questa query SQL:<br>";
+        echo "<code style='background: #f0f0f0; padding: 5px; display: block; margin-top: 5px;'>UPDATE utenti SET deleted_at = NULL WHERE email = 'email_da_ripristinare';</code></p>";
     }
 } catch (\Exception $e) {
     echo "❌ Errore: " . $e->getMessage() . "<br>";

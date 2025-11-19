@@ -352,11 +352,11 @@ class PesateController extends Controller
                 $rowErrors = [];
                 $clienteCreato = false;
                 $cliente = null;
-                $hasOmonimia = $risultatoRicerca['is_duplicato'];
+                $hasOmonimia = false;
                 $possibiliClienti = [];
 
                 if ($risultatoRicerca['match_type'] === 'nessuno') {
-                    // Nuovo cliente
+                    // Nuovo cliente - nessuna scelta da fare
                     $clienteCreato = true;
                     $clientiCreati["new_{$row}"] = [
                         'nome' => $nome,
@@ -364,8 +364,22 @@ class PesateController extends Controller
                         'codice_fiscale' => $codiceFiscale,
                     ];
                 } elseif ($risultatoRicerca['match_type'] === 'unico' || $risultatoRicerca['match_type'] === 'codice_fiscale') {
-                    // Un solo match - usiamo questo
+                    // Un solo match - MOSTRA COMUNQUE LA SCELTA all'utente
                     $cliente = $risultatoRicerca['clienti'][0];
+
+                    // Prepara dati per scelta utente (cliente esistente o crea nuovo)
+                    $hasOmonimia = true; // Mostra radio buttons
+                    $possibiliClienti = collect($risultatoRicerca['clienti'])->map(function($c) {
+                        return [
+                            'id' => $c->id,
+                            'nome' => $c->nome,
+                            'cognome' => $c->cognome,
+                            'codice_fiscale' => $c->codice_fiscale,
+                            'data_iscrizione' => $c->data_iscrizione,
+                            'email' => $c->email,
+                            'telefono' => $c->telefono,
+                        ];
+                    })->toArray();
 
                     if (!isset($clientiTrovati[$cliente->id])) {
                         $clientiTrovati[$cliente->id] = [
@@ -378,7 +392,8 @@ class PesateController extends Controller
                     }
                     $clientiTrovati[$cliente->id]['pesate_count']++;
                 } elseif ($risultatoRicerca['match_type'] === 'multiplo') {
-                    // OMONIMIA! Prepara dati per scelta utente
+                    // OMONIMIA MULTIPLA! Prepara dati per scelta utente
+                    $hasOmonimia = true;
                     $possibiliClienti = collect($risultatoRicerca['clienti'])->map(function($c) {
                         return [
                             'id' => $c->id,

@@ -232,9 +232,15 @@
                                         @endif
 
                                         @if(!empty($row['has_omonimia']))
-                                            <span class="px-1.5 py-0 bg-yellow-100 text-yellow-800 text-[9px] rounded-full font-semibold">
-                                                <i class="fas fa-exclamation-triangle mr-0.5"></i>OMONIMIA
-                                            </span>
+                                            @if(!empty($row['possibili_clienti']) && count($row['possibili_clienti']) === 1)
+                                                <span class="px-1.5 py-0 bg-blue-100 text-blue-800 text-[9px] rounded-full font-semibold">
+                                                    <i class="fas fa-user-check mr-0.5"></i>Esistente
+                                                </span>
+                                            @else
+                                                <span class="px-1.5 py-0 bg-yellow-100 text-yellow-800 text-[9px] rounded-full font-semibold">
+                                                    <i class="fas fa-exclamation-triangle mr-0.5"></i>OMONIMIA
+                                                </span>
+                                            @endif
                                         @endif
                                     </div>
 
@@ -245,12 +251,23 @@
                                         @endif
                                     </div>
 
-                                    <!-- Gestione Omonimia -->
+                                    <!-- Gestione Omonimia / Cliente Esistente -->
                                     @if(!empty($row['has_omonimia']) && !empty($row['possibili_clienti']))
-                                        <div class="mt-1 p-1.5 bg-yellow-50 border border-yellow-200 rounded">
-                                            <div class="font-semibold text-yellow-900 text-[9px] mb-1 leading-tight">
-                                                <i class="fas fa-users mr-0.5"></i>
-                                                {{ count($row['possibili_clienti']) }} clienti:
+                                        @php
+                                            $numClienti = count($row['possibili_clienti']);
+                                            $isOmonimia = $numClienti > 1;
+                                            $bgColor = $isOmonimia ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200';
+                                            $textColor = $isOmonimia ? 'text-yellow-900' : 'text-blue-900';
+                                        @endphp
+                                        <div class="mt-1 p-1.5 {{ $bgColor }} border rounded">
+                                            <div class="font-semibold {{ $textColor }} text-[9px] mb-1 leading-tight">
+                                                @if($isOmonimia)
+                                                    <i class="fas fa-users mr-0.5"></i>
+                                                    {{ $numClienti }} clienti con stesso nome - Scegli azione:
+                                                @else
+                                                    <i class="fas fa-user-check mr-0.5"></i>
+                                                    Cliente trovato - Conferma o crea nuovo:
+                                                @endif
                                             </div>
                                             <div class="space-y-0.5">
                                                 @foreach($row['possibili_clienti'] as $pIndex => $possibileCliente)

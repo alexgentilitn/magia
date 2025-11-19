@@ -393,7 +393,7 @@ class PesateController extends Controller
                     'sede' => $sede,
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
-                        ? $this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getValue())
+                        ? $this->validaBMI($this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getValue()))
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
                         ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getValue())
@@ -408,7 +408,7 @@ class PesateController extends Controller
                         ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)->getValue())
                         : null,
                     'grasso_viscerale' => isset($mapping['grasso_viscerale']) && $mapping['grasso_viscerale'] !== 'skip'
-                        ? (int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getValue()
+                        ? $this->validaGrassoViscerale((int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getValue())
                         : null,
                     'acqua_corporea' => isset($mapping['acqua_corporea']) && $mapping['acqua_corporea'] !== 'skip'
                         ? $this->pulisciPercentuale($worksheet->getCell($mapping['acqua_corporea'] . $row)->getValue())
@@ -423,10 +423,10 @@ class PesateController extends Controller
                         ? $this->pulisciPercentuale($worksheet->getCell($mapping['proteine'] . $row)->getValue())
                         : null,
                     'bmr' => isset($mapping['bmr']) && $mapping['bmr'] !== 'skip'
-                        ? (int) $worksheet->getCell($mapping['bmr'] . $row)->getValue()
+                        ? $this->validaBMR((int) $worksheet->getCell($mapping['bmr'] . $row)->getValue())
                         : null,
                     'eta_metabolica' => isset($mapping['eta_metabolica']) && $mapping['eta_metabolica'] !== 'skip'
-                        ? (int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getValue()
+                        ? $this->validaEtaMetabolica((int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getValue())
                         : null,
                     'data_rilevazione' => $dataRilevazione,
                     'errors' => $rowErrors,
@@ -621,5 +621,79 @@ class PesateController extends Controller
         $numero = str_replace([',', ' '], ['.', ''], $valore);
 
         return is_numeric($numero) ? (float) $numero : null;
+    }
+
+    /**
+     * Helper: valida valore BMI
+     * Se il valore è fuori range (< 10 o > 100), probabilmente è un errore di mapping
+     */
+    private function validaBMI($valore)
+    {
+        if (is_null($valore)) {
+            return null;
+        }
+
+        // BMI valido è generalmente tra 10 e 100
+        // Se è fuori range, probabilmente l'utente ha mappato la colonna sbagliata
+        if ($valore < 10 || $valore > 100) {
+            \Log::warning("BMI fuori range rilevato: {$valore} - valore scartato");
+            return null;
+        }
+
+        return $valore;
+    }
+
+    /**
+     * Helper: valida grasso viscerale
+     * Valori normali sono tra 1 e 59
+     */
+    private function validaGrassoViscerale($valore)
+    {
+        if (is_null($valore)) {
+            return null;
+        }
+
+        if ($valore < 0 || $valore > 100) {
+            \Log::warning("Grasso viscerale fuori range rilevato: {$valore} - valore scartato");
+            return null;
+        }
+
+        return $valore;
+    }
+
+    /**
+     * Helper: valida BMR (metabolismo basale)
+     * Valori normali sono tra 500 e 5000 kcal
+     */
+    private function validaBMR($valore)
+    {
+        if (is_null($valore)) {
+            return null;
+        }
+
+        if ($valore < 500 || $valore > 5000) {
+            \Log::warning("BMR fuori range rilevato: {$valore} - valore scartato");
+            return null;
+        }
+
+        return $valore;
+    }
+
+    /**
+     * Helper: valida età metabolica
+     * Valori normali sono tra 10 e 120 anni
+     */
+    private function validaEtaMetabolica($valore)
+    {
+        if (is_null($valore)) {
+            return null;
+        }
+
+        if ($valore < 10 || $valore > 120) {
+            \Log::warning("Età metabolica fuori range rilevata: {$valore} - valore scartato");
+            return null;
+        }
+
+        return $valore;
     }
 }

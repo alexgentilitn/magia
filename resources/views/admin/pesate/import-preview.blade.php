@@ -205,34 +205,52 @@
                             // Calcola warnings per campi vuoti o valori anomali
                             $warnings = [];
 
-                            // Campi vuoti importanti
-                            if (empty($row['grasso_corporeo'])) $warnings[] = 'Grasso corporeo mancante';
-                            if (empty($row['massa_muscolare'])) $warnings[] = 'Massa muscolare mancante';
-                            if (empty($row['muscolo_scheletrico'])) $warnings[] = 'Muscolo scheletrico mancante';
-                            if (empty($row['acqua_corporea'])) $warnings[] = 'Acqua corporea mancante';
-                            if (empty($row['bmr'])) $warnings[] = 'BMR mancante';
+                            // Helper per verificare se un campo è vuoto (null o stringa vuota, ma NON 0)
+                            $isFieldEmpty = function($value) {
+                                return $value === null || $value === '' || $value === 'null';
+                            };
 
-                            // Valori anomali
-                            if (!empty($row['peso']) && ($row['peso'] < 30 || $row['peso'] > 200)) {
-                                $warnings[] = 'Peso anomalo: ' . $row['peso'] . ' kg (normale: 30-200)';
+                            // Campi vuoti - TUTTI i campi misurazione
+                            if ($isFieldEmpty($row['bmi'] ?? null)) $warnings[] = 'BMI mancante';
+                            if ($isFieldEmpty($row['grasso_corporeo'] ?? null)) $warnings[] = 'Grasso corporeo mancante';
+                            if ($isFieldEmpty($row['grasso_viscerale'] ?? null)) $warnings[] = 'Grasso viscerale mancante';
+                            if ($isFieldEmpty($row['massa_muscolare'] ?? null)) $warnings[] = 'Massa muscolare mancante';
+                            if ($isFieldEmpty($row['muscolo_scheletrico'] ?? null)) $warnings[] = 'Muscolo scheletrico mancante';
+                            if ($isFieldEmpty($row['bmr'] ?? null)) $warnings[] = 'BMR mancante';
+                            if ($isFieldEmpty($row['acqua_corporea'] ?? null)) $warnings[] = 'Acqua corporea mancante';
+                            if ($isFieldEmpty($row['peso_corporeo_senza_grassi'] ?? null)) $warnings[] = 'FFM mancante';
+                            if ($isFieldEmpty($row['proteine'] ?? null)) $warnings[] = 'Proteine mancante';
+                            if ($isFieldEmpty($row['eta_metabolica'] ?? null)) $warnings[] = 'Età metabolica mancante';
+
+                            // Valori anomali (solo se il campo ha un valore)
+                            $peso = $row['peso'] ?? null;
+                            $bmi = $row['bmi'] ?? null;
+                            $grasso = $row['grasso_corporeo'] ?? null;
+                            $viscerale = $row['grasso_viscerale'] ?? null;
+                            $acqua = $row['acqua_corporea'] ?? null;
+                            $bmr = $row['bmr'] ?? null;
+                            $eta = $row['eta_metabolica'] ?? null;
+
+                            if ($peso !== null && $peso !== '' && ($peso < 30 || $peso > 200)) {
+                                $warnings[] = 'Peso anomalo: ' . $peso . ' kg (normale: 30-200)';
                             }
-                            if (!empty($row['bmi']) && ($row['bmi'] < 15 || $row['bmi'] > 50)) {
-                                $warnings[] = 'BMI anomalo: ' . $row['bmi'] . ' (normale: 15-50)';
+                            if ($bmi !== null && $bmi !== '' && ($bmi < 15 || $bmi > 50)) {
+                                $warnings[] = 'BMI anomalo: ' . $bmi . ' (normale: 15-50)';
                             }
-                            if (!empty($row['grasso_corporeo']) && ($row['grasso_corporeo'] < 5 || $row['grasso_corporeo'] > 60)) {
-                                $warnings[] = 'Grasso corporeo anomalo: ' . $row['grasso_corporeo'] . '% (normale: 5-60)';
+                            if ($grasso !== null && $grasso !== '' && ($grasso < 5 || $grasso > 60)) {
+                                $warnings[] = 'Grasso corporeo anomalo: ' . $grasso . '% (normale: 5-60)';
                             }
-                            if (!empty($row['grasso_viscerale']) && ($row['grasso_viscerale'] < 1 || $row['grasso_viscerale'] > 30)) {
-                                $warnings[] = 'Grasso viscerale anomalo: ' . $row['grasso_viscerale'] . ' (normale: 1-30)';
+                            if ($viscerale !== null && $viscerale !== '' && ($viscerale < 1 || $viscerale > 30)) {
+                                $warnings[] = 'Grasso viscerale anomalo: ' . $viscerale . ' (normale: 1-30)';
                             }
-                            if (!empty($row['acqua_corporea']) && ($row['acqua_corporea'] < 30 || $row['acqua_corporea'] > 80)) {
-                                $warnings[] = 'Acqua corporea anomala: ' . $row['acqua_corporea'] . '% (normale: 30-80)';
+                            if ($acqua !== null && $acqua !== '' && ($acqua < 30 || $acqua > 80)) {
+                                $warnings[] = 'Acqua corporea anomala: ' . $acqua . '% (normale: 30-80)';
                             }
-                            if (!empty($row['bmr']) && ($row['bmr'] < 800 || $row['bmr'] > 3500)) {
-                                $warnings[] = 'BMR anomalo: ' . $row['bmr'] . ' kcal (normale: 800-3500)';
+                            if ($bmr !== null && $bmr !== '' && ($bmr < 800 || $bmr > 3500)) {
+                                $warnings[] = 'BMR anomalo: ' . $bmr . ' kcal (normale: 800-3500)';
                             }
-                            if (!empty($row['eta_metabolica']) && ($row['eta_metabolica'] < 10 || $row['eta_metabolica'] > 100)) {
-                                $warnings[] = 'Età metabolica anomala: ' . $row['eta_metabolica'] . ' (normale: 10-100)';
+                            if ($eta !== null && $eta !== '' && ($eta < 10 || $eta > 100)) {
+                                $warnings[] = 'Età metabolica anomala: ' . $eta . ' (normale: 10-100)';
                             }
 
                             $hasWarnings = count($warnings) > 0;

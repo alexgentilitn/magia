@@ -907,10 +907,18 @@ class PesateController extends Controller
     /**
      * Helper: valida valore BMI
      * Se il valore è fuori range (< 10 o > 100), probabilmente è un errore di mapping
+     * Rileva anche numeri seriali Excel (date) e li scarta
      */
     private function validaBMI($valore)
     {
         if (is_null($valore)) {
+            return null;
+        }
+
+        // Rileva numeri seriali Excel (date) - valori > 1000 sono sicuramente date
+        // (BMI non supera mai 100 in condizioni normali)
+        if (is_numeric($valore) && $valore > 1000) {
+            \Log::warning("BMI: rilevato numero seriale Excel (cella formattata come data): {$valore}");
             return null;
         }
 

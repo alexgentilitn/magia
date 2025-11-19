@@ -5,6 +5,20 @@
 @section('contenuto')
 <div class="p-6 max-w-[1800px] mx-auto">
 
+    <!-- DEBUG: Mostra struttura dati prima riga -->
+    @if(count($preview_data) > 0)
+    <div class="mb-6 p-4 bg-gray-800 text-green-400 rounded-lg overflow-x-auto" style="font-family: monospace; font-size: 11px;">
+        <div class="font-bold text-white mb-2">DEBUG - Struttura prima riga (chiavi e valori):</div>
+        <pre>@php
+            $firstRow = $preview_data[0];
+            foreach ($firstRow as $key => $value) {
+                $displayValue = is_array($value) ? json_encode($value) : ($value === null ? 'NULL' : ($value === '' ? 'EMPTY_STRING' : $value));
+                echo str_pad($key, 30) . ' => ' . $displayValue . "\n";
+            }
+        @endphp</pre>
+    </div>
+    @endif
+
     @php
         $totale = count($preview_data);
         $valide = count(array_filter($preview_data, fn($r) => empty($r['errors'])));

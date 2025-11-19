@@ -29,7 +29,7 @@
     </div>
 
     <!-- Form Mapping -->
-    <form action="{{ route('admin.pesate.process-mapping') }}" method="POST">
+    <form action="{{ route('pesate.process-mapping') }}" method="POST">
         @csrf
 
         <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
@@ -264,7 +264,7 @@
                 <i class="fas fa-arrow-right mr-2"></i>
                 Procedi con l'Anteprima
             </button>
-            <a href="{{ route('admin.pesate.import') }}"
+            <a href="{{ route('pesate.import') }}"
                class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Indietro

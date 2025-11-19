@@ -706,13 +706,15 @@ class PesateController extends Controller
                     continue;
                 }
 
-                // Leggi tutti i campi misurazione (modificabili dall'utente)
+                // Leggi tutti i 13 campi misurazione (modificabili dall'utente)
                 $peso = $request->input("peso_{$index}");
                 $bmi = $request->input("bmi_{$index}");
                 $grassoCorporeo = $request->input("grasso_corporeo_{$index}");
+                $grassoSottocutaneo = $request->input("grasso_sottocutaneo_{$index}");
                 $grassoViscerale = $request->input("grasso_viscerale_{$index}");
                 $muscoloScheletrico = $request->input("muscolo_scheletrico_{$index}");
                 $massaMuscolare = $request->input("massa_muscolare_{$index}");
+                $massaOssea = $request->input("massa_ossea_{$index}");
                 $bmr = $request->input("bmr_{$index}");
                 $acquaCorporea = $request->input("acqua_corporea_{$index}");
                 $pesoCorporeoSenzaGrassi = $request->input("peso_corporeo_senza_grassi_{$index}");
@@ -729,11 +731,11 @@ class PesateController extends Controller
                     'peso_corporeo_senza_grassi' => $pesoCorporeoSenzaGrassi ?: null,
                     'muscolo_scheletrico' => $muscoloScheletrico ?: null,
                     'grasso_corporeo' => $grassoCorporeo ?: null,
-                    'grasso_sottocutaneo' => null, // Non nel form
+                    'grasso_sottocutaneo' => $grassoSottocutaneo ?: null,
                     'grasso_viscerale' => $grassoViscerale ?: null,
                     'acqua_corporea' => $acquaCorporea ?: null,
                     'massa_muscolare' => $massaMuscolare ?: null,
-                    'massa_ossea' => null, // Non nel form
+                    'massa_ossea' => $massaOssea ?: null,
                     'proteine' => $proteine ?: null,
                     'bmr' => $bmr ?: null,
                     'eta_metabolica' => $etaMetabolica ?: null,

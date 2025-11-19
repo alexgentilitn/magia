@@ -457,6 +457,12 @@
                                             <input type="number" name="grasso_viscerale_{{ $index }}" value="{{ $row['grasso_viscerale'] ?? '' }}" step="0.01"
                                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
                                         </div>
+                                        <!-- Grasso Sottocutaneo -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">G. Sottoc. (%)</label>
+                                            <input type="number" name="grasso_sottocutaneo_{{ $index }}" value="{{ $row['grasso_sottocutaneo'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
                                         <!-- Massa Muscolare -->
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 mb-1">M. Muscolare (kg)</label>
@@ -491,6 +497,12 @@
                                         <div>
                                             <label class="block text-xs font-medium text-gray-700 mb-1">Proteine (%)</label>
                                             <input type="number" name="proteine_{{ $index }}" value="{{ $row['proteine'] ?? '' }}" step="0.01"
+                                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
+                                        </div>
+                                        <!-- Massa Ossea -->
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">M. Ossea (kg)</label>
+                                            <input type="number" name="massa_ossea_{{ $index }}" value="{{ $row['massa_ossea'] ?? '' }}" step="0.01"
                                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-fucsia-magia focus:border-fucsia-magia">
                                         </div>
                                         <!-- Età Metabolica -->

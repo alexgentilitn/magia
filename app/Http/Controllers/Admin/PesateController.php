@@ -483,6 +483,7 @@ class PesateController extends Controller
                     'cognome' => ucwords(strtolower(trim($cognome))),
                     'codice_fiscale' => $codiceFiscale ? strtoupper(trim($codiceFiscale)) : null,
                     'stato_cliente' => 'attivo',
+                    'tipo_cliente' => 'effettiva',
                     'data_iscrizione' => now(),
                     'utente_id' => auth()->id(),
                 ];

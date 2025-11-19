@@ -229,7 +229,7 @@ class GiornataProvaController extends Controller
                 'consenso_privacy' => true,
                 'consenso_privacy_data' => now(),
                 'tipo_cliente' => 'prova', // 🆕 Cliente di prova
-                'stato_cliente' => 'prova', // Stato speciale
+                'stato_cliente' => 'attivo', // Cliente attivo di prova
                 'data_iscrizione' => now(),
             ]);
 

@@ -123,6 +123,7 @@ class ClientiController extends Controller
                 'indirizzo_cap' => $dati_validati['indirizzo_cap'] ?? null,
                 'programma_attuale' => $dati_validati['programma_attuale'] ?? null,
                 'stato_cliente' => $dati_validati['stato_cliente'],
+                'tipo_cliente' => $dati_validati['tipo_cliente'] ?? 'effettiva',
             ]);
 
             DB::commit();

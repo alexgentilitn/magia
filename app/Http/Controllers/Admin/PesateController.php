@@ -255,7 +255,7 @@ class PesateController extends Controller
         session()->forget('import_errors_detail');
 
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:10240',
             'sede' => 'required|string|max:100',
         ]);
 
@@ -407,41 +407,42 @@ class PesateController extends Controller
                     'cliente_creato' => $clienteCreato,
                     'sede' => $sede,
                     'peso' => $peso,
+                    // Usa sistema universale per tutti i campi numerici
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
-                        ? $this->validaBMI($this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['bmi'] . $row))))
+                        ? $this->validaBMI($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['bmi'] . $row)))
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
-                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)))
+                        ? $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row))
                         : null,
                     'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
-                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)))
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)))
                         : null,
                     'grasso_corporeo' => isset($mapping['grasso_corporeo']) && $mapping['grasso_corporeo'] !== 'skip'
-                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['grasso_corporeo'] . $row)))
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['grasso_corporeo'] . $row)))
                         : null,
                     'grasso_sottocutaneo' => isset($mapping['grasso_sottocutaneo']) && $mapping['grasso_sottocutaneo'] !== 'skip'
-                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)))
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)))
                         : null,
                     'grasso_viscerale' => isset($mapping['grasso_viscerale']) && $mapping['grasso_viscerale'] !== 'skip'
-                        ? $this->validaGrassoViscerale((int) $this->leggiValoreCella($worksheet->getCell($mapping['grasso_viscerale'] . $row)))
+                        ? $this->validaGrassoViscerale((int) $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['grasso_viscerale'] . $row)))
                         : null,
                     'acqua_corporea' => isset($mapping['acqua_corporea']) && $mapping['acqua_corporea'] !== 'skip'
-                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['acqua_corporea'] . $row)))
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['acqua_corporea'] . $row)))
                         : null,
                     'massa_muscolare' => isset($mapping['massa_muscolare']) && $mapping['massa_muscolare'] !== 'skip'
-                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['massa_muscolare'] . $row)))
+                        ? $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['massa_muscolare'] . $row))
                         : null,
                     'massa_ossea' => isset($mapping['massa_ossea']) && $mapping['massa_ossea'] !== 'skip'
-                        ? $this->pulisciNumero($this->leggiValoreCella($worksheet->getCell($mapping['massa_ossea'] . $row)))
+                        ? $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['massa_ossea'] . $row))
                         : null,
                     'proteine' => isset($mapping['proteine']) && $mapping['proteine'] !== 'skip'
-                        ? $this->pulisciPercentuale($this->leggiValoreCella($worksheet->getCell($mapping['proteine'] . $row)))
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['proteine'] . $row)))
                         : null,
                     'bmr' => isset($mapping['bmr']) && $mapping['bmr'] !== 'skip'
-                        ? $this->validaBMR((int) $this->leggiValoreCella($worksheet->getCell($mapping['bmr'] . $row)))
+                        ? $this->validaBMR((int) $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['bmr'] . $row)))
                         : null,
                     'eta_metabolica' => isset($mapping['eta_metabolica']) && $mapping['eta_metabolica'] !== 'skip'
-                        ? $this->validaEtaMetabolica((int) $this->leggiValoreCella($worksheet->getCell($mapping['eta_metabolica'] . $row)))
+                        ? $this->validaEtaMetabolica((int) $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['eta_metabolica'] . $row)))
                         : null,
                     'data_rilevazione' => $dataRilevazione,
                     'errors' => $rowErrors,
@@ -847,5 +848,188 @@ class PesateController extends Controller
         }
 
         return $valore;
+    }
+
+    /**
+     * =====================================================
+     * SISTEMA IMPORT UNIVERSALE - Multi-formato intelligente
+     * =====================================================
+     * Gestisce file da diverse bilance con formati diversi
+     */
+
+    /**
+     * Helper: Rileva automaticamente il separatore per file CSV/TXT
+     * Testa vari separatori comuni e sceglie il più probabile
+     */
+    private function rilevaSeparatoreCSV($filePath, $rigaDaTestare = 5)
+    {
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return ','; // Default
+        }
+
+        $separatoriPossibili = [
+            ',' => 0,
+            ';' => 0,
+            "\t" => 0,
+            '|' => 0,
+        ];
+
+        $rigaCount = 0;
+        while (($riga = fgets($handle)) && $rigaCount < $rigaDaTestare) {
+            foreach ($separatoriPossibili as $sep => $count) {
+                $separatoriPossibili[$sep] += substr_count($riga, $sep);
+            }
+            $rigaCount++;
+        }
+        fclose($handle);
+
+        // Ritorna il separatore più frequente
+        arsort($separatoriPossibili);
+        $separatore = key($separatoriPossibili);
+
+        \Log::info("Separatore CSV rilevato", [
+            'separatore' => $separatore === "\t" ? 'TAB' : $separatore,
+            'conteggi' => $separatoriPossibili
+        ]);
+
+        return $separatore;
+    }
+
+    /**
+     * Helper: Rileva encoding del file
+     * Supporta UTF-8, ISO-8859-1, Windows-1252
+     */
+    private function rilevaEncoding($filePath)
+    {
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return 'UTF-8';
+        }
+
+        $sample = fread($handle, 4096);
+        fclose($handle);
+
+        $encoding = mb_detect_encoding($sample, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+
+        return $encoding ?: 'UTF-8';
+    }
+
+    /**
+     * Helper: Pulisce valore numerico da QUALSIASI formato
+     * Gestisce: percentuali (27.5%), valute (€15.50), spazi, virgole, etc.
+     */
+    private function pulisciValoreUniversale($valore)
+    {
+        if (is_null($valore) || $valore === '') {
+            return null;
+        }
+
+        // Se è già un numero, ritornalo
+        if (is_numeric($valore)) {
+            return (float) $valore;
+        }
+
+        // Converti a stringa e trim
+        $valore = trim(strval($valore));
+
+        // Rimuovi simboli comuni: €, $, £, %, kg, g, cm, m, kcal, etc.
+        $valore = preg_replace('/[€$£¥₹%kgcmKcal]/iu', '', $valore);
+
+        // Rimuovi spazi
+        $valore = str_replace(' ', '', $valore);
+
+        // Gestisci formato europeo (1.234,56) vs americano (1,234.56)
+        // Se ci sono sia virgole che punti, identifica quale è decimale
+        $hasComma = strpos($valore, ',') !== false;
+        $hasDot = strpos($valore, '.') !== false;
+
+        if ($hasComma && $hasDot) {
+            // Identifica quale viene per ultimo (quello è il decimale)
+            $lastComma = strrpos($valore, ',');
+            $lastDot = strrpos($valore, '.');
+
+            if ($lastComma > $lastDot) {
+                // Formato europeo: 1.234,56
+                $valore = str_replace('.', '', $valore); // Rimuovi separatore migliaia
+                $valore = str_replace(',', '.', $valore); // Converti decimale
+            } else {
+                // Formato americano: 1,234.56
+                $valore = str_replace(',', '', $valore); // Rimuovi separatore migliaia
+            }
+        } elseif ($hasComma) {
+            // Solo virgola - probabilmente decimale europeo
+            $valore = str_replace(',', '.', $valore);
+        }
+        // Se solo punto, è già ok
+
+        // Rimuovi eventuali caratteri rimanenti tranne numeri, punto, segno meno
+        $valore = preg_replace('/[^0-9.\-]/', '', $valore);
+
+        return is_numeric($valore) ? (float) $valore : null;
+    }
+
+    /**
+     * Helper: Legge valore da cella con rilevamento formato universale
+     * Estende leggiValoreCella per gestire anche formati percentuale, valuta, etc.
+     */
+    private function leggiValoreCellaUniversale($cell)
+    {
+        if (!$cell) {
+            return null;
+        }
+
+        // Usa la funzione esistente leggiValoreCella per gestione formato Data
+        $valore = $this->leggiValoreCella($cell);
+
+        if (is_null($valore) || $valore === '') {
+            return null;
+        }
+
+        // Se è già un numero pulito, ritornalo
+        if (is_numeric($valore) && $valore < 1000) {
+            return $valore;
+        }
+
+        // Altrimenti applica pulizia universale
+        return $this->pulisciValoreUniversale($valore);
+    }
+
+    /**
+     * Helper: Converte formato percentuale
+     * Gestisce sia "27.5%" che "27.5" che "0.275"
+     */
+    private function normalizzaPercentuale($valore)
+    {
+        if (is_null($valore)) {
+            return null;
+        }
+
+        $pulito = $this->pulisciValoreUniversale($valore);
+
+        if (is_null($pulito)) {
+            return null;
+        }
+
+        // Se il valore è tra 0 e 1, probabilmente è già in formato decimale (0.275)
+        // Converti in percentuale
+        if ($pulito > 0 && $pulito < 1) {
+            return $pulito * 100;
+        }
+
+        // Altrimenti è già percentuale (27.5)
+        return $pulito;
+    }
+
+    /**
+     * Helper: Log diagnostico import
+     * Registra informazioni utili per troubleshooting
+     */
+    private function logImportInfo($tipo, $dati)
+    {
+        \Log::info("Import Pesate - {$tipo}", array_merge($dati, [
+            'timestamp' => now()->toISOString(),
+            'user_id' => auth()->id(),
+        ]));
     }
 }

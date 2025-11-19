@@ -58,6 +58,12 @@ Route::get('/sedi', function() {
 Route::get('/admin/login', [AuthController::class, 'mostraLoginAdmin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->name('admin.login.post');
 
+// ADMIN - RECUPERO PASSWORD
+Route::get('/admin/password/forgot', [AuthController::class, 'mostraFormResetPassword'])->name('admin.password.request');
+Route::post('/admin/password/email', [AuthController::class, 'inviaLinkResetPassword'])->name('admin.password.email');
+Route::get('/admin/password/reset/{token}', [AuthController::class, 'mostraFormNuovaPassword'])->name('admin.password.reset');
+Route::post('/admin/password/reset', [AuthController::class, 'resetPassword'])->name('admin.password.update');
+
 
 // ============================================
 // AREA CLIENTE - LOGIN

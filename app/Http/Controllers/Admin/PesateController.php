@@ -323,6 +323,8 @@ class PesateController extends Controller
             $worksheet = $spreadsheet->getActiveSheet();
 
             $preview_data = [];
+            $clientiTrovati = []; // Clienti esistenti
+            $clientiCreati = [];  // Clienti nuovi creati
 
             for ($row = $startRow; $row <= $highestRow; $row++) {
                 // Estrai dati secondo mapping
@@ -341,8 +343,33 @@ class PesateController extends Controller
                 $cliente = $this->findOrCreateCliente($nome, $cognome, $codiceFiscale);
 
                 $rowErrors = [];
+                $clienteCreato = false;
+
                 if (!$cliente) {
                     $rowErrors[] = 'Impossibile trovare o creare il cliente';
+                } else {
+                    // Traccia se è stato appena creato o trovato
+                    if ($cliente->wasRecentlyCreated) {
+                        $clienteCreato = true;
+                        $clientiCreati[$cliente->id] = [
+                            'id' => $cliente->id,
+                            'nome' => $cliente->nome,
+                            'cognome' => $cliente->cognome,
+                            'codice_fiscale' => $cliente->codice_fiscale,
+                        ];
+                    } else {
+                        // Cliente esistente trovato
+                        if (!isset($clientiTrovati[$cliente->id])) {
+                            $clientiTrovati[$cliente->id] = [
+                                'id' => $cliente->id,
+                                'nome' => $cliente->nome,
+                                'cognome' => $cliente->cognome,
+                                'codice_fiscale' => $cliente->codice_fiscale,
+                                'pesate_count' => 0,
+                            ];
+                        }
+                        $clientiTrovati[$cliente->id]['pesate_count']++;
+                    }
                 }
 
                 // Estrai peso
@@ -353,13 +380,8 @@ class PesateController extends Controller
                     $rowErrors[] = "Peso non valido: '{$pesoRaw}' (deve essere tra 20 e 300 kg)";
                 }
 
-                // Estrai data rilevazione
-                $dataRaw = $worksheet->getCell($mapping['data_rilevazione'] . $row)->getValue();
-                $dataRilevazione = $this->parseData($dataRaw);
-
-                if (empty($dataRilevazione)) {
-                    $rowErrors[] = "Data rilevazione mancante o non valida: '{$dataRaw}'";
-                }
+                // Data rilevazione: SEMPRE OGGI
+                $dataRilevazione = now()->format('Y-m-d');
 
                 $preview_data[] = [
                     'row' => $row,
@@ -367,7 +389,7 @@ class PesateController extends Controller
                     'cognome' => $cognome,
                     'nome' => $nome,
                     'codice_fiscale' => $codiceFiscale,
-                    'cliente_creato' => $cliente && $cliente->wasRecentlyCreated ? true : false,
+                    'cliente_creato' => $clienteCreato,
                     'sede' => $sede,
                     'peso' => $peso,
                     'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
@@ -411,7 +433,11 @@ class PesateController extends Controller
                 ];
             }
 
-            return view('admin.pesate.import-preview', compact('preview_data', 'sede'));
+            // Converti array associativi in array indicizzati per la view
+            $clientiTrovati = array_values($clientiTrovati);
+            $clientiCreati = array_values($clientiCreati);
+
+            return view('admin.pesate.import-preview', compact('preview_data', 'sede', 'clientiTrovati', 'clientiCreati'));
 
         } catch (\Exception $e) {
             \Log::error('Errore import pesate: ' . $e->getMessage());

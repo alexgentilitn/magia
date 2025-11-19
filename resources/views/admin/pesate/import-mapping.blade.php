@@ -69,12 +69,19 @@
                                     'label' => 'Peso (kg)',
                                     'terms' => ['peso', 'weight', 'kg']
                                 ],
-                                'data_rilevazione' => [
-                                    'label' => 'Data Rilevazione',
-                                    'terms' => ['data', 'date', 'rilevazione', 'misurazione']
-                                ],
                             ];
                         @endphp
+
+                        <!-- Info Data Automatica -->
+                        <div class="col-span-2 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-check text-green-600 text-xl mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-green-900">Data Rilevazione Automatica</p>
+                                    <p class="text-sm text-green-700">La data di tutte le pesate verrà impostata automaticamente a <strong>{{ date('d/m/Y') }}</strong> (oggi)</p>
+                                </div>
+                            </div>
+                        </div>
 
                         @foreach($campiObbligatori as $field => $config)
                             @php

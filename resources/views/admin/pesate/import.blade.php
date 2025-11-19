@@ -63,7 +63,8 @@
             <ul class="list-disc list-inside space-y-2 text-blue-800 text-sm">
                 <li>Il file può essere in formato <strong>Excel (.xlsx, .xls)</strong> o <strong>CSV</strong></li>
                 <li>Le colonne possono essere in <strong>qualsiasi ordine</strong> - verranno mappate nel passaggio successivo</li>
-                <li>I <strong>campi obbligatori</strong> sono: <strong>Nome</strong>, <strong>Cognome</strong>, <strong>Peso</strong>, <strong>Data rilevazione</strong></li>
+                <li>I <strong>campi obbligatori</strong> sono: <strong>Nome</strong>, <strong>Cognome</strong>, <strong>Peso</strong></li>
+                <li>La <strong>Data Rilevazione</strong> verrà impostata <strong>automaticamente a OGGI</strong> ({{ date('d/m/Y') }})</li>
                 <li>Se il <strong>cliente non esiste</strong>, verrà <strong>creato automaticamente</strong></li>
                 <li>Il <strong>Codice Fiscale</strong> è opzionale ma <strong>raccomandato</strong> per identificazione più precisa</li>
             </ul>

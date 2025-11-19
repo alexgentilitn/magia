@@ -413,6 +413,8 @@ class PesateController extends Controller
                     'nome' => $nome,
                     'codice_fiscale' => $codiceFiscale,
                     'cliente_creato' => $clienteCreato,
+                    'has_omonimia' => $hasOmonimia,
+                    'possibili_clienti' => $possibiliClienti,
                     'sede' => $sede,
                     'peso' => $peso,
                     // Usa sistema universale per tutti i campi numerici
@@ -421,6 +423,9 @@ class PesateController extends Controller
                         : null,
                     'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
                         ? $this->leggiValoreCellaUniversale($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row))
+                        : null,
+                    'muscolo' => isset($mapping['muscolo']) && $mapping['muscolo'] !== 'skip'
+                        ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['muscolo'] . $row)))
                         : null,
                     'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
                         ? $this->normalizzaPercentuale($this->leggiValoreCellaUniversale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)))

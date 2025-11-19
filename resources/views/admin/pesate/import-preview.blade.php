@@ -164,36 +164,36 @@
 
     <!-- Tabella Anteprima Dettagliata -->
     <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-        <div class="p-4 bg-gray-50 border-b border-gray-200">
-            <h3 class="font-bold text-gray-900 flex items-center">
-                <i class="fas fa-table text-gray-600 mr-2"></i>
+        <div class="px-3 py-2 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-sm font-bold text-gray-900 flex items-center">
+                <i class="fas fa-table text-gray-600 mr-2 text-xs"></i>
                 Anteprima Dettagliata Dati
                 <span class="ml-3 text-xs text-gray-500 font-normal">
                     <i class="fas fa-info-circle mr-1"></i>
-                    I valori sono modificabili. In caso di omonimia, scegli l'azione appropriata.
+                    Valori modificabili - In caso di omonimia, scegli l'azione
                 </span>
             </h3>
         </div>
         <div class="overflow-x-auto" style="max-height: 700px;">
-            <table class="min-w-full divide-y divide-gray-200 text-xs">
+            <table class="min-w-full divide-y divide-gray-200" style="font-size: 11px;">
                 <thead class="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-12">Riga</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase min-w-[200px]">Cliente</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Peso (kg)</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">BMI</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Grasso %</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Grasso Visc.</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Muscolo %</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Massa Musc.</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Musc. Schel.</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">BMR (kcal)</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Acqua %</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Peso s/Grassi</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Proteine %</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Età Metab.</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">Data</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase min-w-[150px]">Azioni</th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 35px;">#</th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 180px;">Cliente</th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Peso<br><span class="text-[9px] text-gray-500">(kg)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 55px;">BMI</th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Grasso<br><span class="text-[9px] text-gray-500">(%)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">G.Visc.<br><span class="text-[9px] text-gray-500">(lv)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Muscolo<br><span class="text-[9px] text-gray-500">(%)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Musc.<br><span class="text-[9px] text-gray-500">(kg)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">M.Schel.<br><span class="text-[9px] text-gray-500">(%)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">BMR<br><span class="text-[9px] text-gray-500">(kcal)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Acqua<br><span class="text-[9px] text-gray-500">(%)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">FFM<br><span class="text-[9px] text-gray-500">(kg)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 65px;">Proteine<br><span class="text-[9px] text-gray-500">(%)</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 55px;">Età<br><span class="text-[9px] text-gray-500">Met.</span></th>
+                        <th class="px-1 py-1.5 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 90px;">Data</th>
+                        <th class="px-1 py-1.5 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-tight" style="min-width: 70px;">Stato</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -210,53 +210,53 @@
                             </td>
 
                             <!-- Riga -->
-                            <td class="px-2 py-3 text-sm font-bold text-gray-900">{{ $row['row'] }}</td>
+                            <td class="px-1 py-1.5 font-bold text-gray-900">{{ $row['row'] }}</td>
 
                             <!-- Cliente con Dati Anagrafici -->
-                            <td class="px-2 py-3">
-                                <div class="space-y-1">
-                                    <div class="font-bold text-gray-900">
+                            <td class="px-1 py-1.5">
+                                <div class="space-y-0.5">
+                                    <div class="font-bold text-gray-900 text-[11px] leading-tight">
                                         {{ $row['cognome'] }} {{ $row['nome'] }}
                                     </div>
 
                                     <!-- Badges Status -->
-                                    <div class="flex flex-wrap gap-1">
+                                    <div class="flex flex-wrap gap-0.5">
                                         @if(!empty($row['cliente_creato']))
-                                            <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-                                                <i class="fas fa-user-plus mr-1"></i>Nuovo
+                                            <span class="px-1.5 py-0 bg-green-100 text-green-700 text-[9px] rounded-full font-semibold">
+                                                <i class="fas fa-user-plus mr-0.5"></i>Nuovo
                                             </span>
                                         @endif
 
                                         @if(!empty($row['has_omonimia']))
-                                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full font-semibold">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>OMONIMIA
+                                            <span class="px-1.5 py-0 bg-yellow-100 text-yellow-800 text-[9px] rounded-full font-semibold">
+                                                <i class="fas fa-exclamation-triangle mr-0.5"></i>OMONIMIA
                                             </span>
                                         @endif
                                     </div>
 
                                     <!-- Dati Identificativi -->
-                                    <div class="text-xs text-gray-600 space-y-0.5">
+                                    <div class="text-[9px] text-gray-600 space-y-0">
                                         @if(!empty($row['codice_fiscale']))
-                                            <div><strong>CF:</strong> {{ $row['codice_fiscale'] }}</div>
+                                            <div class="leading-tight"><strong>CF:</strong> {{ $row['codice_fiscale'] }}</div>
                                         @endif
                                     </div>
 
                                     <!-- Gestione Omonimia -->
                                     @if(!empty($row['has_omonimia']) && !empty($row['possibili_clienti']))
-                                        <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                            <div class="font-semibold text-yellow-900 text-xs mb-2">
-                                                <i class="fas fa-users mr-1"></i>
-                                                {{ count($row['possibili_clienti']) }} clienti trovati con stesso nome:
+                                        <div class="mt-1 p-1.5 bg-yellow-50 border border-yellow-200 rounded">
+                                            <div class="font-semibold text-yellow-900 text-[9px] mb-1 leading-tight">
+                                                <i class="fas fa-users mr-0.5"></i>
+                                                {{ count($row['possibili_clienti']) }} clienti:
                                             </div>
-                                            <div class="space-y-1">
+                                            <div class="space-y-0.5">
                                                 @foreach($row['possibili_clienti'] as $pIndex => $possibileCliente)
-                                                    <label class="flex items-start p-2 bg-white border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
+                                                    <label class="flex items-start p-1 bg-white border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
                                                         <input type="radio"
                                                                name="cliente_id_{{ $index }}"
                                                                value="{{ $possibileCliente['id'] }}"
                                                                {{ $pIndex === 0 ? 'checked' : '' }}
-                                                               class="mt-1 mr-2">
-                                                        <div class="flex-1 text-xs">
+                                                               class="mt-0.5 mr-1 text-[9px]">
+                                                        <div class="flex-1 text-[9px] leading-tight">
                                                             <div class="font-semibold text-gray-900">
                                                                 {{ $possibileCliente['cognome'] }} {{ $possibileCliente['nome'] }}
                                                             </div>
@@ -264,31 +264,31 @@
                                                                 <div class="text-gray-600">CF: {{ $possibileCliente['codice_fiscale'] }}</div>
                                                             @endif
                                                             @if(!empty($possibileCliente['email']))
-                                                                <div class="text-gray-600">Email: {{ $possibileCliente['email'] }}</div>
+                                                                <div class="text-gray-600">{{ $possibileCliente['email'] }}</div>
                                                             @endif
                                                             @if(!empty($possibileCliente['telefono']))
-                                                                <div class="text-gray-600">Tel: {{ $possibileCliente['telefono'] }}</div>
+                                                                <div class="text-gray-600">{{ $possibileCliente['telefono'] }}</div>
                                                             @endif
                                                             @if(!empty($possibileCliente['data_iscrizione']))
-                                                                <div class="text-gray-500">Iscrizione: {{ \Carbon\Carbon::parse($possibileCliente['data_iscrizione'])->format('d/m/Y') }}</div>
+                                                                <div class="text-gray-500">Iscr: {{ \Carbon\Carbon::parse($possibileCliente['data_iscrizione'])->format('d/m/Y') }}</div>
                                                             @endif
                                                         </div>
                                                     </label>
                                                 @endforeach
 
                                                 <!-- Opzione Crea Nuovo -->
-                                                <label class="flex items-start p-2 bg-green-50 border-2 border-green-300 rounded hover:bg-green-100 cursor-pointer">
+                                                <label class="flex items-start p-1 bg-green-50 border border-green-300 rounded hover:bg-green-100 cursor-pointer">
                                                     <input type="radio"
                                                            name="cliente_id_{{ $index }}"
                                                            value="new"
-                                                           class="mt-1 mr-2">
-                                                    <div class="flex-1 text-xs">
+                                                           class="mt-0.5 mr-1">
+                                                    <div class="flex-1 text-[9px] leading-tight">
                                                         <div class="font-bold text-green-900">
-                                                            <i class="fas fa-user-plus mr-1"></i>
-                                                            Crea Nuovo Cliente
+                                                            <i class="fas fa-user-plus mr-0.5"></i>
+                                                            Crea Nuovo
                                                         </div>
                                                         <div class="text-green-700">
-                                                            Crea un nuovo profilo con lo stesso nome
+                                                            Nuovo profilo stesso nome
                                                         </div>
                                                     </div>
                                                 </label>
@@ -298,10 +298,10 @@
 
                                     <!-- Errori -->
                                     @if(!empty($row['errors']))
-                                        <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                                        <div class="mt-1 p-1 bg-red-50 border border-red-200 rounded">
                                             @foreach($row['errors'] as $error)
-                                                <div class="text-xs text-red-600">
-                                                    <i class="fas fa-exclamation-triangle mr-1"></i>{{ $error }}
+                                                <div class="text-[9px] text-red-600 leading-tight">
+                                                    <i class="fas fa-exclamation-triangle mr-0.5"></i>{{ $error }}
                                                 </div>
                                             @endforeach
                                         </div>
@@ -310,107 +310,68 @@
                             </td>
 
                             <!-- Campi Misurazione Editabili -->
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="peso_{{ $index }}"
-                                       value="{{ $row['peso'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       placeholder="kg">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="peso_{{ $index }}" value="{{ $row['peso'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="bmi_{{ $index }}"
-                                       value="{{ $row['bmi'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="bmi_{{ $index }}" value="{{ $row['bmi'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="grasso_corporeo_{{ $index }}"
-                                       value="{{ $row['grasso_corporeo'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="grasso_corporeo_{{ $index }}" value="{{ $row['grasso_corporeo'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="grasso_viscerale_{{ $index }}"
-                                       value="{{ $row['grasso_viscerale'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="grasso_viscerale_{{ $index }}" value="{{ $row['grasso_viscerale'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="muscolo_{{ $index }}"
-                                       value="{{ $row['muscolo'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="muscolo_{{ $index }}" value="{{ $row['muscolo'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="massa_muscolare_{{ $index }}"
-                                       value="{{ $row['massa_muscolare'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="massa_muscolare_{{ $index }}" value="{{ $row['massa_muscolare'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="muscolo_scheletrico_{{ $index }}"
-                                       value="{{ $row['muscolo_scheletrico'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="muscolo_scheletrico_{{ $index }}" value="{{ $row['muscolo_scheletrico'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="bmr_{{ $index }}"
-                                       value="{{ $row['bmr'] ?? '' }}"
-                                       step="1"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="bmr_{{ $index }}" value="{{ $row['bmr'] ?? '' }}" step="1"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="acqua_corporea_{{ $index }}"
-                                       value="{{ $row['acqua_corporea'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="acqua_corporea_{{ $index }}" value="{{ $row['acqua_corporea'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="peso_corporeo_senza_grassi_{{ $index }}"
-                                       value="{{ $row['peso_corporeo_senza_grassi'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="peso_corporeo_senza_grassi_{{ $index }}" value="{{ $row['peso_corporeo_senza_grassi'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="proteine_{{ $index }}"
-                                       value="{{ $row['proteine'] ?? '' }}"
-                                       step="0.01"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="proteine_{{ $index }}" value="{{ $row['proteine'] ?? '' }}" step="0.01"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="number"
-                                       name="eta_metabolica_{{ $index }}"
-                                       value="{{ $row['eta_metabolica'] ?? '' }}"
-                                       step="1"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="number" name="eta_metabolica_{{ $index }}" value="{{ $row['eta_metabolica'] ?? '' }}" step="1"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
-                            <td class="px-2 py-3">
-                                <input type="date"
-                                       name="data_rilevazione_{{ $index }}"
-                                       value="{{ $row['data_rilevazione'] ?? '' }}"
-                                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <td class="px-1 py-1.5">
+                                <input type="date" name="data_rilevazione_{{ $index }}" value="{{ $row['data_rilevazione'] ?? '' }}"
+                                       class="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px] focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                             </td>
 
                             <!-- Azioni -->
-                            <td class="px-2 py-3 text-center">
+                            <td class="px-1 py-1.5 text-center">
                                 @if(empty($row['errors']))
-                                    <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                                        <i class="fas fa-check mr-1"></i>Pronto
+                                    <span class="inline-block px-1.5 py-0.5 bg-green-100 text-green-800 text-[9px] font-semibold rounded-full">
+                                        <i class="fas fa-check mr-0.5"></i>OK
                                     </span>
                                 @else
-                                    <span class="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
-                                        <i class="fas fa-times mr-1"></i>Errore
+                                    <span class="inline-block px-1.5 py-0.5 bg-red-100 text-red-800 text-[9px] font-semibold rounded-full">
+                                        <i class="fas fa-times mr-0.5"></i>Errore
                                     </span>
                                 @endif
                             </td>

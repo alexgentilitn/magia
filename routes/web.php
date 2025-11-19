@@ -162,6 +162,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     // IMPORTAZIONE PESATE DA EXCEL
     Route::get('/pesate/import', [\App\Http\Controllers\Admin\PesateController::class, 'showImportForm'])->name('pesate.import');
     Route::post('/pesate/process-import', [\App\Http\Controllers\Admin\PesateController::class, 'processImport'])->name('pesate.process-import');
+    Route::post('/pesate/process-mapping', [\App\Http\Controllers\Admin\PesateController::class, 'processMappingAndPreview'])->name('pesate.process-mapping');
     Route::post('/pesate/confirm-import', [\App\Http\Controllers\Admin\PesateController::class, 'confirmImport'])->name('pesate.confirm-import');
 
     // GESTIONE CLIENTI

@@ -81,7 +81,17 @@
                         <tr class="{{ !empty($row['errors']) ? 'bg-red-50' : 'hover:bg-gray-50' }}">
                             <td class="px-4 py-3 text-sm text-gray-900">{{ $row['row'] }}</td>
                             <td class="px-4 py-3 text-sm">
-                                <div class="font-medium text-gray-900">{{ $row['cognome'] }} {{ $row['nome'] }}</div>
+                                <div class="font-medium text-gray-900">
+                                    {{ $row['cognome'] }} {{ $row['nome'] }}
+                                    @if(!empty($row['cliente_creato']))
+                                        <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                                            <i class="fas fa-user-plus mr-1"></i>Nuovo
+                                        </span>
+                                    @endif
+                                    @if(!empty($row['codice_fiscale']))
+                                        <span class="ml-2 text-xs text-gray-500">CF: {{ $row['codice_fiscale'] }}</span>
+                                    @endif
+                                </div>
                                 @if(!empty($row['errors']))
                                     <div class="text-xs text-red-600 mt-1">
                                         @foreach($row['errors'] as $error)

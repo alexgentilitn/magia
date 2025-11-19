@@ -246,12 +246,12 @@ class PesateController extends Controller
     }
 
     /**
-     * Processa file Excel e mostra anteprima
+     * Processa file Excel e mostra interfaccia mapping colonne
      */
     public function processImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
             'sede' => 'required|string|max:100',
         ]);
 
@@ -259,48 +259,106 @@ class PesateController extends Controller
             $file = $request->file('file');
             $sede = $request->sede;
 
+            // Salva file temporaneamente
+            $filename = 'import_' . time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('temp_imports', $filename);
+
             $spreadsheet = IOFactory::load($file->getRealPath());
             $worksheet = $spreadsheet->getActiveSheet();
+            $highestColumn = $worksheet->getHighestColumn();
             $highestRow = $worksheet->getHighestRow();
 
+            // Leggi headers (assumiamo riga 1 o 2)
+            $headers = [];
+            for ($col = 'A'; $col <= $highestColumn; $col++) {
+                $headers[$col] = trim($worksheet->getCell("{$col}2")->getValue() ?? '');
+                if (empty($headers[$col])) {
+                    $headers[$col] = trim($worksheet->getCell("{$col}1")->getValue() ?? '');
+                }
+            }
+
+            // Leggi prime 5 righe di esempio
+            $sampleRows = [];
+            $startRow = 3; // Assume dati dalla riga 3
+            for ($row = $startRow; $row <= min($startRow + 4, $highestRow); $row++) {
+                $rowData = [];
+                for ($col = 'A'; $col <= $highestColumn; $col++) {
+                    $rowData[$col] = $worksheet->getCell("{$col}{$row}")->getValue();
+                }
+                $sampleRows[] = $rowData;
+            }
+
+            // Salva info in sessione
+            session([
+                'import_file_path' => $path,
+                'import_sede' => $sede,
+                'import_start_row' => $startRow,
+                'import_highest_row' => $highestRow,
+            ]);
+
+            return view('admin.pesate.import-mapping', compact('headers', 'sampleRows', 'sede'));
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Errore nella lettura del file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Processa mapping colonne e mostra anteprima
+     */
+    public function processMappingAndPreview(Request $request)
+    {
+        $mapping = $request->mapping;
+        $sede = session('import_sede');
+        $filePath = session('import_file_path');
+        $startRow = session('import_start_row', 3);
+        $highestRow = session('import_highest_row');
+
+        if (!$filePath || !file_exists(storage_path('app/' . $filePath))) {
+            return back()->with('error', 'File di importazione non trovato. Riprova l\'upload.');
+        }
+
+        try {
+            $spreadsheet = IOFactory::load(storage_path('app/' . $filePath));
+            $worksheet = $spreadsheet->getActiveSheet();
+
             $preview_data = [];
-            $errors = [];
 
-            // Header nella riga 2, dati dalla riga 3
-            for ($row = 3; $row <= $highestRow; $row++) {
-                $cognome = trim($worksheet->getCell("A$row")->getValue() ?? '');
-                $nome = trim($worksheet->getCell("B$row")->getValue() ?? '');
+            for ($row = $startRow; $row <= $highestRow; $row++) {
+                // Estrai dati secondo mapping
+                $cognome = trim($worksheet->getCell($mapping['cognome'] . $row)->getValue() ?? '');
+                $nome = trim($worksheet->getCell($mapping['nome'] . $row)->getValue() ?? '');
+                $codiceFiscale = isset($mapping['codice_fiscale']) && $mapping['codice_fiscale'] !== 'skip'
+                    ? trim($worksheet->getCell($mapping['codice_fiscale'] . $row)->getValue() ?? '')
+                    : null;
 
-                if (empty($cognome) && empty($nome)) {
+                // Salta righe vuote
+                if (empty($cognome) && empty($nome) && empty($codiceFiscale)) {
                     continue;
                 }
 
-                // Cerca cliente
-                $cliente = Cliente::where('cognome', 'LIKE', $cognome)
-                                ->where('nome', 'LIKE', $nome)
-                                ->first();
+                // Cerca cliente con logica migliorata
+                $cliente = $this->findOrCreateCliente($nome, $cognome, $codiceFiscale);
 
                 $rowErrors = [];
                 if (!$cliente) {
-                    $rowErrors[] = 'Cliente non trovato nel database';
+                    $rowErrors[] = 'Impossibile trovare o creare il cliente';
                 }
 
-                // Estrai dati pesata
-                $peso = $this->pulisciNumero($worksheet->getCell("C$row")->getValue());
+                // Estrai peso
+                $pesoRaw = $worksheet->getCell($mapping['peso'] . $row)->getValue();
+                $peso = $this->pulisciNumero($pesoRaw);
+
                 if (!$peso || $peso < 20 || $peso > 300) {
-                    $rowErrors[] = 'Peso non valido (deve essere tra 20 e 300 kg)';
+                    $rowErrors[] = "Peso non valido: '{$pesoRaw}' (deve essere tra 20 e 300 kg)";
                 }
 
-                $dataRilevazione = $worksheet->getCell("P$row")->getValue();
-                if ($dataRilevazione instanceof \DateTime) {
-                    $dataRilevazione = $dataRilevazione->format('Y-m-d');
-                } elseif (is_numeric($dataRilevazione)) {
-                    // Excel date serial
-                    $dataRilevazione = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($dataRilevazione)->format('Y-m-d');
-                }
+                // Estrai data rilevazione
+                $dataRaw = $worksheet->getCell($mapping['data_rilevazione'] . $row)->getValue();
+                $dataRilevazione = $this->parseData($dataRaw);
 
                 if (empty($dataRilevazione)) {
-                    $rowErrors[] = 'Data rilevazione mancante';
+                    $rowErrors[] = "Data rilevazione mancante o non valida: '{$dataRaw}'";
                 }
 
                 $preview_data[] = [
@@ -308,20 +366,46 @@ class PesateController extends Controller
                     'cliente_id' => $cliente->id ?? null,
                     'cognome' => $cognome,
                     'nome' => $nome,
+                    'codice_fiscale' => $codiceFiscale,
+                    'cliente_creato' => $cliente && $cliente->wasRecentlyCreated ? true : false,
                     'sede' => $sede,
                     'peso' => $peso,
-                    'bmi' => $this->pulisciNumero($worksheet->getCell("D$row")->getValue()),
-                    'peso_corporeo_senza_grassi' => $this->pulisciNumero($worksheet->getCell("E$row")->getValue()),
-                    'muscolo_scheletrico' => $this->pulisciPercentuale($worksheet->getCell("F$row")->getValue()),
-                    'grasso_corporeo' => $this->pulisciPercentuale($worksheet->getCell("G$row")->getValue()),
-                    'grasso_sottocutaneo' => $this->pulisciPercentuale($worksheet->getCell("H$row")->getValue()),
-                    'grasso_viscerale' => (int) $worksheet->getCell("I$row")->getValue(),
-                    'acqua_corporea' => $this->pulisciPercentuale($worksheet->getCell("J$row")->getValue()),
-                    'massa_muscolare' => $this->pulisciNumero($worksheet->getCell("K$row")->getValue()),
-                    'massa_ossea' => $this->pulisciNumero($worksheet->getCell("L$row")->getValue()),
-                    'proteine' => $this->pulisciPercentuale($worksheet->getCell("M$row")->getValue()),
-                    'bmr' => (int) $worksheet->getCell("N$row")->getValue(),
-                    'eta_metabolica' => (int) $worksheet->getCell("O$row")->getValue(),
+                    'bmi' => isset($mapping['bmi']) && $mapping['bmi'] !== 'skip'
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['bmi'] . $row)->getValue())
+                        : null,
+                    'peso_corporeo_senza_grassi' => isset($mapping['peso_corporeo_senza_grassi']) && $mapping['peso_corporeo_senza_grassi'] !== 'skip'
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['peso_corporeo_senza_grassi'] . $row)->getValue())
+                        : null,
+                    'muscolo_scheletrico' => isset($mapping['muscolo_scheletrico']) && $mapping['muscolo_scheletrico'] !== 'skip'
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['muscolo_scheletrico'] . $row)->getValue())
+                        : null,
+                    'grasso_corporeo' => isset($mapping['grasso_corporeo']) && $mapping['grasso_corporeo'] !== 'skip'
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_corporeo'] . $row)->getValue())
+                        : null,
+                    'grasso_sottocutaneo' => isset($mapping['grasso_sottocutaneo']) && $mapping['grasso_sottocutaneo'] !== 'skip'
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['grasso_sottocutaneo'] . $row)->getValue())
+                        : null,
+                    'grasso_viscerale' => isset($mapping['grasso_viscerale']) && $mapping['grasso_viscerale'] !== 'skip'
+                        ? (int) $worksheet->getCell($mapping['grasso_viscerale'] . $row)->getValue()
+                        : null,
+                    'acqua_corporea' => isset($mapping['acqua_corporea']) && $mapping['acqua_corporea'] !== 'skip'
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['acqua_corporea'] . $row)->getValue())
+                        : null,
+                    'massa_muscolare' => isset($mapping['massa_muscolare']) && $mapping['massa_muscolare'] !== 'skip'
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_muscolare'] . $row)->getValue())
+                        : null,
+                    'massa_ossea' => isset($mapping['massa_ossea']) && $mapping['massa_ossea'] !== 'skip'
+                        ? $this->pulisciNumero($worksheet->getCell($mapping['massa_ossea'] . $row)->getValue())
+                        : null,
+                    'proteine' => isset($mapping['proteine']) && $mapping['proteine'] !== 'skip'
+                        ? $this->pulisciPercentuale($worksheet->getCell($mapping['proteine'] . $row)->getValue())
+                        : null,
+                    'bmr' => isset($mapping['bmr']) && $mapping['bmr'] !== 'skip'
+                        ? (int) $worksheet->getCell($mapping['bmr'] . $row)->getValue()
+                        : null,
+                    'eta_metabolica' => isset($mapping['eta_metabolica']) && $mapping['eta_metabolica'] !== 'skip'
+                        ? (int) $worksheet->getCell($mapping['eta_metabolica'] . $row)->getValue()
+                        : null,
                     'data_rilevazione' => $dataRilevazione,
                     'errors' => $rowErrors,
                 ];
@@ -330,7 +414,83 @@ class PesateController extends Controller
             return view('admin.pesate.import-preview', compact('preview_data', 'sede'));
 
         } catch (\Exception $e) {
+            \Log::error('Errore import pesate: ' . $e->getMessage());
             return back()->with('error', 'Errore nella lettura del file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Trova cliente esistente o crea nuovo cliente
+     */
+    private function findOrCreateCliente($nome, $cognome, $codiceFiscale = null)
+    {
+        // Prima cerca per nome e cognome
+        $cliente = Cliente::where(function($q) use ($nome, $cognome) {
+                $q->whereRaw('LOWER(TRIM(nome)) = ?', [strtolower(trim($nome))])
+                  ->whereRaw('LOWER(TRIM(cognome)) = ?', [strtolower(trim($cognome))]);
+            })
+            ->first();
+
+        // Se non trovato e c'è codice fiscale, cerca per quello
+        if (!$cliente && $codiceFiscale) {
+            $cliente = Cliente::whereRaw('LOWER(TRIM(codice_fiscale)) = ?', [strtolower(trim($codiceFiscale))])
+                ->first();
+        }
+
+        // Se ancora non trovato, crea nuovo cliente
+        if (!$cliente) {
+            try {
+                $cliente = Cliente::create([
+                    'nome' => ucwords(strtolower(trim($nome))),
+                    'cognome' => ucwords(strtolower(trim($cognome))),
+                    'codice_fiscale' => $codiceFiscale ? strtoupper(trim($codiceFiscale)) : null,
+                    'stato_cliente' => 'attiva',
+                    'tipo_cliente' => 'effettiva',
+                    'data_iscrizione' => now(),
+                    'utente_id' => auth()->id(),
+                ]);
+
+                \Log::info("Nuovo cliente creato durante import: {$cognome} {$nome} (ID: {$cliente->id})");
+            } catch (\Exception $e) {
+                \Log::error("Errore creazione cliente {$cognome} {$nome}: " . $e->getMessage());
+                return null;
+            }
+        }
+
+        return $cliente;
+    }
+
+    /**
+     * Helper: parse data da vari formati
+     */
+    private function parseData($valore)
+    {
+        if (empty($valore)) {
+            return null;
+        }
+
+        // Se è già DateTime object
+        if ($valore instanceof \DateTime) {
+            return $valore->format('Y-m-d');
+        }
+
+        // Se è numero seriale Excel
+        if (is_numeric($valore) && $valore > 25569) { // Excel date serial inizia da 1900
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($valore)->format('Y-m-d');
+            } catch (\Exception $e) {
+                \Log::warning("Impossibile convertire serial Excel: {$valore}");
+                return null;
+            }
+        }
+
+        // Prova parsing diretto
+        try {
+            $data = \Carbon\Carbon::parse($valore);
+            return $data->format('Y-m-d');
+        } catch (\Exception $e) {
+            \Log::warning("Impossibile parsare data: {$valore}");
+            return null;
         }
     }
 

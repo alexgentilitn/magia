@@ -49,28 +49,24 @@
         </h3>
         <ol class="list-decimal list-inside space-y-2 text-blue-800">
             <li>Seleziona la <strong>sede</strong> relativa alle pesate da importare</li>
-            <li>Carica il <strong>file Excel</strong> con i dati delle pesate</li>
+            <li>Carica il <strong>file Excel o CSV</strong> con i dati delle pesate</li>
+            <li><strong>Mappa le colonne</strong> del tuo file ai campi del database</li>
             <li>Visualizza l'<strong>anteprima</strong> dei dati che verranno importati</li>
             <li>Conferma l'importazione - solo le righe valide verranno inserite</li>
         </ol>
 
         <div class="mt-4 p-4 bg-white rounded border border-blue-200">
-            <h4 class="font-bold text-blue-900 mb-2">
+            <h4 class="font-bold text-blue-900 mb-2 flex items-center">
                 <i class="fas fa-file-excel mr-2"></i>
-                Formato File Excel Richiesto
+                Requisiti File
             </h4>
-            <p class="text-sm text-blue-800 mb-2">
-                Il file deve avere le colonne nell'ordine esatto con <strong>header alla riga 2</strong> e <strong>dati dalla riga 3</strong>:
-            </p>
-            <div class="bg-gray-100 p-3 rounded font-mono text-xs overflow-x-auto">
-                A: Cognome* | B: Nome* | C: Peso (kg)* | D: BMI | E: Peso senza grassi | F: Muscolo scheletrico (%) |
-                G: Grasso corporeo (%) | H: Grasso sottocutaneo (%) | I: Grasso viscerale | J: Acqua corporea (%) |
-                K: Massa muscolare (kg) | L: Massa ossea (kg) | M: Proteine (%) | N: BMR (kcal) | O: Età metabolica |
-                P: Data rilevazione*
-            </div>
-            <p class="text-sm text-blue-700 mt-2">
-                <strong>*</strong> = Campi obbligatori
-            </p>
+            <ul class="list-disc list-inside space-y-2 text-blue-800 text-sm">
+                <li>Il file può essere in formato <strong>Excel (.xlsx, .xls)</strong> o <strong>CSV</strong></li>
+                <li>Le colonne possono essere in <strong>qualsiasi ordine</strong> - verranno mappate nel passaggio successivo</li>
+                <li>I <strong>campi obbligatori</strong> sono: <strong>Nome</strong>, <strong>Cognome</strong>, <strong>Peso</strong>, <strong>Data rilevazione</strong></li>
+                <li>Se il <strong>cliente non esiste</strong>, verrà <strong>creato automaticamente</strong></li>
+                <li>Il <strong>Codice Fiscale</strong> è opzionale ma <strong>raccomandato</strong> per identificazione più precisa</li>
+            </ul>
         </div>
     </div>
 
@@ -105,7 +101,7 @@
                 </label>
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-fucsia-magia transition">
                     <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
-                    <input type="file" name="file" accept=".xlsx,.xls" required
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
                            class="block w-full text-sm text-gray-500
                                   file:mr-4 file:py-2 file:px-4
                                   file:rounded-lg file:border-0
@@ -114,7 +110,7 @@
                                   hover:file:bg-viola-magia
                                   cursor-pointer">
                     <p class="text-sm text-gray-500 mt-2">
-                        Formati supportati: .xlsx, .xls (max 10 MB)
+                        Formati supportati: .xlsx, .xls, .csv (max 10 MB)
                     </p>
                 </div>
             </div>
@@ -124,7 +120,7 @@
                 <button type="submit"
                         class="flex-1 px-6 py-3 bg-gradient-to-r from-viola-magia to-fucsia-magia text-white font-semibold rounded-lg hover:shadow-lg transition transform hover:-translate-y-0.5">
                     <i class="fas fa-upload mr-2"></i>
-                    Carica e Visualizza Anteprima
+                    Carica File e Mappa Colonne
                 </button>
                 <a href="{{ route('admin.clienti-pesate.index') }}"
                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
@@ -142,10 +138,10 @@
             <div>
                 <p class="font-bold text-yellow-900 mb-1">Note Importanti:</p>
                 <ul class="list-disc list-inside text-yellow-800 text-sm space-y-1">
-                    <li>I clienti devono essere già presenti nel database (usa Nome e Cognome per l'abbinamento)</li>
-                    <li>Le pesate duplicate (stesso cliente, stessa data) non verranno importate</li>
-                    <li>Verifica sempre l'anteprima prima di confermare l'importazione</li>
-                    <li>Il processo è reversibile solo eliminando manualmente le pesate importate</li>
+                    <li><strong>Nuova funzionalità:</strong> I clienti che non esistono verranno creati automaticamente durante l'importazione</li>
+                    <li>Il sistema cercherà i clienti per <strong>Nome + Cognome</strong> oppure per <strong>Codice Fiscale</strong></li>
+                    <li>Verifica sempre l'anteprima prima di confermare - i nuovi clienti saranno evidenziati</li>
+                    <li>Le pesate duplicate (stesso cliente, stessa data) potrebbero causare errori</li>
                 </ul>
             </div>
         </div>

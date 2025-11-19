@@ -9,6 +9,7 @@ on:
       - claude/Magia_Brench-01DNXamdVeXgWB4ZTdwLV9Zx  # Branch ufficiale - Sistema Pesate MySQL
       - claude/magia_1-01PbEMSDbW8Zwx2btzyUVKyo  # Branch con interfaccia import pesate
       - claude/magia_2-014g9oFtUHSZYLpEbGMBJTok  # Branch MAGIA_2 - Fix salvataggio pesate con gestione errori
+      - claude/magia-2-014g9oftuhszylpebgmbjt-0122wXiaFGHiG8aJQWvpg2yD  # Branch corrente - Fix segnalazioni 404
       # Deploy automatico da branch claude/** con session ID
   workflow_dispatch:
     # Deploy manuale consentito

@@ -78,50 +78,6 @@
         </div>
     </div>
 
-    <!-- DEBUG: Dati Grezzi Importati -->
-    <div class="bg-gray-800 rounded-lg shadow mb-6" x-data="{ open: true }">
-        <div class="px-4 py-3 flex items-center justify-between cursor-pointer" @click="open = !open">
-            <h3 class="text-sm font-bold text-white flex items-center">
-                <i class="fas fa-bug text-yellow-400 mr-2"></i>
-                DEBUG: Dati Grezzi Importati (prime 3 righe)
-            </h3>
-            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'" class="text-gray-400"></i>
-        </div>
-        <div x-show="open" class="p-4 bg-gray-900 rounded-b-lg overflow-x-auto">
-            <table class="w-full text-xs text-left">
-                <thead>
-                    <tr class="text-gray-400 border-b border-gray-700">
-                        <th class="pb-2 pr-3">Campo</th>
-                        @foreach(array_slice($preview_data, 0, 3) as $i => $row)
-                            <th class="pb-2 px-3">Riga {{ $row['row'] }}</th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody class="text-gray-300">
-                    @php
-                        $campiDebug = ['bmi', 'grasso_corporeo', 'grasso_sottocutaneo', 'grasso_viscerale',
-                                       'massa_muscolare', 'massa_ossea', 'muscolo_scheletrico', 'bmr',
-                                       'acqua_corporea', 'peso_corporeo_senza_grassi', 'proteine', 'eta_metabolica'];
-                    @endphp
-                    @foreach($campiDebug as $campo)
-                        <tr class="border-b border-gray-800">
-                            <td class="py-1.5 pr-3 font-mono text-yellow-400">{{ $campo }}</td>
-                            @foreach(array_slice($preview_data, 0, 3) as $row)
-                                @php
-                                    $val = $row[$campo] ?? null;
-                                    $isEmpty = $val === null || $val === '' || $val === 'null';
-                                @endphp
-                                <td class="py-1.5 px-3 font-mono {{ $isEmpty ? 'text-red-400' : 'text-green-400' }}">
-                                    {{ $isEmpty ? 'NULL' : $val }}
-                                </td>
-                            @endforeach
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     <!-- Riepilogo Clienti Compatto -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <!-- Clienti Esistenti -->

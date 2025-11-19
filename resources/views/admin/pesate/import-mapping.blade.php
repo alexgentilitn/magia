@@ -16,12 +16,13 @@
         <div class="flex items-start">
             <i class="fas fa-info-circle text-blue-600 text-xl mr-3 mt-1"></i>
             <div>
-                <p class="font-bold text-blue-900 mb-1">Come funziona:</p>
+                <p class="font-bold text-blue-900 mb-2">Come funziona:</p>
                 <ol class="list-decimal list-inside text-blue-800 text-sm space-y-1">
-                    <li>Per ogni campo obbligatorio, seleziona la colonna Excel corrispondente</li>
-                    <li>I campi opzionali possono essere saltati selezionando "-- Salta campo --"</li>
-                    <li>Sotto ogni select vedrai un'anteprima dei dati di quella colonna</li>
-                    <li>Se il cliente non esiste, verrà creato automaticamente</li>
+                    <li>Il sistema ha <strong>rilevato automaticamente</strong> le colonne in base ai nomi degli header</li>
+                    <li>I campi con <span class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded"><i class="fas fa-check-circle mr-1"></i> Auto</span> sono stati abbinati automaticamente</li>
+                    <li><strong>Verifica</strong> che l'abbinamento sia corretto guardando l'anteprima sotto ogni campo</li>
+                    <li>Puoi <strong>modificare</strong> qualsiasi abbinamento selezionando una colonna diversa</li>
+                    <li>I campi opzionali possono essere saltati selezionando "-- Salta --"</li>
                 </ol>
             </div>
         </div>
@@ -33,10 +34,16 @@
 
         <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
             <div class="p-6 bg-gradient-to-r from-viola-magia to-fucsia-magia">
-                <h3 class="text-xl font-bold text-white flex items-center">
-                    <i class="fas fa-columns mr-3"></i>
-                    Mapping Colonne
-                </h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-columns mr-3"></i>
+                        Mapping Colonne
+                    </h3>
+                    <span class="px-4 py-2 bg-white bg-opacity-20 rounded-lg text-white text-sm">
+                        <i class="fas fa-magic mr-2"></i>
+                        <span id="auto-count">0</span> campi auto-rilevati
+                    </span>
+                </div>
             </div>
 
             <div class="p-6 space-y-6">
@@ -48,81 +55,68 @@
                     </h4>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Cognome -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Cognome <span class="text-red-500">*</span>
-                            </label>
-                            <select name="mapping[cognome]" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                                <option value="">-- Seleziona colonna --</option>
-                                @foreach($headers as $col => $header)
-                                    <option value="{{ $col }}" {{ stripos($header, 'cognome') !== false ? 'selected' : '' }}>
-                                        Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-cognome">
-                                Seleziona una colonna per vedere l'anteprima
-                            </div>
-                        </div>
+                        @php
+                            $campiObbligatori = [
+                                'cognome' => [
+                                    'label' => 'Cognome',
+                                    'terms' => ['cognome', 'surname', 'last name', 'lastname']
+                                ],
+                                'nome' => [
+                                    'label' => 'Nome',
+                                    'terms' => ['nome', 'name', 'first name', 'firstname']
+                                ],
+                                'peso' => [
+                                    'label' => 'Peso (kg)',
+                                    'terms' => ['peso', 'weight', 'kg']
+                                ],
+                                'data_rilevazione' => [
+                                    'label' => 'Data Rilevazione',
+                                    'terms' => ['data', 'date', 'rilevazione', 'misurazione']
+                                ],
+                            ];
+                        @endphp
 
-                        <!-- Nome -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Nome <span class="text-red-500">*</span>
-                            </label>
-                            <select name="mapping[nome]" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                                <option value="">-- Seleziona colonna --</option>
-                                @foreach($headers as $col => $header)
-                                    <option value="{{ $col }}" {{ stripos($header, 'nome') !== false && stripos($header, 'cognome') === false ? 'selected' : '' }}>
-                                        Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-nome">
-                                Seleziona una colonna per vedere l'anteprima
+                        @foreach($campiObbligatori as $field => $config)
+                            @php
+                                // Auto-rilevazione campo obbligatorio
+                                $autoMatched = null;
+                                foreach ($headers as $col => $header) {
+                                    $headerLower = strtolower($header);
+                                    foreach ($config['terms'] as $term) {
+                                        // Per nome, escludiamo "cognome" per evitare conflitti
+                                        if ($field === 'nome' && stripos($headerLower, 'cognome') !== false) {
+                                            continue;
+                                        }
+                                        if (stripos($headerLower, strtolower($term)) !== false) {
+                                            $autoMatched = $col;
+                                            break 2;
+                                        }
+                                    }
+                                }
+                            @endphp
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {{ $config['label'] }} <span class="text-red-500">*</span>
+                                    @if($autoMatched)
+                                        <span class="ml-1 text-xs text-green-600">
+                                            <i class="fas fa-check-circle"></i> Auto
+                                        </span>
+                                    @endif
+                                </label>
+                                <select name="mapping[{{ $field }}]" required
+                                        class="w-full px-4 py-2 border {{ $autoMatched ? 'border-green-300 bg-green-50' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                                    <option value="">-- Seleziona colonna --</option>
+                                    @foreach($headers as $col => $header)
+                                        <option value="{{ $col }}" {{ $autoMatched === $col ? 'selected' : '' }}>
+                                            Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-{{ $field }}">
+                                    Seleziona una colonna per vedere l'anteprima
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Peso -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Peso (kg) <span class="text-red-500">*</span>
-                            </label>
-                            <select name="mapping[peso]" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                                <option value="">-- Seleziona colonna --</option>
-                                @foreach($headers as $col => $header)
-                                    <option value="{{ $col }}" {{ stripos($header, 'peso') !== false || stripos($header, 'weight') !== false ? 'selected' : '' }}>
-                                        Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-peso">
-                                Seleziona una colonna per vedere l'anteprima
-                            </div>
-                        </div>
-
-                        <!-- Data Rilevazione -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Data Rilevazione <span class="text-red-500">*</span>
-                            </label>
-                            <select name="mapping[data_rilevazione]" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
-                                <option value="">-- Seleziona colonna --</option>
-                                @foreach($headers as $col => $header)
-                                    <option value="{{ $col }}" {{ stripos($header, 'data') !== false || stripos($header, 'date') !== false ? 'selected' : '' }}>
-                                        Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-data_rilevazione">
-                                Seleziona una colonna per vedere l'anteprima
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -133,16 +127,36 @@
                         Campo Raccomandato
                     </h4>
 
+                    @php
+                        // Auto-rilevazione codice fiscale
+                        $cfAutoMatched = null;
+                        $cfTerms = ['fiscale', 'cf', 'tax', 'codice', 'fiscal'];
+                        foreach ($headers as $col => $header) {
+                            $headerLower = strtolower($header);
+                            foreach ($cfTerms as $term) {
+                                if (stripos($headerLower, $term) !== false) {
+                                    $cfAutoMatched = $col;
+                                    break 2;
+                                }
+                            }
+                        }
+                    @endphp
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Codice Fiscale
-                            <span class="text-sm text-gray-500">(usato per trovare cliente se nome/cognome non corrispondono)</span>
+                            @if($cfAutoMatched)
+                                <span class="ml-1 text-xs text-green-600">
+                                    <i class="fas fa-check-circle"></i> Auto
+                                </span>
+                            @endif
+                            <br>
+                            <span class="text-xs text-gray-500">(usato per trovare cliente se nome/cognome non corrispondono)</span>
                         </label>
                         <select name="mapping[codice_fiscale]"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                                class="w-full px-4 py-2 border {{ $cfAutoMatched ? 'border-green-300 bg-green-50' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-fucsia-magia">
                             <option value="skip">-- Salta campo --</option>
                             @foreach($headers as $col => $header)
-                                <option value="{{ $col }}" {{ stripos($header, 'fiscale') !== false || stripos($header, 'cf') !== false || stripos($header, 'tax') !== false ? 'selected' : '' }}>
+                                <option value="{{ $col }}" {{ $cfAutoMatched === $col ? 'selected' : '' }}>
                                     Colonna {{ $col }}: {{ $header ?: '(vuoto)' }}
                                 </option>
                             @endforeach
@@ -182,13 +196,51 @@
                         @endphp
 
                         @foreach($campiOpzionali as $field => $label)
+                            @php
+                                // Auto-rilevazione campo
+                                $autoMatched = null;
+                                $searchTerms = match($field) {
+                                    'bmi' => ['bmi', 'body mass', 'indice massa'],
+                                    'peso_corporeo_senza_grassi' => ['peso senza grassi', 'ffm', 'fat free', 'massa magra', 'lean'],
+                                    'muscolo_scheletrico' => ['muscolo scheletrico', 'skeletal muscle', 'musc skel'],
+                                    'grasso_corporeo' => ['grasso corporeo', 'body fat', 'bf%', 'massa grassa', 'fat%'],
+                                    'grasso_sottocutaneo' => ['grasso sottocutaneo', 'subcutaneous', 'sottocut'],
+                                    'grasso_viscerale' => ['grasso viscerale', 'visceral', 'visc'],
+                                    'acqua_corporea' => ['acqua', 'water', 'tbw', 'idratazione'],
+                                    'massa_muscolare' => ['massa muscolare', 'muscle mass', 'muscolo'],
+                                    'massa_ossea' => ['massa ossea', 'bone mass', 'ossa'],
+                                    'proteine' => ['proteine', 'protein'],
+                                    'bmr' => ['bmr', 'metabolismo basale', 'basal', 'kcal'],
+                                    'eta_metabolica' => ['età metabolica', 'metabolic age', 'eta metab'],
+                                    default => []
+                                };
+
+                                foreach ($headers as $col => $header) {
+                                    $headerLower = strtolower($header);
+                                    foreach ($searchTerms as $term) {
+                                        if (stripos($headerLower, strtolower($term)) !== false) {
+                                            $autoMatched = $col;
+                                            break 2;
+                                        }
+                                    }
+                                }
+                            @endphp
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ $label }}</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ $label }}
+                                    @if($autoMatched)
+                                        <span class="ml-1 text-xs text-green-600">
+                                            <i class="fas fa-check-circle"></i> Auto
+                                        </span>
+                                    @endif
+                                </label>
                                 <select name="mapping[{{ $field }}]"
-                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-fucsia-magia">
+                                        class="w-full px-3 py-2 text-sm border {{ $autoMatched ? 'border-green-300 bg-green-50' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-fucsia-magia">
                                     <option value="skip">-- Salta --</option>
                                     @foreach($headers as $col => $header)
-                                        <option value="{{ $col }}">{{ $col }}: {{ Str::limit($header, 15) }}</option>
+                                        <option value="{{ $col }}" {{ $autoMatched === $col ? 'selected' : '' }}>
+                                            {{ $col }}: {{ Str::limit($header, 15) }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -260,6 +312,48 @@
         const div = document.getElementById('optional-fields');
         div.style.display = div.style.display === 'none' ? 'grid' : 'none';
     }
+
+    // Conta campi auto-rilevati
+    function countAutoMatched() {
+        const selects = document.querySelectorAll('select[name^="mapping"]');
+        let count = 0;
+
+        selects.forEach(select => {
+            // Controlla se il campo ha un valore selezionato (non vuoto e non "skip")
+            const selectedValue = select.value;
+            const hasGreenBorder = select.classList.contains('border-green-300');
+
+            if (hasGreenBorder && selectedValue && selectedValue !== 'skip' && selectedValue !== '') {
+                count++;
+            }
+        });
+
+        // Aggiorna il contatore
+        const counterElement = document.getElementById('auto-count');
+        if (counterElement) {
+            counterElement.textContent = count;
+
+            // Cambia colore se tutti i campi obbligatori sono rilevati (minimo 4)
+            const badge = counterElement.parentElement;
+            if (count >= 4) {
+                badge.classList.add('bg-green-500', 'bg-opacity-100');
+                badge.classList.remove('bg-white', 'bg-opacity-20');
+            }
+        }
+
+        return count;
+    }
+
+    // Esegui al caricamento
+    document.addEventListener('DOMContentLoaded', function() {
+        // Conta e mostra numero di campi auto-rilevati
+        const autoCount = countAutoMatched();
+
+        // Mostra messaggio se tutti i campi obbligatori sono stati trovati
+        if (autoCount >= 4) {
+            console.log(`✓ Auto-rilevati ${autoCount} campi - tutti i campi obbligatori trovati!`);
+        }
+    });
 </script>
 
 @endsection

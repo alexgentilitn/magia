@@ -250,6 +250,9 @@ class PesateController extends Controller
      */
     public function processImport(Request $request)
     {
+        // Pulisci errori dettagliati dalle sessioni precedenti
+        session()->forget('import_errors_detail');
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
             'sede' => 'required|string|max:100',
@@ -346,7 +349,16 @@ class PesateController extends Controller
                 $clienteCreato = false;
 
                 if (!$cliente) {
-                    $rowErrors[] = 'Impossibile trovare o creare il cliente';
+                    // Recupera errore dettagliato dalla sessione
+                    $detailedErrors = session('import_errors_detail', []);
+                    $clienteKey = "{$cognome} {$nome}";
+                    $errorDetail = collect($detailedErrors)->firstWhere('cliente', $clienteKey);
+
+                    if ($errorDetail) {
+                        $rowErrors[] = 'Impossibile trovare o creare il cliente: ' . $errorDetail['errore'];
+                    } else {
+                        $rowErrors[] = 'Impossibile trovare o creare il cliente (dettagli non disponibili - verifica log)';
+                    }
                 } else {
                     // Traccia se è stato appena creato o trovato
                     if ($cliente->wasRecentlyCreated) {
@@ -466,18 +478,34 @@ class PesateController extends Controller
         // Se ancora non trovato, crea nuovo cliente
         if (!$cliente) {
             try {
-                $cliente = Cliente::create([
+                $datiCliente = [
                     'nome' => ucwords(strtolower(trim($nome))),
                     'cognome' => ucwords(strtolower(trim($cognome))),
                     'codice_fiscale' => $codiceFiscale ? strtoupper(trim($codiceFiscale)) : null,
                     'stato_cliente' => 'attivo',
                     'data_iscrizione' => now(),
                     'utente_id' => auth()->id(),
-                ]);
+                ];
+
+                \Log::info("Tentativo creazione cliente con dati: " . json_encode($datiCliente));
+
+                $cliente = Cliente::create($datiCliente);
 
                 \Log::info("Nuovo cliente creato durante import: {$cognome} {$nome} (ID: {$cliente->id})");
             } catch (\Exception $e) {
-                \Log::error("Errore creazione cliente {$cognome} {$nome}: " . $e->getMessage());
+                $errorMessage = "Errore SQL: " . $e->getMessage();
+                if ($e instanceof \Illuminate\Database\QueryException) {
+                    $errorMessage .= " | SQL State: " . $e->errorInfo[0] . " | Error Code: " . $e->errorInfo[1];
+                }
+                \Log::error("Errore creazione cliente {$cognome} {$nome}: " . $errorMessage);
+                \Log::error("Stack trace: " . $e->getTraceAsString());
+
+                // Salva l'errore dettagliato in sessione per mostrarlo all'utente
+                session()->push('import_errors_detail', [
+                    'cliente' => "{$cognome} {$nome}",
+                    'errore' => $errorMessage
+                ]);
+
                 return null;
             }
         }

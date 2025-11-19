@@ -234,6 +234,11 @@ class AuthController extends Controller
 
         // Invia email
         try {
+            // Applica configurazioni SMTP dal database
+            if (class_exists(\App\Models\Impostazione::class)) {
+                \App\Models\Impostazione::applySmtpConfig();
+            }
+
             \Mail::to($request->email)->send(new \App\Mail\ResetPasswordMail($utente, $token));
         } catch (\Exception $e) {
             \Log::error('Errore invio email reset password: ' . $e->getMessage());

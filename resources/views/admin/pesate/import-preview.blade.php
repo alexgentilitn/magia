@@ -10,6 +10,30 @@
         $valide = count(array_filter($preview_data, fn($r) => empty($r['errors'])));
         $errori = $totale - $valide;
         $dataOggi = now()->format('d/m/Y');
+
+        // Conta righe con warnings (campi mancanti)
+        $isFieldEmpty = function($value) {
+            return $value === null || $value === '' || $value === 'null';
+        };
+
+        $righeConWarnings = 0;
+        foreach ($preview_data as $row) {
+            $hasWarning = $isFieldEmpty($row['bmi'] ?? null) ||
+                          $isFieldEmpty($row['grasso_corporeo'] ?? null) ||
+                          $isFieldEmpty($row['grasso_sottocutaneo'] ?? null) ||
+                          $isFieldEmpty($row['grasso_viscerale'] ?? null) ||
+                          $isFieldEmpty($row['massa_muscolare'] ?? null) ||
+                          $isFieldEmpty($row['muscolo_scheletrico'] ?? null) ||
+                          $isFieldEmpty($row['bmr'] ?? null) ||
+                          $isFieldEmpty($row['acqua_corporea'] ?? null) ||
+                          $isFieldEmpty($row['peso_corporeo_senza_grassi'] ?? null) ||
+                          $isFieldEmpty($row['proteine'] ?? null) ||
+                          $isFieldEmpty($row['eta_metabolica'] ?? null) ||
+                          $isFieldEmpty($row['massa_ossea'] ?? null);
+            if ($hasWarning && empty($row['errors'])) {
+                $righeConWarnings++;
+            }
+        }
     @endphp
 
     <!-- Header Compatto con Statistiche Inline -->
@@ -34,6 +58,12 @@
                 <div class="px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
                     <p class="text-[10px] text-red-600 font-medium uppercase tracking-wide">Errori</p>
                     <p class="text-lg font-bold text-red-900">{{ $errori }}</p>
+                </div>
+                @endif
+                @if($righeConWarnings > 0)
+                <div class="px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p class="text-[10px] text-orange-600 font-medium uppercase tracking-wide">Avvisi</p>
+                    <p class="text-lg font-bold text-orange-900">{{ $righeConWarnings }}</p>
                 </div>
                 @endif
                 <div class="px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-lg">

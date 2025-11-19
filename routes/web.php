@@ -636,7 +636,7 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
     // ============================================
     // IMPOSTAZIONI (solo amministratori)
     // ============================================
-    Route::middleware('tipo_utente:amministratore')->prefix('impostazioni')->name('impostazioni.')->group(function () {
+    Route::prefix('impostazioni')->name('impostazioni.')->group(function () {
         // Pagina principale impostazioni (con tutti i tab)
         Route::get('/', [ImpostazioniController::class, 'index'])->name('index');
 
@@ -650,7 +650,9 @@ Route::middleware(['auth', 'tipo_utente:amministratore'])->prefix('admin')->name
         Route::post('/paypal/test', [ImpostazioniController::class, 'testPaypal'])->name('paypal.test');
 
         // Segnalazioni Bug/Suggerimenti
-        Route::resource('segnalazioni', \App\Http\Controllers\Admin\SegnalazioniController::class)->except(['edit']);
+        Route::resource('segnalazioni', \App\Http\Controllers\Admin\SegnalazioniController::class)
+            ->parameters(['segnalazioni' => 'segnalazione'])
+            ->except(['edit']);
     });
 
     // ============================================

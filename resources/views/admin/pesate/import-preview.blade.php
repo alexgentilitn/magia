@@ -5,20 +5,6 @@
 @section('contenuto')
 <div class="p-6 max-w-[1800px] mx-auto">
 
-    <!-- DEBUG: Mostra struttura dati prima riga -->
-    @if(count($preview_data) > 0)
-    <div class="mb-6 p-4 bg-gray-800 text-green-400 rounded-lg overflow-x-auto" style="font-family: monospace; font-size: 11px;">
-        <div class="font-bold text-white mb-2">DEBUG - Struttura prima riga (chiavi e valori):</div>
-        <pre>@php
-            $firstRow = $preview_data[0];
-            foreach ($firstRow as $key => $value) {
-                $displayValue = is_array($value) ? json_encode($value) : ($value === null ? 'NULL' : ($value === '' ? 'EMPTY_STRING' : $value));
-                echo str_pad($key, 30) . ' => ' . $displayValue . "\n";
-            }
-        @endphp</pre>
-    </div>
-    @endif
-
     @php
         $totale = count($preview_data);
         $valide = count(array_filter($preview_data, fn($r) => empty($r['errors'])));
@@ -224,9 +210,10 @@
                                 return $value === null || $value === '' || $value === 'null';
                             };
 
-                            // Campi vuoti - TUTTI i campi misurazione
+                            // Campi vuoti - TUTTI i 12 campi misurazione
                             if ($isFieldEmpty($row['bmi'] ?? null)) $warnings[] = 'BMI mancante';
                             if ($isFieldEmpty($row['grasso_corporeo'] ?? null)) $warnings[] = 'Grasso corporeo mancante';
+                            if ($isFieldEmpty($row['grasso_sottocutaneo'] ?? null)) $warnings[] = 'Grasso sottocutaneo mancante';
                             if ($isFieldEmpty($row['grasso_viscerale'] ?? null)) $warnings[] = 'Grasso viscerale mancante';
                             if ($isFieldEmpty($row['massa_muscolare'] ?? null)) $warnings[] = 'Massa muscolare mancante';
                             if ($isFieldEmpty($row['muscolo_scheletrico'] ?? null)) $warnings[] = 'Muscolo scheletrico mancante';
@@ -235,6 +222,7 @@
                             if ($isFieldEmpty($row['peso_corporeo_senza_grassi'] ?? null)) $warnings[] = 'FFM mancante';
                             if ($isFieldEmpty($row['proteine'] ?? null)) $warnings[] = 'Proteine mancante';
                             if ($isFieldEmpty($row['eta_metabolica'] ?? null)) $warnings[] = 'Età metabolica mancante';
+                            if ($isFieldEmpty($row['massa_ossea'] ?? null)) $warnings[] = 'Massa ossea mancante';
 
                             // Valori anomali (solo se il campo ha un valore)
                             $peso = $row['peso'] ?? null;

@@ -51,8 +51,16 @@ class SegnalazioniController extends Controller
 
             \Log::info("Nuova segnalazione creata: #{$segnalazione->id} - {$segnalazione->titolo}");
 
+            // Invia email di notifica se presente email_notifica
+            $emailInviata = $segnalazione->inviaNotificaCreazione();
+
+            $messaggioSuccesso = 'Segnalazione inviata con successo! Ti aggiorneremo sullo stato.';
+            if ($emailInviata) {
+                $messaggioSuccesso .= ' Email di conferma inviata.';
+            }
+
             return redirect()->route('admin.impostazioni.index')
-                ->with('success', 'Segnalazione inviata con successo! Ti aggiorneremo sullo stato.')
+                ->with('success', $messaggioSuccesso)
                 ->with('active_tab', 'segnalazioni');
 
         } catch (\Exception $e) {

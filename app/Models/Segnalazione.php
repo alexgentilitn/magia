@@ -268,4 +268,35 @@ class Segnalazione extends Model
             \Log::error("Errore invio email notifica segnalazione #{$this->id}: " . $e->getMessage());
         }
     }
+
+    /**
+     * Invia email di notifica nuova segnalazione
+     */
+    public function inviaNotificaCreazione()
+    {
+        // Verifica che ci sia un'email di notifica
+        if (!$this->email_notifica) {
+            \Log::info("Segnalazione #{$this->id}: Nessuna email di notifica configurata, skip invio");
+            return false;
+        }
+
+        try {
+            // Applica configurazione SMTP
+            if (class_exists(\App\Models\Impostazione::class)) {
+                \App\Models\Impostazione::applySmtpConfig();
+            }
+
+            Mail::to($this->email_notifica)->send(
+                new \App\Mail\NuovaSegnalazioneMail($this)
+            );
+
+            \Log::info("Email notifica nuova segnalazione inviata per #{$this->id} a {$this->email_notifica}");
+
+            return true;
+
+        } catch (\Exception $e) {
+            \Log::error("Errore invio email nuova segnalazione #{$this->id}: " . $e->getMessage());
+            return false;
+        }
+    }
 }

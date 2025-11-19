@@ -204,33 +204,140 @@
 
                         @foreach($campiOpzionali as $field => $label)
                             @php
-                                // Auto-rilevazione campo
+                                // Auto-rilevazione campo con matching intelligente
                                 $autoMatched = null;
+
+                                // Termini di ricerca per ogni campo (ordine di priorità)
                                 $searchTerms = match($field) {
-                                    'bmi' => ['bmi', 'body mass', 'indice massa'],
-                                    'peso_corporeo_senza_grassi' => ['peso senza grassi', 'ffm', 'fat free', 'massa magra', 'lean'],
-                                    'muscolo_scheletrico' => ['muscolo scheletrico', 'skeletal muscle', 'musc skel'],
-                                    'grasso_corporeo' => ['grasso corporeo', 'body fat', 'bf%', 'massa grassa', 'fat%'],
-                                    'grasso_sottocutaneo' => ['grasso sottocutaneo', 'subcutaneous', 'sottocut'],
-                                    'grasso_viscerale' => ['grasso viscerale', 'visceral', 'visc'],
-                                    'acqua_corporea' => ['acqua', 'water', 'tbw', 'idratazione'],
-                                    'massa_muscolare' => ['massa muscolare', 'muscle mass', 'muscolo'],
-                                    'massa_ossea' => ['massa ossea', 'bone mass', 'ossa'],
-                                    'proteine' => ['proteine', 'protein'],
-                                    'bmr' => ['bmr', 'metabolismo basale', 'basal', 'kcal'],
-                                    'eta_metabolica' => ['età metabolica', 'metabolic age', 'eta metab'],
+                                    'bmi' => ['bmi', 'body mass', 'indice massa', 'b.m.i'],
+                                    'peso_corporeo_senza_grassi' => [
+                                        'peso corporeo senza grassi',  // Match esatto
+                                        'peso senza grassi',           // Abbreviato
+                                        'ffm',                         // Acronimo
+                                        'fat free mass',               // Inglese
+                                        'fat free',                    // Inglese abbreviato
+                                        'massa magra',                 // Sinonimo italiano
+                                        'lean body mass',              // Inglese alternativo
+                                        'lean mass',                   // Breve
+                                    ],
+                                    'muscolo_scheletrico' => [
+                                        'muscolo scheletrico',
+                                        'skeletal muscle',
+                                        'musc schel',
+                                        'musc skel',
+                                        'smm',
+                                    ],
+                                    'grasso_corporeo' => [
+                                        'grasso corporeo',
+                                        'body fat',
+                                        'bf%',
+                                        'massa grassa',
+                                        'fat%',
+                                        'bodyfat',
+                                    ],
+                                    'grasso_sottocutaneo' => [
+                                        'grasso sottocutaneo',
+                                        'subcutaneous fat',
+                                        'subcutaneous',
+                                        'sottocut',
+                                        'subcut',
+                                    ],
+                                    'grasso_viscerale' => [
+                                        'grasso viscerale',
+                                        'visceral fat',
+                                        'visceral',
+                                        'visc',
+                                    ],
+                                    'acqua_corporea' => [
+                                        'acqua corporea',
+                                        'body water',
+                                        'total body water',
+                                        'acqua',
+                                        'water',
+                                        'tbw',
+                                        'idratazione',
+                                    ],
+                                    'massa_muscolare' => [
+                                        'massa muscolare',
+                                        'muscle mass',
+                                        'massa musc',
+                                        'musc mass',
+                                    ],
+                                    'massa_ossea' => [
+                                        'massa ossea',
+                                        'bone mass',
+                                        'bone',
+                                        'ossa',
+                                    ],
+                                    'proteine' => [
+                                        'proteine',
+                                        'protein',
+                                        'prot',
+                                    ],
+                                    'bmr' => [
+                                        'bmr',
+                                        'metabolismo basale',
+                                        'basal metabolic',
+                                        'basal',
+                                        'kcal',
+                                    ],
+                                    'eta_metabolica' => [
+                                        'età metabolica',
+                                        'eta metabolica',
+                                        'metabolic age',
+                                        'eta metab',
+                                        'age metab',
+                                    ],
                                     default => []
                                 };
 
+                                // Prova matching esatto o parziale (priorità ai match più completi)
+                                $bestMatch = null;
+                                $bestScore = 0;
+
                                 foreach ($headers as $col => $header) {
-                                    $headerLower = strtolower($header);
-                                    foreach ($searchTerms as $term) {
-                                        if (stripos($headerLower, strtolower($term)) !== false) {
-                                            $autoMatched = $col;
-                                            break 2;
+                                    $headerLower = strtolower(trim($header));
+
+                                    foreach ($searchTerms as $priority => $term) {
+                                        $termLower = strtolower($term);
+
+                                        // Match esatto (massimo punteggio)
+                                        if ($headerLower === $termLower) {
+                                            $score = 1000 - $priority; // Più alta priorità = più punti
+                                            if ($score > $bestScore) {
+                                                $bestScore = $score;
+                                                $bestMatch = $col;
+                                            }
+                                        }
+                                        // Match contenuto (punteggio medio)
+                                        elseif (stripos($headerLower, $termLower) !== false) {
+                                            $score = 500 - $priority;
+                                            if ($score > $bestScore) {
+                                                $bestScore = $score;
+                                                $bestMatch = $col;
+                                            }
+                                        }
+                                        // Match parole separate (punteggio basso ma comunque utile)
+                                        else {
+                                            $termWords = explode(' ', $termLower);
+                                            $matchedWords = 0;
+                                            foreach ($termWords as $word) {
+                                                if (strlen($word) > 2 && stripos($headerLower, $word) !== false) {
+                                                    $matchedWords++;
+                                                }
+                                            }
+                                            if ($matchedWords > 0 && $matchedWords === count($termWords)) {
+                                                $score = 100 + ($matchedWords * 10) - $priority;
+                                                if ($score > $bestScore) {
+                                                    $bestScore = $score;
+                                                    $bestMatch = $col;
+                                                }
+                                            }
                                         }
                                     }
                                 }
+
+                                $autoMatched = $bestMatch;
                             @endphp
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">

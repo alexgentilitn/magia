@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Lezione;
 use App\Models\Professionista;
 use App\Models\Sede;
+use App\Models\Cliente;
+use App\Mail\ConfermaPrenotazioneMail;
+use App\Mail\ReminderLezioneMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 /**
@@ -153,12 +157,586 @@ class CalendarioController extends Controller
             'professionista',
             'sede',
             'programma',
-            'clienti'
+            'clienti' => function($query) {
+                $query->withPivot('stato', 'check_in', 'check_out', 'created_at');
+            }
         ])->findOrFail($id);
 
         return response()->json([
             'lezione' => $lezione,
             'html' => view('admin.calendario.partials.modal-dettagli', compact('lezione'))->render()
         ]);
+    }
+
+    /**
+     * Prenota un cliente a una lezione
+     */
+    public function prenota(Request $request, $id)
+    {
+        $request->validate([
+            'cliente_id' => 'required|exists:clienti,id'
+        ]);
+
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+        $clienteId = $request->cliente_id;
+        $cliente = Cliente::findOrFail($clienteId);
+
+        // Verifica se il cliente è già prenotato
+        if ($lezione->clienti()->where('cliente_id', $clienteId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Il cliente è già prenotato per questa lezione.'
+            ], 422);
+        }
+
+        // Verifica posti disponibili
+        $postiDisponibili = $lezione->posti_totali - $lezione->posti_occupati;
+
+        if ($postiDisponibili <= 0) {
+            // Nessun posto disponibile - aggiungi a lista d'attesa
+            $lezione->clienti()->attach($clienteId, [
+                'stato' => 'lista_attesa',
+                'data_prenotazione' => now()->format('Y-m-d'),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Invia email di conferma lista d'attesa
+            try {
+                Mail::to($cliente->email)->send(new ConfermaPrenotazioneMail($lezione, $cliente, true));
+            } catch (\Exception $e) {
+                \Log::error('Errore invio email lista attesa: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'lista_attesa' => true,
+                'message' => 'Nessun posto disponibile. Cliente aggiunto alla lista d\'attesa.',
+                'posti_occupati' => $lezione->posti_occupati,
+                'posti_totali' => $lezione->posti_totali
+            ]);
+        }
+
+        // Prenota il cliente
+        $lezione->clienti()->attach($clienteId, [
+            'stato' => 'prenotato',
+            'data_prenotazione' => now()->format('Y-m-d'),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Incrementa posti occupati
+        $lezione->increment('posti_occupati');
+
+        // Invia email di conferma prenotazione
+        try {
+            Mail::to($cliente->email)->send(new ConfermaPrenotazioneMail($lezione, $cliente, false));
+        } catch (\Exception $e) {
+            \Log::error('Errore invio email conferma prenotazione: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prenotazione effettuata con successo!',
+            'posti_occupati' => $lezione->posti_occupati,
+            'posti_totali' => $lezione->posti_totali
+        ]);
+    }
+
+    /**
+     * Invia reminder email a tutti i clienti prenotati per una lezione
+     */
+    public function inviaReminder($id)
+    {
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+
+        // Ottieni tutti i clienti con stato 'prenotato' (non lista d'attesa)
+        $clienti = $lezione->clienti()
+            ->wherePivot('stato', 'prenotato')
+            ->get();
+
+        if ($clienti->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nessun cliente prenotato per questa lezione.'
+            ], 422);
+        }
+
+        $inviati = 0;
+        $errori = 0;
+
+        foreach ($clienti as $cliente) {
+            try {
+                Mail::to($cliente->email)->send(new ReminderLezioneMail($lezione, $cliente));
+                $inviati++;
+            } catch (\Exception $e) {
+                \Log::error("Errore invio reminder a {$cliente->email}: " . $e->getMessage());
+                $errori++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Reminder inviati: {$inviati} successi, {$errori} errori.",
+            'inviati' => $inviati,
+            'errori' => $errori
+        ]);
+    }
+
+    /**
+     * Annulla prenotazione di un cliente
+     */
+    public function annullaPrenotazione($lezioneId, $clienteId)
+    {
+        $lezione = Lezione::findOrFail($lezioneId);
+
+        // Verifica se il cliente è prenotato
+        $prenotazione = $lezione->clienti()
+            ->where('cliente_id', $clienteId)
+            ->first();
+
+        if (!$prenotazione) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Prenotazione non trovata.'
+            ], 404);
+        }
+
+        $statoPrenotazione = $prenotazione->pivot->stato;
+
+        // Rimuovi prenotazione
+        $lezione->clienti()->detach($clienteId);
+
+        // Se era una prenotazione confermata/prenotata, decrementa posti occupati
+        if (in_array($statoPrenotazione, ['prenotato', 'confermato'])) {
+            $lezione->decrement('posti_occupati');
+
+            // Controlla se c'è qualcuno in lista d'attesa
+            $primoInAttesa = $lezione->clienti()
+                ->wherePivot('stato', 'lista_attesa')
+                ->orderBy('cliente_lezione.created_at')
+                ->first();
+
+            if ($primoInAttesa) {
+                // Promuovi da lista d'attesa a prenotato
+                $lezione->clienti()->updateExistingPivot($primoInAttesa->id, [
+                    'stato' => 'prenotato',
+                    'updated_at' => now()
+                ]);
+
+                $lezione->increment('posti_occupati');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Prenotazione annullata. Un cliente dalla lista d\'attesa è stato promosso.',
+                    'posti_occupati' => $lezione->posti_occupati,
+                    'posti_totali' => $lezione->posti_totali,
+                    'promosso' => [
+                        'id' => $primoInAttesa->id,
+                        'nome' => $primoInAttesa->nome . ' ' . $primoInAttesa->cognome
+                    ]
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prenotazione annullata con successo.',
+            'posti_occupati' => $lezione->posti_occupati,
+            'posti_totali' => $lezione->posti_totali
+        ]);
+    }
+
+    /**
+     * Modifica durata lezione (resize calendario)
+     */
+    public function resize(Request $request, $id)
+    {
+        $request->validate([
+            'start' => 'required|date',
+            'end' => 'required|date|after:start'
+        ]);
+
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+
+        try {
+            // Parse nuove date/orari
+            $nuovaDataInizio = Carbon::parse($request->start);
+            $nuovaDataFine = Carbon::parse($request->end);
+
+            // Resize può cambiare sia inizio che fine
+            $nuovaOraInizio = $nuovaDataInizio->format('H:i:s');
+            $nuovaOraFine = $nuovaDataFine->format('H:i:s');
+            $data = $nuovaDataInizio->format('Y-m-d');
+
+            // Calcola durata in minuti
+            $durata = $nuovaDataInizio->diffInMinutes($nuovaDataFine);
+
+            if ($durata < 15) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La durata minima della lezione è di 15 minuti.'
+                ], 422);
+            }
+
+            if ($durata > 240) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La durata massima della lezione è di 4 ore.'
+                ], 422);
+            }
+
+            // Verifica conflitti con stesso professionista
+            $conflittoProfessionista = Lezione::where('id', '!=', $id)
+                ->where('professionista_id', $lezione->professionista_id)
+                ->where('data', $data)
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoProfessionista) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: il professionista ha già un\'altra lezione in questo orario.'
+                ], 422);
+            }
+
+            // Verifica conflitti con stessa sede
+            $conflittoSede = Lezione::where('id', '!=', $id)
+                ->where('sede_id', $lezione->sede_id)
+                ->where('data', $data)
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoSede) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: la sede è già occupata in questo orario.'
+                ], 422);
+            }
+
+            // Aggiorna durata lezione
+            $lezione->update([
+                'ora_inizio' => $nuovaOraInizio,
+                'ora_fine' => $nuovaOraFine
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Durata lezione modificata con successo!',
+                'lezione' => [
+                    'id' => $lezione->id,
+                    'ora_inizio' => Carbon::parse($lezione->ora_inizio)->format('H:i'),
+                    'ora_fine' => Carbon::parse($lezione->ora_fine)->format('H:i'),
+                    'durata_minuti' => $durata
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante la modifica: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sposta lezione (drag & drop calendario)
+     */
+    public function move(Request $request, $id)
+    {
+        $request->validate([
+            'start' => 'required|date',
+            'end' => 'required|date|after:start'
+        ]);
+
+        $lezione = Lezione::with(['professionista', 'sede'])->findOrFail($id);
+
+        try {
+            // Parse nuove date/orari
+            $nuovaData = Carbon::parse($request->start);
+            $nuovaDataFine = Carbon::parse($request->end);
+
+            $nuovaOraInizio = $nuovaData->format('H:i:s');
+            $nuovaOraFine = $nuovaDataFine->format('H:i:s');
+
+            // Verifica conflitti con stesso professionista
+            $conflittoProfessionista = Lezione::where('id', '!=', $id)
+                ->where('professionista_id', $lezione->professionista_id)
+                ->where('data', $nuovaData->format('Y-m-d'))
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoProfessionista) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: il professionista ha già un\'altra lezione in questo orario.'
+                ], 422);
+            }
+
+            // Verifica conflitti con stessa sede
+            $conflittoSede = Lezione::where('id', '!=', $id)
+                ->where('sede_id', $lezione->sede_id)
+                ->where('data', $nuovaData->format('Y-m-d'))
+                ->where(function($query) use ($nuovaOraInizio, $nuovaOraFine) {
+                    $query->whereBetween('ora_inizio', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhereBetween('ora_fine', [$nuovaOraInizio, $nuovaOraFine])
+                          ->orWhere(function($q) use ($nuovaOraInizio, $nuovaOraFine) {
+                              $q->where('ora_inizio', '<=', $nuovaOraInizio)
+                                ->where('ora_fine', '>=', $nuovaOraFine);
+                          });
+                })
+                ->exists();
+
+            if ($conflittoSede) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conflitto di orario: la sede è già occupata in questo orario.'
+                ], 422);
+            }
+
+            // Aggiorna lezione
+            $lezione->update([
+                'data' => $nuovaData->format('Y-m-d'),
+                'ora_inizio' => $nuovaOraInizio,
+                'ora_fine' => $nuovaOraFine
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lezione spostata con successo!',
+                'lezione' => [
+                    'id' => $lezione->id,
+                    'data' => $lezione->data->format('d/m/Y'),
+                    'ora_inizio' => Carbon::parse($lezione->ora_inizio)->format('H:i'),
+                    'ora_fine' => Carbon::parse($lezione->ora_fine)->format('H:i')
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante lo spostamento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Elimina lezione
+     */
+    public function destroy(Request $request, $id)
+    {
+        try {
+            $lezione = Lezione::findOrFail($id);
+            $eliminaTutteSerie = $request->input('elimina_serie', false);
+
+            // Controlla se ci sono prenotazioni
+            $prenotazioni = $lezione->clienti()->count();
+
+            // Se è una lezione ricorrente e si vuole eliminare tutta la serie
+            if ($eliminaTutteSerie && $lezione->isLezioneRicorrente()) {
+                $count = $lezione->eliminaOccorrenzeFuture($lezione->isLezionePadre());
+
+                $message = "Eliminate {$count} occorrenze della serie ricorrente.";
+                if ($prenotazioni > 0) {
+                    $message .= " Le prenotazioni associate sono state cancellate.";
+                }
+            } else {
+                // Elimina solo questa lezione
+                $lezione->delete();
+
+                $message = $prenotazioni > 0
+                    ? "Lezione eliminata con successo. {$prenotazioni} prenotazioni sono state cancellate."
+                    : "Lezione eliminata con successo.";
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante l\'eliminazione: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check-in cliente
+     */
+    public function checkIn($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia prenotato
+            $prenotazione = $lezione->clienti()->where('cliente_id', $clienteId)->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non prenotato per questa lezione.'
+                ], 404);
+            }
+
+            // Aggiorna stato e check-in
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'presente',
+                'check_in' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-in effettuato con successo!',
+                'check_in' => now()->format('H:i')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante il check-in: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check-out cliente
+     */
+    public function checkOut($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia presente
+            $prenotazione = $lezione->clienti()
+                ->where('cliente_id', $clienteId)
+                ->wherePivot('stato', 'presente')
+                ->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non presente o non ha effettuato il check-in.'
+                ], 404);
+            }
+
+            // Aggiorna check-out
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'check_out' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-out effettuato con successo!',
+                'check_out' => now()->format('H:i')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore durante il check-out: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Segna cliente come assente
+     */
+    public function segnaAssente($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia prenotato
+            $prenotazione = $lezione->clienti()->where('cliente_id', $clienteId)->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non prenotato per questa lezione.'
+                ], 404);
+            }
+
+            // Aggiorna stato
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'assente',
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cliente segnato come assente.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Annulla assenza cliente
+     */
+    public function annullaAssenza($lezioneId, $clienteId)
+    {
+        try {
+            $lezione = Lezione::findOrFail($lezioneId);
+
+            // Verifica che il cliente sia assente
+            $prenotazione = $lezione->clienti()
+                ->where('cliente_id', $clienteId)
+                ->wherePivot('stato', 'assente')
+                ->first();
+
+            if (!$prenotazione) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cliente non segnato come assente.'
+                ], 404);
+            }
+
+            // Ripristina stato prenotato
+            $lezione->clienti()->updateExistingPivot($clienteId, [
+                'stato' => 'prenotato',
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Assenza annullata. Cliente ripristinato.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errore: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

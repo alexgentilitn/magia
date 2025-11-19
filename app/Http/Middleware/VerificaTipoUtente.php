@@ -39,13 +39,21 @@ class VerificaTipoUtente
         if (!in_array($user->tipo_utente, $tipiConsentiti)) {
             // Redirect diverso in base al tipo utente attuale
             if ($user->tipo_utente === 'cliente') {
-                // Cliente tenta di accedere all'area admin
+                // Cliente tenta di accedere ad area riservata (admin o professionista)
                 return redirect()->route('cliente.dashboard')
                     ->with('error', 'Non hai i permessi per accedere a questa sezione.');
-            } else {
-                // Admin tenta di accedere all'area cliente
+            } elseif ($user->tipo_utente === 'professionista') {
+                // Professionista tenta di accedere all'area admin o cliente
+                return redirect()->route('professionista.dashboard')
+                    ->with('error', 'Non hai i permessi per accedere a questa sezione.');
+            } elseif ($user->tipo_utente === 'amministratore') {
+                // Admin tenta di accedere all'area cliente o professionista
                 return redirect()->route('admin.dashboard')
                     ->with('error', 'Non hai i permessi per accedere a questa sezione.');
+            } else {
+                // Tipo utente sconosciuto
+                return redirect()->route('home')
+                    ->with('error', 'Tipo utente non riconosciuto.');
             }
         }
 

@@ -1,0 +1,146 @@
+@extends('layouts.admin')
+
+@section('titolo', 'Anteprima Importazione Pesate')
+
+@section('contenuto')
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Anteprima Importazione Pesate</h2>
+        <p class="text-gray-600 mt-1">Controlla i dati prima di confermare l'importazione</p>
+    </div>
+
+    <!-- Statistiche -->
+    @php
+        $totale = count($preview_data);
+        $valide = count(array_filter($preview_data, fn($r) => empty($r['errors'])));
+        $errori = $totale - $valide;
+    @endphp
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+            <p class="text-sm text-gray-600 font-medium">Totale Righe</p>
+            <p class="text-2xl font-bold text-gray-800">{{ $totale }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+            <p class="text-sm text-gray-600 font-medium">Righe Valide</p>
+            <p class="text-2xl font-bold text-gray-800">{{ $valide }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+            <p class="text-sm text-gray-600 font-medium">Righe con Errori</p>
+            <p class="text-2xl font-bold text-gray-800">{{ $errori }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-fucsia-magia">
+            <p class="text-sm text-gray-600 font-medium">Sede</p>
+            <p class="text-xl font-bold text-gray-800">{{ $sede }}</p>
+        </div>
+    </div>
+
+    <!-- Info -->
+    @if($valide > 0)
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
+                <p class="text-green-800">
+                    <strong>{{ $valide }}</strong> pesate verranno importate.
+                    @if($errori > 0)
+                        <strong>{{ $errori }}</strong> righe verranno saltate a causa di errori.
+                    @endif
+                </p>
+            </div>
+        </div>
+    @else
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle text-red-600 text-xl mr-3"></i>
+                <p class="text-red-800 font-medium">
+                    Impossibile procedere: tutte le righe contengono errori. Correggi il file e riprova.
+                </p>
+            </div>
+        </div>
+    @endif
+
+    <!-- Tabella Anteprima -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+        <div class="overflow-x-auto" style="max-height: 600px;">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Riga</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">BMI</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grasso %</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stato</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($preview_data as $row)
+                        <tr class="{{ !empty($row['errors']) ? 'bg-red-50' : 'hover:bg-gray-50' }}">
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $row['row'] }}</td>
+                            <td class="px-4 py-3 text-sm">
+                                <div class="font-medium text-gray-900">{{ $row['cognome'] }} {{ $row['nome'] }}</div>
+                                @if(!empty($row['errors']))
+                                    <div class="text-xs text-red-600 mt-1">
+                                        @foreach($row['errors'] as $error)
+                                            <div><i class="fas fa-exclamation-triangle mr-1"></i>{{ $error }}</div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $row['peso'] ?? '-' }} kg</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $row['bmi'] ?? '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $row['grasso_corporeo'] ?? '-' }}%</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $row['data_rilevazione'] ?? '-' }}</td>
+                            <td class="px-4 py-3 text-sm">
+                                @if(empty($row['errors']))
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-check mr-1"></i>OK
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
+                                        <i class="fas fa-times mr-1"></i>Errore
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Form Conferma -->
+    @if($valide > 0)
+        <form action="{{ route('admin.pesate.confirm-import') }}" method="POST">
+            @csrf
+            <input type="hidden" name="preview_data" value="{{ json_encode($preview_data) }}">
+            <input type="hidden" name="sede" value="{{ $sede }}">
+
+            <div class="flex gap-4">
+                <button type="submit"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:shadow-lg transition transform hover:-translate-y-0.5">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Conferma Importazione ({{ $valide }} pesate)
+                </button>
+                <a href="{{ route('admin.pesate.import') }}"
+                   class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Torna Indietro
+                </a>
+            </div>
+        </form>
+    @else
+        <div class="flex gap-4">
+            <a href="{{ route('admin.pesate.import') }}"
+               class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 text-center rounded-lg hover:bg-gray-300 transition">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Torna al Form di Upload
+            </a>
+        </div>
+    @endif
+
+</div>
+@endsection

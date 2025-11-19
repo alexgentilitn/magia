@@ -184,7 +184,7 @@
                         </button>
                     </h4>
 
-                    <div id="optional-fields" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display: none;">
+                    <div id="optional-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6" style="display: none;">
                         @php
                             $campiOpzionali = [
                                 'bmi' => 'BMI',
@@ -246,10 +246,13 @@
                                     <option value="skip">-- Salta --</option>
                                     @foreach($headers as $col => $header)
                                         <option value="{{ $col }}" {{ $autoMatched === $col ? 'selected' : '' }}>
-                                            {{ $col }}: {{ Str::limit($header, 15) }}
+                                            {{ $col }}: {{ $header }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <div class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono overflow-x-auto" id="preview-{{ $field }}">
+                                    Seleziona una colonna per vedere l'anteprima
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -292,8 +295,10 @@
         if (samples.length === 0) {
             previewDiv.innerHTML = '<span class="text-gray-400">(colonna vuota)</span>';
         } else {
-            previewDiv.innerHTML = samples.slice(0, 3).map(v => `<span class="text-gray-700">${v}</span>`).join(', ') +
-                                  (samples.length > 3 ? ', ...' : '');
+            const displayCount = 5; // Mostra 5 valori invece di 3
+            previewDiv.innerHTML = '<strong class="text-gray-600">Anteprima:</strong> ' +
+                                  samples.slice(0, displayCount).map(v => `<span class="text-gray-700 font-semibold">${v}</span>`).join(', ') +
+                                  (samples.length > displayCount ? ` <span class="text-gray-500">(+${samples.length - displayCount} righe)</span>` : '');
         }
     }
 

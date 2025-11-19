@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pesata;
 use App\Models\Cliente;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -345,8 +346,8 @@ class PesateController extends Controller
                     continue;
                 }
 
-                // Cerca cliente con logica migliorata
-                $cliente = $this->findOrCreateCliente($nome, $cognome, $codiceFiscale);
+                // Cerca cliente con logica migliorata - LIMITATO ALLA SEDE SELEZIONATA
+                $cliente = $this->findOrCreateCliente($nome, $cognome, $codiceFiscale, $sede);
 
                 $rowErrors = [];
                 $clienteCreato = false;
@@ -463,20 +464,46 @@ class PesateController extends Controller
 
     /**
      * Trova cliente esistente o crea nuovo cliente
+     * LIMITATO ALLA SEDE SELEZIONATA per evitare confusione tra omonimi
      */
-    private function findOrCreateCliente($nome, $cognome, $codiceFiscale = null)
+    private function findOrCreateCliente($nome, $cognome, $codiceFiscale = null, $nomeSede = null)
     {
-        // Prima cerca per nome e cognome
-        $cliente = Cliente::where(function($q) use ($nome, $cognome) {
-                $q->whereRaw('LOWER(TRIM(nome)) = ?', [strtolower(trim($nome))])
-                  ->whereRaw('LOWER(TRIM(cognome)) = ?', [strtolower(trim($cognome))]);
-            })
-            ->first();
+        // Trova ID della sede dal nome
+        $sedeId = null;
+        if ($nomeSede) {
+            $sede = Sede::where('nome', $nomeSede)->first();
+            $sedeId = $sede ? $sede->id : null;
 
-        // Se non trovato e c'è codice fiscale, cerca per quello
+            \Log::info("Ricerca cliente limitata alla sede", [
+                'nome_sede' => $nomeSede,
+                'sede_id' => $sedeId,
+                'cliente_cercato' => "{$cognome} {$nome}"
+            ]);
+        }
+
+        // Prima cerca per nome e cognome NELLA SEDE SELEZIONATA
+        $query = Cliente::where(function($q) use ($nome, $cognome) {
+            $q->whereRaw('LOWER(TRIM(nome)) = ?', [strtolower(trim($nome))])
+              ->whereRaw('LOWER(TRIM(cognome)) = ?', [strtolower(trim($cognome))]);
+        });
+
+        // Filtra per sede se presente
+        if ($sedeId) {
+            $query->where('sede_preferita_id', $sedeId);
+        }
+
+        $cliente = $query->first();
+
+        // Se non trovato e c'è codice fiscale, cerca per quello NELLA STESSA SEDE
         if (!$cliente && $codiceFiscale) {
-            $cliente = Cliente::whereRaw('LOWER(TRIM(codice_fiscale)) = ?', [strtolower(trim($codiceFiscale))])
-                ->first();
+            $query = Cliente::whereRaw('LOWER(TRIM(codice_fiscale)) = ?', [strtolower(trim($codiceFiscale))]);
+
+            // Filtra per sede anche qui
+            if ($sedeId) {
+                $query->where('sede_preferita_id', $sedeId);
+            }
+
+            $cliente = $query->first();
         }
 
         // Se ancora non trovato, crea nuovo cliente
@@ -490,13 +517,14 @@ class PesateController extends Controller
                     'tipo_cliente' => 'effettiva',
                     'data_iscrizione' => now(),
                     'utente_id' => auth()->id(),
+                    'sede_preferita_id' => $sedeId, // Imposta sede preferita
                 ];
 
                 \Log::info("Tentativo creazione cliente con dati: " . json_encode($datiCliente));
 
                 $cliente = Cliente::create($datiCliente);
 
-                \Log::info("Nuovo cliente creato durante import: {$cognome} {$nome} (ID: {$cliente->id})");
+                \Log::info("Nuovo cliente creato durante import: {$cognome} {$nome} (ID: {$cliente->id}, Sede: {$nomeSede})");
             } catch (\Exception $e) {
                 $errorMessage = "Errore SQL: " . $e->getMessage();
                 if ($e instanceof \Illuminate\Database\QueryException) {
